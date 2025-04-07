@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         title: 'flutter_applaication_1',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 162, 50, 200)),
         ),
         home: MyHomePage(),
       ),
@@ -70,11 +70,14 @@ class Bigcard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final style = theme.textTheme.displayMedium!.copyWith(
+      color: theme.colorScheme.onPrimary,
+    );
     return Card(
       color:theme.colorScheme.primary,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Text(pair.asLowerCase),
+        child: Text(pair.asLowerCase, style:style),
       ),
     );
   }
