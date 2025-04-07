@@ -41,19 +41,22 @@ class MyHomePage extends StatelessWidget {
     var pair = appState.current;
 
     return Scaffold(
-      body: Column(
-        children: [
-          Text('A random genious idea:'),
-          Bigcard(pair: pair),
-
-          ElevatedButton(
-            onPressed: (){
-              appState.getNext();
-              print('button pressed!');
-            },
-            child: Text('Next'),
-          ),
-        ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('A random genious idea:'),
+            Bigcard(pair: pair),
+        
+            ElevatedButton(
+              onPressed: (){
+                appState.getNext();
+                print('button pressed!');
+              },
+              child: Text('Next'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -74,10 +77,14 @@ class Bigcard extends StatelessWidget {
       color: theme.colorScheme.onPrimary,
     );
     return Card(
-      color:theme.colorScheme.primary,
+      color:theme.colorScheme.secondary,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Text(pair.asLowerCase, style:style),
+        child: Text(
+          pair.asLowerCase, 
+          style:style,
+          semanticsLabel: "${pair.first} ${pair.second}",
+          ),
       ),
     );
   }
