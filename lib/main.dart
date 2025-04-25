@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:healthymeal/gptPages/dashboard.dart';
+import 'package:healthymeal/gptPages/scoreboard.dart';
 
 void main() {
-  runApp(const Dashboard());
+  runApp(const Scoreboard());
 }
 
