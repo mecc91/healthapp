@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:healthymeal/Pages/mealrecord.dart';
+import 'package:healthymeal/Pages/scoreboard.dart'; // scoreboard.dart 파일을 import 합니다.
 import 'package:image_picker/image_picker.dart';
 
 class Dashboard extends StatefulWidget {
@@ -28,56 +29,64 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color.fromARGB(255, 84, 239, 138), Color.fromARGB(255, 239, 186, 86)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+    // MaterialApp을 Scaffold 상위로 이동시키거나 제거해야 합니다.
+    // 일반적으로 MaterialApp은 앱의 최상위 루트에 한 번만 사용됩니다.
+    // 여기서는 MaterialApp을 제거하고 Scaffold만 반환하도록 수정합니다.
+    // 만약 이 Dashboard 위젯이 앱의 시작점이 아니라면,
+    // 앱을 실행하는 main.dart 파일의 MaterialApp 내에서 이 Dashboard를 호출해야 합니다.
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color.fromARGB(255, 84, 239, 138), Color.fromARGB(255, 239, 186, 86)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  _buildDailyStatusCard(),
-                  _buildWeeklyScoreCard(),
-                ],
-              ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeader(),
+                _buildDailyStatusCard(),
+                _buildWeeklyScoreCard(),
+              ],
             ),
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 1,
-          selectedItemColor: Colors.black,
-          unselectedItemColor: Colors.grey,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.bar_chart, size: 40), label: ''),
-            BottomNavigationBarItem(icon: Icon(Icons.camera_alt, size: 40), label: ''),
-            /*BottomNavigationBarItem(
-              icon: IconButton(
-                onPressed: _takePicture, 
-                icon: Icon(Icons.camera_alt, size: 40)),
-              label: ''
-            ),*/
-            BottomNavigationBarItem(icon: Icon(Icons.star_border, size: 40), label: ''),
-          ],
-          onTap: (index) {
-          if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
-            Navigator.push( // MealRecordScreen으로 이동
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1, // 초기 선택 인덱스를 조정하거나 상태 변수로 관리할 수 있습니다.
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: const [ // const 키워드 추가
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart, size: 40), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt, size: 40), label: ''),
+          /*BottomNavigationBarItem(
+            icon: IconButton(
+              onPressed: _takePicture,
+              icon: Icon(Icons.camera_alt, size: 40)),
+            label: ''
+          ),*/
+          BottomNavigationBarItem(icon: Icon(Icons.star_border, size: 40), label: ''),
+        ],
+        onTap: (index) {
+          if (index == 0) { // bar_chart 아이콘 (인덱스 0)을 탭했을 때
+            Navigator.push( // ScoreboardScreen으로 이동
+              context,
+              // ScoreboardScreen을 MaterialApp 없이 직접 사용합니다.
+              MaterialPageRoute(builder: (context) => const ScoreboardScreen()),
+            );
+          } else if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
+            Navigator.push( // FoodRecordScreen으로 이동
               context,
               MaterialPageRoute(builder: (context) => const FoodRecordScreen()),
             );
           }
           // 다른 아이템 탭 시 추가 로직 구현 가능
         },
-        ),
       ),
     );
   }
@@ -95,12 +104,12 @@ class _DashboardState extends State<Dashboard> {
           Row(
             children: [
               IconButton(
-                icon: Icon(Icons.notifications_none),
+                icon: const Icon(Icons.notifications_none), // const 키워드 추가
                 onPressed:() {},
                 color: Colors.black,
               ),
-              SizedBox(width: 12),
-              CircleAvatar(
+              const SizedBox(width: 12), // const 키워드 추가
+              const CircleAvatar( // const 키워드 추가
                 radius: 18,
                 backgroundImage: AssetImage('assets/profile.jpg'),
               ),
