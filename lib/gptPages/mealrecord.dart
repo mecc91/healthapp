@@ -1,55 +1,60 @@
 import 'package:flutter/material.dart';
 import 'dart:io'; // File 클래스 사용
 import 'dart:math';
-import 'package:camera/camera.dart'; // camera 패키지 임포트
-import 'package:path_provider/path_provider.dart'; // path_provider 패키지 임포트
-import 'package:path/path.dart' show join; // path 패키지의 join 함수 임포트
+import 'package:image_picker/image_picker.dart'; // image_picker 패키지 임포트
 // import 'package:http/http.dart' as http; // 실제 API 호출 시 필요
 
 // 앱의 시작점인 main 함수
 Future<void> main() async {
+  // Flutter 앱이 실행되기 전에 위젯 바인딩을 초기화합니다.
   WidgetsFlutterBinding.ensureInitialized();
-  final cameras = await availableCameras();
-  final firstCamera = cameras.first;
-  runApp(MyApp(camera: firstCamera));
+  // 카메라가 필수는 아니므로 제거
+  runApp(const MyApp());
 }
 
 // 메인 애플리케이션 위젯
 class MyApp extends StatelessWidget {
-  final CameraDescription camera;
-  const MyApp({super.key, required this.camera});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Food Record',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Roboto',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
+      title: 'Food Record', // 앱 제목
+      theme: ThemeData( // 앱 테마 설정
+        primarySwatch: Colors.green, // 기본 색상 견본
+        fontFamily: 'Roboto', // 기본 글꼴
+        appBarTheme: const AppBarTheme( // 앱 바 테마
+          backgroundColor: Colors.white, // 배경색: 흰색
+          foregroundColor: Colors.black, // 전경색 (아이콘, 텍스트): 검은색
+          elevation: 0, // 그림자 없음
         ),
-        scaffoldBackgroundColor: Colors.white,
-        elevatedButtonTheme: ElevatedButtonThemeData(
+        scaffoldBackgroundColor: Colors.white, // Scaffold 배경색: 흰색
+        elevatedButtonTheme: ElevatedButtonThemeData( // ElevatedButton 테마
           style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
+            shape: RoundedRectangleBorder( // 둥근 모서리 버튼
               borderRadius: BorderRadius.circular(10.0),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 15),
+            padding: const EdgeInsets.symmetric(vertical: 15), // 버튼 내부 패딩
           ),
         ),
+        outlinedButtonTheme: OutlinedButtonThemeData( // OutlinedButton 테마 추가
+          style: OutlinedButton.styleFrom(
+             shape: RoundedRectangleBorder(
+               borderRadius: BorderRadius.circular(10.0),
+             ),
+             padding: const EdgeInsets.symmetric(vertical: 15),
+          )
+        )
       ),
-      home: FoodRecordScreen(camera: camera),
+      home: const FoodRecordScreen(), // 홈 화면 설정 (카메라 제거)
     );
   }
 }
 
-// 음식 기록 화면 위젯
+// 음식 기록 화면 위젯 (StatefulWidget)
 class FoodRecordScreen extends StatefulWidget {
-  final CameraDescription camera;
-  const FoodRecordScreen({super.key, required this.camera});
+  // 카메라 제거
+  const FoodRecordScreen({super.key});
 
   @override
   State<FoodRecordScreen> createState() => _FoodRecordScreenState();
@@ -57,14 +62,14 @@ class FoodRecordScreen extends StatefulWidget {
 
 // FoodRecordScreen 위젯의 상태 관리 클래스
 class _FoodRecordScreenState extends State<FoodRecordScreen> {
-  late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
-  XFile? _capturedImageFile;
+  // CameraController 및 관련 Future 제거
+  final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스 생성
+  XFile? _pickedImageFile; // 선택/촬영된 이미지 파일
 
-  String? _selectedServing = '1';
-  String? _selectedTime = 'Breakfast';
-  final List<String> _servingOptions = ['1', '2', '3', '4', '5'];
-  final List<String> _timeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+  String? _selectedServing = '1'; // 선택된 서빙 수량 (기본값 '1')
+  String? _selectedTime = 'Breakfast'; // 선택된 식사 시간 (기본값 'Breakfast')
+  final List<String> _servingOptions = ['1', '2', '3', '4', '5']; // 서빙 수량 옵션
+  final List<String> _timeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack']; // 식사 시간 옵션
 
   // --- 메뉴 관련 상태 변수 추가 ---
   String _menuName = ''; // 분석/수정된 메뉴 이름
@@ -75,151 +80,170 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(
-      widget.camera,
-      ResolutionPreset.medium,
-      enableAudio: false,
-    );
-    _initializeControllerFuture = _controller.initialize();
+    // 카메라 컨트롤러 초기화 제거
     _menuNameController.text = _menuName; // 초기 컨트롤러 텍스트 설정
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-    _menuNameController.dispose(); // 컨트롤러 dispose 추가
+    // 카메라 컨트롤러 dispose 제거
+    _menuNameController.dispose(); // 메뉴 이름 컨트롤러 dispose 추가
     super.dispose();
   }
 
-  // --- GPT API 호출 시뮬레이션 함수 ---
+  // --- 이미지 선택 함수 (갤러리 또는 카메라) ---
+  Future<void> _pickImage(ImageSource source) async {
+     if (_isAnalyzingMenu) return; // 분석 중에는 이미지 선택 방지
+
+     try {
+       final XFile? pickedFile = await _picker.pickImage(
+         source: source,
+         imageQuality: 80, // 이미지 품질 설정 (0-100)
+         maxWidth: 1000, // 최대 너비 설정 (선택적)
+       );
+
+       if (pickedFile != null) {
+         // 위젯이 마운트된 상태인지 확인 후 상태 업데이트
+         if (!mounted) return;
+         setState(() {
+           _pickedImageFile = pickedFile; // 선택된 이미지 저장
+           _menuName = "분석 중..."; // 분석 시작 메시지
+           _menuNameController.text = _menuName;
+           _isEditingMenu = false; // 편집 모드 해제
+         });
+         // 선택된 이미지로 GPT 분석 시작
+         await _analyzeImageWithGPT(pickedFile.path);
+       } else {
+         print('이미지가 선택되지 않았습니다.');
+       }
+     } catch (e) {
+       print('이미지 선택 오류: $e');
+       // 위젯이 마운트된 상태인지 확인 후 스낵바 표시
+       if (!mounted) return;
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('이미지를 가져오는 중 오류 발생: $e')),
+       );
+       setState(() {
+         _menuName = ""; // 오류 시 메뉴 이름 초기화
+         _menuNameController.text = _menuName;
+       });
+     }
+   }
+
+
+  // --- GPT API 호출 시뮬레이션 함수 (기존과 동일) ---
   Future<void> _analyzeImageWithGPT(String imagePath) async {
     setState(() {
       _isAnalyzingMenu = true; // 분석 시작, 로딩 상태 true
-      _menuName = ''; // 이전 메뉴 이름 초기화
+      // _menuName = '분석 중...'; // 이미 _pickImage에서 설정됨
+      // _menuNameController.text = _menuName;
       _isEditingMenu = false; // 편집 모드 해제
     });
 
     try {
       // !!! 중요: 실제 GPT API 호출 로직 구현 필요 !!!
-      // 예시: http.post(...) 또는 dio.post(...) 사용하여 이미지 파일을 API 엔드포인트로 전송
-      // 여기서는 2초 지연으로 시뮬레이션
-      await Future.delayed(const Duration(seconds: 2));
-
-      // --- 시뮬레이션 결과 ---
-      // 실제로는 API 응답에서 메뉴 이름을 파싱해야 함
+      await Future.delayed(const Duration(seconds: 2)); // 2초 지연 시뮬레이션
       final String analyzedMenuName = "오므라이스 (분석됨)"; // GPT 분석 결과 예시
 
+      if (!mounted) return;
       setState(() {
-        _menuName = analyzedMenuName; // 상태 업데이트
-        _menuNameController.text = _menuName; // 컨트롤러 텍스트도 업데이트
-        _isAnalyzingMenu = false; // 분석 완료, 로딩 상태 false
+        _menuName = analyzedMenuName;
+        _menuNameController.text = _menuName;
+        _isAnalyzingMenu = false; // 분석 완료
       });
 
     } catch (e) {
       print('GPT 분석 오류 (시뮬레이션): $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('음식 이름 분석 중 오류 발생: $e')),
       );
       setState(() {
-        _menuName = "분석 실패"; // 오류 발생 시
+        _menuName = "분석 실패";
         _menuNameController.text = _menuName;
-        _isAnalyzingMenu = false; // 분석 완료 (실패), 로딩 상태 false
+        _isAnalyzingMenu = false;
       });
     }
   }
 
-  // 사진 촬영 및 데이터 처리 함수
-  Future<void> _takePictureAndConfirm() async {
-    if (_isAnalyzingMenu) return; // 분석 중에는 촬영 방지
-    if (_capturedImageFile != null) {
-      // 이미 사진이 있고, 메뉴 이름도 있으면 백엔드 전송 로직 수행
-      if (_menuName.isNotEmpty && _menuName != "분석 실패" && _menuName != "분석 중...") {
-          // --- 백엔드 전송 준비 ---
-          print('--- 데이터 전송 준비 ---');
-          print('Image Path: ${_capturedImageFile?.path}');
-          print('Menu: $_menuName'); // 분석/수정된 메뉴 이름 사용
-          print('Serving: $_selectedServing');
-          print('Time: $_selectedTime');
-          print('----------------------');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('데이터가 준비되었습니다. (백엔드 전송 구현 필요)')),
-          );
-          // TODO: 실제 백엔드 전송 로직 구현 (http, dio 등 사용)
-      } else {
-         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text('메뉴 이름 분석이 완료되지 않았거나 실패했습니다.')),
-         );
-      }
-      return; // 이미 처리했으므로 함수 종료
+  // --- 데이터 저장 함수 (기존 _takePictureAndConfirm 역할 일부) ---
+  Future<void> _saveData() async {
+    if (_isAnalyzingMenu) return; // 분석 중에는 저장 방지
+    if (_pickedImageFile == null) { // 이미지가 없으면 저장 불가
+       if (!mounted) return;
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(content: Text('먼저 음식 사진을 선택해주세요.')),
+       );
+       return;
     }
 
+    // 메뉴 이름 유효성 검사
+    if (_menuName.isNotEmpty && _menuName != "분석 실패" && _menuName != "분석 중...") {
+        // --- 백엔드 전송 준비 ---
+        print('--- 데이터 전송 준비 ---');
+        print('Image Path: ${_pickedImageFile?.path}');
+        print('Menu: $_menuName');
+        print('Serving: $_selectedServing');
+        print('Time: $_selectedTime');
+        print('----------------------');
 
-    // --- 사진 촬영 및 분석 시작 ---
-    try {
-      await _initializeControllerFuture;
-      final image = await _controller.takePicture();
-      setState(() {
-        _capturedImageFile = image; // 촬영된 이미지 저장
-        _menuName = "분석 중..."; // 분석 시작 메시지
-        _menuNameController.text = _menuName;
-      });
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('데이터가 준비되었습니다. (백엔드 전송 구현 필요)')),
+        );
+        // TODO: 실제 백엔드 전송 로직 구현
 
-      // 촬영된 이미지로 GPT 분석 시작
-      await _analyzeImageWithGPT(image.path);
+        // 예시: 전송 후 초기 상태로 돌아가기
+        // _clearSelection();
 
-    } catch (e) {
-      print('사진 촬영 오류: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('사진 촬영 중 오류 발생: $e')),
-      );
-      setState(() {
-         _menuName = ""; // 촬영 실패 시 메뉴 이름 초기화
-         _menuNameController.text = _menuName;
-      });
+    } else {
+       // 메뉴 이름이 유효하지 않을 경우 사용자에게 알림
+       if (!mounted) return;
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(content: Text('메뉴 이름 분석이 완료되지 않았거나 실패했습니다. 확인 또는 수정 후 저장해주세요.')),
+       );
     }
   }
 
-  // 사진 다시 찍기 함수
-  void _retakePicture() {
-    if (_isAnalyzingMenu) return; // 분석 중에는 다시 찍기 방지
+  // --- 선택 초기화 함수 (기존 _retakePicture 역할) ---
+  void _clearSelection() {
+    if (_isAnalyzingMenu) return; // 분석 중에는 초기화 방지
     setState(() {
-      _capturedImageFile = null; // 캡처된 이미지 초기화
+      _pickedImageFile = null; // 선택된 이미지 초기화
       _menuName = ''; // 메뉴 이름 초기화
-      _menuNameController.text = '';
+      _menuNameController.text = ''; // 컨트롤러 텍스트 초기화
       _isEditingMenu = false; // 편집 모드 해제
+      // 드롭다운 기본값으로 리셋 (선택적)
+      // _selectedServing = '1';
+      // _selectedTime = 'Breakfast';
     });
   }
 
-  // 메뉴 편집 모드 토글 및 저장 함수
+  // 메뉴 편집 모드 토글 및 저장 함수 (기존과 동일)
   void _toggleEditMenu() {
     if (_isAnalyzingMenu) return; // 분석 중에는 편집 불가
 
     setState(() {
       if (_isEditingMenu) {
         // 편집 모드 -> 저장 및 보기 모드로 전환
-        _menuName = _menuNameController.text.trim(); // TextField 값 저장
+        _menuName = _menuNameController.text.trim(); // TextField 값 저장 (양 끝 공백 제거)
         if (_menuName.isEmpty){
-           // 사용자가 빈 값으로 저장 시 분석 실패 상태로 간주하거나 기본값 설정 가능
            _menuName = "메뉴 이름 없음";
            _menuNameController.text = _menuName;
         }
-        _isEditingMenu = false;
+        _isEditingMenu = false; // 보기 모드로 전환
       } else {
         // 보기 모드 -> 편집 모드로 전환
-        // 분석 실패 또는 이름이 없는 경우에만 편집 모드 진입 허용 (선택적)
-        // if (_menuName == "분석 실패" || _menuName.isEmpty || _menuName == "메뉴 이름 없음") {
+        // 이미지가 선택되었거나 메뉴 이름이 비어 있을 때만 편집 가능
+        if (_pickedImageFile != null || _menuName.isEmpty) {
            _isEditingMenu = true;
-        // } else {
-        //    ScaffoldMessenger.of(context).showSnackBar(
-        //      SnackBar(content: Text('분석된 메뉴 이름이 있습니다.')),
-        //    );
-        // }
+        }
       }
     });
   }
 
 
-  // 대시보드로 돌아가기 함수
+  // 대시보드로 돌아가기 함수 (기존과 동일)
   void _goToDashboard() {
     Navigator.of(context).popUntil((route) => route.isFirst);
   }
@@ -227,132 +251,143 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.of(context).size; // 화면 크기 정보
     final horizontalPadding = max(16.0, screenSize.width * 0.04);
-    final imageAreaHeight = screenSize.height * 0.5;
+    // 이미지 영역 높이 조절 (카메라 프리뷰보다 작게 설정 가능)
+    final imageAreaHeight = screenSize.height * 0.4; // 높이 40%로 조절
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
+        leading: IconButton( // 뒤로가기 버튼
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         title: const Text(
-          'Record',
+          'Record', // 앱 바 제목
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
+        centerTitle: true, // 제목 중앙 정렬
       ),
-      body: Column(
+      body: Column( // 세로 방향 레이아웃
         children: [
-          // === 상단 영역 (카메라 프리뷰 또는 캡처된 이미지) ===
-          Expanded(
-            child: SingleChildScrollView(
+          // === 상단 영역 (선택된 이미지 또는 이미지 선택 버튼) ===
+          Expanded( // 남은 공간을 모두 차지
+            child: SingleChildScrollView( // 내용이 길어지면 스크롤 가능하도록
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0), // 좌우, 상하 패딩
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯들을 왼쪽 정렬
                   children: [
-                    // === 이미지/카메라 영역 ===
-                    Center(
+                    // === 이미지 선택/표시 영역 ===
+                    Center( // 가운데 정렬
                       child: Container(
-                        height: imageAreaHeight,
-                        width: double.infinity,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                           color: Colors.black,
-                           borderRadius: BorderRadius.circular(12.0),
+                        height: imageAreaHeight, // 조절된 높이
+                        width: double.infinity, // 너비 최대로
+                        clipBehavior: Clip.antiAlias, // 내용이 넘칠 경우 잘라내기
+                        decoration: BoxDecoration( // 컨테이너 스타일
+                           color: Colors.grey[200], // 배경색
+                           borderRadius: BorderRadius.circular(12.0), // 둥근 모서리
+                           border: Border.all(color: Colors.grey.shade300) // 테두리 추가
                         ),
-                        child: _capturedImageFile == null
-                            ? FutureBuilder<void>(
-                                future: _initializeControllerFuture,
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.done) {
-                                    return OverflowBox(
-                                      alignment: Alignment.center,
-                                      child: FittedBox(
-                                        fit: BoxFit.cover,
-                                        child: SizedBox(
-                                          width: imageAreaHeight * _controller.value.aspectRatio,
-                                          height: imageAreaHeight,
-                                          child: CameraPreview(_controller),
+                        child: _pickedImageFile == null // 선택된 이미지가 없으면
+                            ? Center( // 이미지 선택 버튼 표시
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.photo_library_outlined, size: 50, color: Colors.grey[600]),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          icon: const Icon(Icons.photo_camera),
+                                          label: const Text('카메라'),
+                                          onPressed: () => _pickImage(ImageSource.camera),
+                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
                                         ),
-                                      ),
-                                    );
-                                  } else if (snapshot.hasError) {
-                                     return Center(child: Text('카메라 오류: ${snapshot.error}', style: TextStyle(color: Colors.white)));
-                                  }
-                                  else {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-                                },
+                                        const SizedBox(width: 16),
+                                        ElevatedButton.icon(
+                                          icon: const Icon(Icons.photo_library),
+                                          label: const Text('갤러리'),
+                                          onPressed: () => _pickImage(ImageSource.gallery),
+                                           style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                                        ),
+                                      ],
+                                    ),
+                                     const SizedBox(height: 8),
+                                     Text(
+                                       '음식 사진을 추가하세요',
+                                       style: TextStyle(color: Colors.grey[700])
+                                     ),
+                                  ],
+                                ),
                               )
-                            : Image.file(
-                                File(_capturedImageFile!.path),
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: imageAreaHeight,
+                            : Image.file( // 선택된 이미지가 있으면 파일로부터 이미지 표시
+                                File(_pickedImageFile!.path), // 이미지 파일 경로
+                                fit: BoxFit.cover, // 비율 유지하며 컨테이너 채우기
+                                width: double.infinity, // 너비 최대로
+                                height: imageAreaHeight, // 고정 높이
                               ),
                       ),
                     ),
-                    const SizedBox(height: 24.0),
+                    const SizedBox(height: 24.0), // 섹션 간 간격
 
-                    // === 메뉴 섹션 ===
+                    // === 메뉴 섹션 (기존과 거의 동일) ===
                     const Text(
-                      'Menu',
+                      'Menu', // 섹션 제목
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 8.0),
+                    const SizedBox(height: 8.0), // 제목과 내용 간 간격
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // TextField 높이 고려 패딩 조절
-                      decoration: BoxDecoration(
-                        color: Colors.lightGreen[100]?.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(10.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 내부 패딩
+                      decoration: BoxDecoration( // 컨테이너 스타일
+                        color: Colors.lightGreen[100]?.withOpacity(0.6), // 연한 녹색 배경 (투명도 조절)
+                        borderRadius: BorderRadius.circular(10.0), // 둥근 모서리
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                      child: Row( // 가로 방향 레이아웃
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양 끝 정렬
+                        crossAxisAlignment: CrossAxisAlignment.center, // 수직 중앙 정렬
                         children: [
-                          Expanded( // 텍스트 또는 TextField가 공간 차지하도록
+                          Expanded( // 텍스트 또는 TextField가 남은 공간 차지하도록
                             child: Center( // 내부 컨텐츠 중앙 정렬
-                              child: _isAnalyzingMenu
+                              child: _isAnalyzingMenu // 분석 중 상태 확인
                                   ? const SizedBox( // 로딩 인디케이터
-                                      height: 24, // 적절한 높이 지정
-                                      width: 24,
+                                      height: 24, width: 24,
                                       child: CircularProgressIndicator(strokeWidth: 2.0),
                                     )
-                                  : _isEditingMenu
-                                      ? TextField( // 편집 모드일 때 TextField
+                                  : _isEditingMenu // 편집 모드 상태 확인
+                                      ? TextField( // 편집 모드일 때 TextField 표시
                                           controller: _menuNameController,
-                                          textAlign: TextAlign.center, // 텍스트 중앙 정렬
+                                          textAlign: TextAlign.center,
                                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                                           decoration: const InputDecoration(
-                                            isDense: true, // 높이 줄이기
-                                            hintText: '메뉴 이름을 입력하세요',
-                                            border: InputBorder.none, // 기본 테두리 제거
-                                            contentPadding: EdgeInsets.symmetric(vertical: 8.0) // 내부 패딩 조절
+                                            isDense: true, hintText: '메뉴 이름을 입력하세요',
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.symmetric(vertical: 8.0)
                                           ),
-                                          // autofocus: true, // 필요시 자동 포커스
                                         )
-                                      : Text( // 보기 모드일 때 Text
-                                          _menuName.isEmpty && _capturedImageFile == null ? '사진 촬영 후 분석됩니다' : _menuName,
+                                      : Text( // 보기 모드일 때 Text 표시
+                                          _menuName.isEmpty && _pickedImageFile == null
+                                              ? '사진 선택 후 분석됩니다' // 초기 상태
+                                              : _menuName.isEmpty && _pickedImageFile != null && !_isAnalyzingMenu
+                                                  ? '메뉴 이름 없음' // 분석 후 이름 없는 경우
+                                                  : _menuName, // 분석된/수정된 이름
                                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                                           overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
                                         ),
                             ),
                           ),
-                          // 편집 토글 버튼 (아이콘 변경)
-                          IconButton(
-                            icon: Icon(
-                              _isEditingMenu ? Icons.check : Icons.refresh, // 편집 중이면 체크, 아니면 리프레시
-                              color: Colors.black54
-                            ),
-                            onPressed: _toggleEditMenu, // 편집 모드 토글 함수 연결
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                          ),
+                          // 편집/저장 토글 버튼
+                          if (_pickedImageFile != null && !_isAnalyzingMenu) // 이미지가 있고 분석 중 아닐 때만 표시
+                             IconButton(
+                               icon: Icon(_isEditingMenu ? Icons.check : Icons.edit_note, color: Colors.black54),
+                               onPressed: _toggleEditMenu,
+                               tooltip: _isEditingMenu ? '저장' : '수정',
+                               constraints: const BoxConstraints(), padding: EdgeInsets.zero,
+                             ),
                         ],
                       ),
                     ),
@@ -363,26 +398,21 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           ),
 
           // === 하단 고정 영역 ===
-          Padding(
+          Padding( // 하단 영역 패딩
             padding: EdgeInsets.only(
-              left: horizontalPadding,
-              right: horizontalPadding,
-              top: 16.0,
-              bottom: 20.0,
+              left: horizontalPadding, right: horizontalPadding,
+              top: 16.0, bottom: 20.0,
             ),
-            child: Column(
+            child: Column( // 세로 방향 레이아웃
               children: [
-                // === 서빙 수량 및 시간 섹션 ===
-                Row(
+                // === 서빙 수량 및 시간 섹션 (드롭다운 비활성화 로직 수정) ===
+                Row( // 가로 방향 레이아웃
                   children: [
-                    Expanded(
+                    Expanded( // Serving
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Serving',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                          const Text('Serving', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8.0),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -392,21 +422,17 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                value: _selectedServing,
-                                isExpanded: true,
+                                value: _selectedServing, isExpanded: true,
                                 icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
                                 items: _servingOptions.map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Center(child: Text(value)),
-                                  );
+                                  return DropdownMenuItem<String>(value: value, child: Center(child: Text(value)));
                                 }).toList(),
-                                // 사진 촬영/분석 중이 아닐 때만 변경 가능
-                                onChanged: _capturedImageFile == null && !_isAnalyzingMenu ? (newValue) {
-                                  setState(() {
-                                    _selectedServing = newValue;
-                                  });
-                                } : null, // 비활성화 조건
+                                // 이미지가 선택되었거나 분석 중일 때는 비활성화
+                                onChanged: _pickedImageFile != null || _isAnalyzingMenu ? null : (newValue) {
+                                  setState(() { _selectedServing = newValue; });
+                                },
+                                // 비활성화 시 힌트 텍스트 표시 (선택적)
+                                disabledHint: Center(child: Text(_selectedServing ?? '', style: TextStyle(color: Colors.grey[600]))),
                               ),
                             ),
                           ),
@@ -414,14 +440,11 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                       ),
                     ),
                     const SizedBox(width: 16.0),
-                    Expanded(
+                    Expanded( // Time
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Time',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                          const Text('Time', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8.0),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -431,21 +454,17 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                value: _selectedTime,
-                                isExpanded: true,
+                                value: _selectedTime, isExpanded: true,
                                 icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
                                 items: _timeOptions.map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Center(child: Text(value)),
-                                  );
+                                  return DropdownMenuItem<String>(value: value, child: Center(child: Text(value)));
                                 }).toList(),
-                                // 사진 촬영/분석 중이 아닐 때만 변경 가능
-                                onChanged: _capturedImageFile == null && !_isAnalyzingMenu ? (newValue) {
-                                   setState(() {
-                                     _selectedTime = newValue;
-                                   });
-                                } : null, // 비활성화 조건
+                                // 이미지가 선택되었거나 분석 중일 때는 비활성화
+                                onChanged: _pickedImageFile != null || _isAnalyzingMenu ? null : (newValue) {
+                                   setState(() { _selectedTime = newValue; });
+                                },
+                                // 비활성화 시 힌트 텍스트 표시 (선택적)
+                                disabledHint: Center(child: Text(_selectedTime ?? '', style: TextStyle(color: Colors.grey[600]))),
                               ),
                             ),
                           ),
@@ -454,56 +473,62 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24.0),
+                const SizedBox(height: 24.0), // 섹션 간 간격
 
-                // === 하단 버튼 섹션 ===
-                Row(
+                // === 하단 버튼 섹션 (버튼 역할 및 활성화/비활성화 로직 변경) ===
+                Row( // 가로 방향 레이아웃
                   children: [
-                    // --- 다시 찍기 버튼 ---
-                    OutlinedButton(
-                      onPressed: _retakePicture,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.orange, backgroundColor: Colors.orange.shade50,
-                        side: BorderSide(color: Colors.orange.shade200),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
+                    // --- 초기화/다시 선택 버튼 ---
+                    // 이미지가 있거나 분석 중일 때만 활성화
+                    Tooltip(
+                      message: '초기화',
+                      child: OutlinedButton(
+                        onPressed: _pickedImageFile != null || _isAnalyzingMenu ? _clearSelection : null,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.orange, backgroundColor: Colors.orange.shade50,
+                          side: BorderSide(color: Colors.orange.shade200),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
+                        ).copyWith( // 비활성화 스타일
+                           foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey : Colors.orange),
+                           backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey.shade200 : Colors.orange.shade50),
+                           side: MaterialStateProperty.resolveWith<BorderSide?>((states) => states.contains(MaterialState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.orange.shade200)),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
+                        child: Icon(_pickedImageFile != null ? Icons.refresh : Icons.image_not_supported_outlined, size: 24),
                       ),
-                      child: const Icon(Icons.camera_alt_outlined, size: 24),
                     ),
-                    const SizedBox(width: 16.0),
+                    const SizedBox(width: 16.0), // 버튼 간 간격
 
-                    // --- 확인 버튼 (사진 촬영 또는 데이터 준비 완료) ---
-                    Expanded(
+                    // --- 저장하기 버튼 ---
+                    Expanded( // 남은 공간 차지
                       child: ElevatedButton(
-                        onPressed: _takePictureAndConfirm, // 사진 촬영 또는 데이터 전송 준비
+                        // 분석 중이거나 이미지가 없으면 비활성화
+                        onPressed: _isAnalyzingMenu || _pickedImageFile == null ? null : _saveData,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.orange, foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 15),
+                          disabledBackgroundColor: Colors.orange.shade200,
+                          disabledForegroundColor: Colors.white70,
                         ),
-                        child: Text(
-                          // 버튼 텍스트 변경 (사진 없으면 '촬영/분석', 있으면 '저장하기')
-                          _capturedImageFile == null ? '촬영 & 분석' : '저장하기',
+                        child: const Text(
+                          '저장하기', // 버튼 텍스트 고정
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16.0),
+                    const SizedBox(width: 16.0), // 버튼 간 간격
 
-                    // --- 삭제 버튼 (대시보드로 이동) ---
-                    OutlinedButton(
-                      onPressed: _goToDashboard,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey.shade700, backgroundColor: Colors.grey.shade200,
-                        side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
+                    // --- 취소 버튼 (대시보드로 이동) ---
+                    Tooltip(
+                      message: '취소',
+                      child: OutlinedButton(
+                        onPressed: _goToDashboard, // 항상 활성화
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey.shade700, backgroundColor: Colors.grey.shade200,
+                          side: BorderSide(color: Colors.grey.shade300),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
                         ),
-                         padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
+                        child: const Icon(Icons.cancel_outlined, size: 24), // 아이콘 변경
                       ),
-                      child: const Icon(Icons.delete_outline, size: 24),
                     ),
                   ],
                 ),
