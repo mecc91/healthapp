@@ -4,57 +4,12 @@ import 'dart:math';
 import 'package:image_picker/image_picker.dart'; // image_picker 패키지 임포트
 // import 'package:http/http.dart' as http; // 실제 API 호출 시 필요
 
-// 앱의 시작점인 main 함수
-Future<void> main() async {
-  // Flutter 앱이 실행되기 전에 위젯 바인딩을 초기화합니다.
-  WidgetsFlutterBinding.ensureInitialized();
-  // 카메라가 필수는 아니므로 제거
-  runApp(const MyApp());
-}
-
-// 메인 애플리케이션 위젯
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Food Record', // 앱 제목
-      theme: ThemeData( // 앱 테마 설정
-        primarySwatch: Colors.green, // 기본 색상 견본
-        fontFamily: 'Roboto', // 기본 글꼴
-        appBarTheme: const AppBarTheme( // 앱 바 테마
-          backgroundColor: Colors.white, // 배경색: 흰색
-          foregroundColor: Colors.black, // 전경색 (아이콘, 텍스트): 검은색
-          elevation: 0, // 그림자 없음
-        ),
-        scaffoldBackgroundColor: Colors.white, // Scaffold 배경색: 흰색
-        elevatedButtonTheme: ElevatedButtonThemeData( // ElevatedButton 테마
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder( // 둥근 모서리 버튼
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 15), // 버튼 내부 패딩
-          ),
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData( // OutlinedButton 테마 추가
-          style: OutlinedButton.styleFrom(
-             shape: RoundedRectangleBorder(
-               borderRadius: BorderRadius.circular(10.0),
-             ),
-             padding: const EdgeInsets.symmetric(vertical: 15),
-          )
-        )
-      ),
-      home: const FoodRecordScreen(), // 홈 화면 설정 (카메라 제거)
-    );
-  }
-}
+// main 함수와 MyApp 클래스 제거됨
 
 // 음식 기록 화면 위젯 (StatefulWidget)
 class FoodRecordScreen extends StatefulWidget {
-  // 카메라 제거
-  const FoodRecordScreen({super.key});
+  // 카메라 관련 코드가 생성자에 있었다면 제거됨
+  const FoodRecordScreen({super.key}); // 기본 생성자 유지
 
   @override
   State<FoodRecordScreen> createState() => _FoodRecordScreenState();
@@ -193,8 +148,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         );
         // TODO: 실제 백엔드 전송 로직 구현
 
-        // 예시: 전송 후 초기 상태로 돌아가기
+        // 예시: 전송 후 초기 상태로 돌아가기 또는 이전 화면으로 돌아가기
         // _clearSelection();
+        if(mounted) Navigator.of(context).pop(); // 저장 후 이전 화면(대시보드)으로 돌아가기
 
     } else {
        // 메뉴 이름이 유효하지 않을 경우 사용자에게 알림
@@ -228,24 +184,27 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
         // 편집 모드 -> 저장 및 보기 모드로 전환
         _menuName = _menuNameController.text.trim(); // TextField 값 저장 (양 끝 공백 제거)
         if (_menuName.isEmpty){
-           _menuName = "메뉴 이름 없음";
+           _menuName = "메뉴 이름 없음"; // 비어있으면 기본값 설정
            _menuNameController.text = _menuName;
         }
         _isEditingMenu = false; // 보기 모드로 전환
       } else {
         // 보기 모드 -> 편집 모드로 전환
-        // 이미지가 선택되었거나 메뉴 이름이 비어 있을 때만 편집 가능
-        if (_pickedImageFile != null || _menuName.isEmpty) {
+        // 이미지가 선택되었을 때만 편집 가능하도록 수정 (초기 상태에서는 편집 버튼 안 보이게 함)
+        if (_pickedImageFile != null) {
            _isEditingMenu = true;
+           // TextField에 현재 메뉴 이름으로 포커스 (선택적)
+           // FocusScope.of(context).requestFocus(FocusNode()); // 포커스 필요 시
         }
       }
     });
   }
 
 
-  // 대시보드로 돌아가기 함수 (기존과 동일)
-  void _goToDashboard() {
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  // 대시보드로 돌아가기 함수 (이제 취소 버튼 역할)
+  void _cancelAndGoBack() {
+    // 단순히 현재 화면을 닫아 이전 화면(대시보드)으로 돌아감
+    Navigator.of(context).pop();
   }
 
 
@@ -258,17 +217,18 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton( // 뒤로가기 버튼
+        leading: IconButton( // 뒤로가기 버튼 (자동으로 생성되지만 명시적으로 추가해도 무방)
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: _cancelAndGoBack, // 취소 함수 연결
         ),
         title: const Text(
           'Record', // 앱 바 제목
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true, // 제목 중앙 정렬
+         backgroundColor: Colors.white, // AppBar 배경색 통일
+         foregroundColor: Colors.black, // AppBar 전경색 통일
+         elevation: 0, // AppBar 그림자 제거
       ),
       body: Column( // 세로 방향 레이아웃
         children: [
@@ -305,14 +265,24 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                           icon: const Icon(Icons.photo_camera),
                                           label: const Text('카메라'),
                                           onPressed: () => _pickImage(ImageSource.camera),
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.teal,
+                                              foregroundColor: Colors.white, // 텍스트 색상 추가
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // 패딩 조절
+                                          ),
                                         ),
                                         const SizedBox(width: 16),
                                         ElevatedButton.icon(
                                           icon: const Icon(Icons.photo_library),
                                           label: const Text('갤러리'),
                                           onPressed: () => _pickImage(ImageSource.gallery),
-                                           style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                                           style: ElevatedButton.styleFrom(
+                                               backgroundColor: Colors.indigo,
+                                               foregroundColor: Colors.white, // 텍스트 색상 추가
+                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // 패딩 조절
+                                           ),
                                         ),
                                       ],
                                     ),
@@ -355,24 +325,26 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                               child: _isAnalyzingMenu // 분석 중 상태 확인
                                   ? const SizedBox( // 로딩 인디케이터
                                       height: 24, width: 24,
-                                      child: CircularProgressIndicator(strokeWidth: 2.0),
+                                      child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.teal), // 색상 추가
                                     )
                                   : _isEditingMenu // 편집 모드 상태 확인
                                       ? TextField( // 편집 모드일 때 TextField 표시
                                           controller: _menuNameController,
                                           textAlign: TextAlign.center,
+                                          autofocus: true, // 편집 모드 시작 시 자동 포커스
                                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                                           decoration: const InputDecoration(
                                             isDense: true, hintText: '메뉴 이름을 입력하세요',
                                             border: InputBorder.none,
                                             contentPadding: EdgeInsets.symmetric(vertical: 8.0)
                                           ),
+                                          onSubmitted: (_) => _toggleEditMenu(), // 엔터 키로 저장
                                         )
                                       : Text( // 보기 모드일 때 Text 표시
                                           _menuName.isEmpty && _pickedImageFile == null
                                               ? '사진 선택 후 분석됩니다' // 초기 상태
                                               : _menuName.isEmpty && _pickedImageFile != null && !_isAnalyzingMenu
-                                                  ? '메뉴 이름 없음' // 분석 후 이름 없는 경우
+                                                  ? '메뉴 이름 없음' // 분석 후 이름 없는 경우 또는 직접 입력하지 않은 경우
                                                   : _menuName, // 분석된/수정된 이름
                                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                                           overflow: TextOverflow.ellipsis,
@@ -381,9 +353,11 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                             ),
                           ),
                           // 편집/저장 토글 버튼
-                          if (_pickedImageFile != null && !_isAnalyzingMenu) // 이미지가 있고 분석 중 아닐 때만 표시
+                          // 이미지가 있고, 분석 중이 아닐 때만 표시
+                          if (_pickedImageFile != null && !_isAnalyzingMenu)
                              IconButton(
-                               icon: Icon(_isEditingMenu ? Icons.check : Icons.edit_note, color: Colors.black54),
+                               icon: Icon(_isEditingMenu ? Icons.check_circle_outline : Icons.edit_note, // 아이콘 변경
+                                          color: _isEditingMenu ? Colors.teal : Colors.black54), // 저장 아이콘 색상 변경
                                onPressed: _toggleEditMenu,
                                tooltip: _isEditingMenu ? '저장' : '수정',
                                constraints: const BoxConstraints(), padding: EdgeInsets.zero,
@@ -401,7 +375,7 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
           Padding( // 하단 영역 패딩
             padding: EdgeInsets.only(
               left: horizontalPadding, right: horizontalPadding,
-              top: 16.0, bottom: 20.0,
+              top: 16.0, bottom: max(16.0, MediaQuery.of(context).padding.bottom + 8.0), // 하단 안전 영역 고려
             ),
             child: Column( // 세로 방향 레이아웃
               children: [
@@ -427,8 +401,8 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                 items: _servingOptions.map((String value) {
                                   return DropdownMenuItem<String>(value: value, child: Center(child: Text(value)));
                                 }).toList(),
-                                // 이미지가 선택되었거나 분석 중일 때는 비활성화
-                                onChanged: _pickedImageFile != null || _isAnalyzingMenu ? null : (newValue) {
+                                // 분석 중에는 비활성화
+                                onChanged: _isAnalyzingMenu ? null : (newValue) {
                                   setState(() { _selectedServing = newValue; });
                                 },
                                 // 비활성화 시 힌트 텍스트 표시 (선택적)
@@ -459,8 +433,8 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                                 items: _timeOptions.map((String value) {
                                   return DropdownMenuItem<String>(value: value, child: Center(child: Text(value)));
                                 }).toList(),
-                                // 이미지가 선택되었거나 분석 중일 때는 비활성화
-                                onChanged: _pickedImageFile != null || _isAnalyzingMenu ? null : (newValue) {
+                                // 분석 중에는 비활성화
+                                onChanged: _isAnalyzingMenu ? null : (newValue) {
                                    setState(() { _selectedTime = newValue; });
                                 },
                                 // 비활성화 시 힌트 텍스트 표시 (선택적)
@@ -479,21 +453,22 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                 Row( // 가로 방향 레이아웃
                   children: [
                     // --- 초기화/다시 선택 버튼 ---
-                    // 이미지가 있거나 분석 중일 때만 활성화
+                    // 이미지가 있을 때만 초기화 가능, 분석 중에는 비활성화
                     Tooltip(
                       message: '초기화',
                       child: OutlinedButton(
-                        onPressed: _pickedImageFile != null || _isAnalyzingMenu ? _clearSelection : null,
+                        onPressed: _pickedImageFile != null && !_isAnalyzingMenu ? _clearSelection : null,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.orange, backgroundColor: Colors.orange.shade50,
                           side: BorderSide(color: Colors.orange.shade200),
                           padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ).copyWith( // 비활성화 스타일
                            foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.orange),
                            backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.orange.shade50),
                            side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.orange.shade200)),
                         ),
-                        child: Icon(_pickedImageFile != null ? Icons.refresh : Icons.image_not_supported_outlined, size: 24),
+                        child: Icon(Icons.refresh, size: 24), // 아이콘 고정
                       ),
                     ),
                     const SizedBox(width: 16.0), // 버튼 간 간격
@@ -501,11 +476,14 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     // --- 저장하기 버튼 ---
                     Expanded( // 남은 공간 차지
                       child: ElevatedButton(
-                        // 분석 중이거나 이미지가 없으면 비활성화
-                        onPressed: _isAnalyzingMenu || _pickedImageFile == null ? null : _saveData,
+                        // 분석 중이 아니고, 이미지가 있고, 메뉴 이름이 유효할 때만 활성화
+                        onPressed: !_isAnalyzingMenu && _pickedImageFile != null && _menuName.isNotEmpty && _menuName != "분석 실패" && _menuName != "분석 중..."
+                            ? _saveData
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange, foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           disabledBackgroundColor: Colors.orange.shade200,
                           disabledForegroundColor: Colors.white70,
                         ),
@@ -517,15 +495,16 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                     ),
                     const SizedBox(width: 16.0), // 버튼 간 간격
 
-                    // --- 취소 버튼 (대시보드로 이동) ---
+                    // --- 취소 버튼 (이전 화면으로 돌아가기) ---
                     Tooltip(
                       message: '취소',
                       child: OutlinedButton(
-                        onPressed: _goToDashboard, // 항상 활성화
+                        onPressed: _cancelAndGoBack, // 항상 활성화
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.grey.shade700, backgroundColor: Colors.grey.shade200,
                           side: BorderSide(color: Colors.grey.shade300),
                           padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         child: const Icon(Icons.cancel_outlined, size: 24), // 아이콘 변경
                       ),

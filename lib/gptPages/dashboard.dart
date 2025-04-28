@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:healthymeal/gptPages/mealrecord.dart'; // mealrecord.dart 파일을 import 합니다.
 
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
@@ -27,16 +28,26 @@ class Dashboard extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
+        currentIndex: 1, // 현재 선택된 인덱스 (대시보드는 0)
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
         showUnselectedLabels: false,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: ''), // 카메라 아이콘 (인덱스 1)
           BottomNavigationBarItem(icon: Icon(Icons.star_border), label: ''),
         ],
+        // onTap 콜백 추가
+        onTap: (index) {
+          if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
+            Navigator.push( // MealRecordScreen으로 이동
+              context,
+              MaterialPageRoute(builder: (context) => const FoodRecordScreen()),
+            );
+          }
+          // 다른 아이템 탭 시 추가 로직 구현 가능
+        },
       ),
     );
   }
@@ -57,7 +68,9 @@ class Dashboard extends StatelessWidget {
               SizedBox(width: 12),
               CircleAvatar(
                 radius: 18,
-                backgroundImage: AssetImage('assets/profile.jpg'),
+                // TODO: 실제 프로필 이미지 경로로 변경하세요.
+                // backgroundImage: AssetImage('assets/profile.jpg'),
+                backgroundColor: Colors.grey, // 임시 배경색
               ),
             ],
           ),
@@ -103,6 +116,7 @@ class Dashboard extends StatelessWidget {
                           value: item["value"]! as double,
                           backgroundColor: Colors.grey[300],
                           color: item["color"] as Color,
+                          minHeight: 6, // 프로그레스 바 높이 조절
                         ),
                       ],
                     ),
@@ -120,10 +134,11 @@ class Dashboard extends StatelessWidget {
       {"day": "Tuesday", "value": 0.3},
       {"day": "Wednesday", "value": 0.8},
       {"day": "Thursday", "value": 0.85},
+      // TODO: 실제 데이터로 채우세요.
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0), // 하단 패딩 추가
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 4,
@@ -137,7 +152,10 @@ class Dashboard extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              ...scores.map((item) => Padding(
+              if (scores.isEmpty) // 데이터가 없을 경우 메시지 표시
+                const Center(child: Text('이번 주 점수 데이터가 없습니다.'))
+              else
+               ...scores.map((item) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
                       children: [
@@ -153,6 +171,7 @@ class Dashboard extends StatelessWidget {
                             value: item["value"]! as double,
                             backgroundColor: Colors.grey[300],
                             color: Colors.tealAccent,
+                             minHeight: 6, // 프로그레스 바 높이 조절
                           ),
                         ),
                       ],
