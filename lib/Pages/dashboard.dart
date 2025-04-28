@@ -1,45 +1,74 @@
-import 'package:flutter/material.dart';
-import 'package:healthymeal/gptPages/mealrecord.dart'; // mealrecord.dart 파일을 import 합니다.
+import 'dart:io';
 
-class Dashboard extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:healthymeal/Pages/mealrecord.dart';
+import 'package:image_picker/image_picker.dart';
+
+class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
   @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  // ignore: unused_field
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
+  Future<void> _takePicture() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      },);
+    } else {
+      print('사진이 선택되지 않았습니다');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFB1F2C8), Color(0xFFD7B26F)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color.fromARGB(255, 84, 239, 138), Color.fromARGB(255, 239, 186, 86)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeader(),
-                _buildDailyStatusCard(),
-                _buildWeeklyScoreCard(),
-              ],
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  _buildDailyStatusCard(),
+                  _buildWeeklyScoreCard(),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // 현재 선택된 인덱스 (대시보드는 0)
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: ''), // 카메라 아이콘 (인덱스 1)
-          BottomNavigationBarItem(icon: Icon(Icons.star_border), label: ''),
-        ],
-        // onTap 콜백 추가
-        onTap: (index) {
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 1,
+          selectedItemColor: Colors.black,
+          unselectedItemColor: Colors.grey,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: [
+            BottomNavigationBarItem(icon: Icon(Icons.bar_chart, size: 40), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.camera_alt, size: 40), label: ''),
+            /*BottomNavigationBarItem(
+              icon: IconButton(
+                onPressed: _takePicture, 
+                icon: Icon(Icons.camera_alt, size: 40)),
+              label: ''
+            ),*/
+            BottomNavigationBarItem(icon: Icon(Icons.star_border, size: 40), label: ''),
+          ],
+          onTap: (index) {
           if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
             Navigator.push( // MealRecordScreen으로 이동
               context,
@@ -48,29 +77,32 @@ class Dashboard extends StatelessWidget {
           }
           // 다른 아이템 탭 시 추가 로직 구현 가능
         },
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
             'Dashboard',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, fontStyle: FontStyle.normal),
           ),
           Row(
-            children: const [
-              Icon(Icons.notifications_none),
+            children: [
+              IconButton(
+                icon: Icon(Icons.notifications_none),
+                onPressed:() {},
+                color: Colors.black,
+              ),
               SizedBox(width: 12),
               CircleAvatar(
                 radius: 18,
-                // TODO: 실제 프로필 이미지 경로로 변경하세요.
-                // backgroundImage: AssetImage('assets/profile.jpg'),
-                backgroundColor: Colors.grey, // 임시 배경색
+                backgroundImage: AssetImage('assets/profile.jpg'),
               ),
             ],
           ),
@@ -91,18 +123,18 @@ class Dashboard extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 4,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 "Daily Status",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontStyle: FontStyle.normal),
               ),
               const SizedBox(height: 16),
               ...nutrients.map((item) => Padding(
@@ -116,7 +148,8 @@ class Dashboard extends StatelessWidget {
                           value: item["value"]! as double,
                           backgroundColor: Colors.grey[300],
                           color: item["color"] as Color,
-                          minHeight: 6, // 프로그레스 바 높이 조절
+                          minHeight: 10,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ],
                     ),
@@ -134,16 +167,18 @@ class Dashboard extends StatelessWidget {
       {"day": "Tuesday", "value": 0.3},
       {"day": "Wednesday", "value": 0.8},
       {"day": "Thursday", "value": 0.85},
-      // TODO: 실제 데이터로 채우세요.
+      {"day": "Friday", "value": 0.4},
+      {"day": "Saturday", "value": 0.2},
+      {"day": "Sunday", "value": 0.5},
     ];
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0), // 하단 패딩 추가
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 4,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -152,15 +187,12 @@ class Dashboard extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              if (scores.isEmpty) // 데이터가 없을 경우 메시지 표시
-                const Center(child: Text('이번 주 점수 데이터가 없습니다.'))
-              else
-               ...scores.map((item) => Padding(
+              ...scores.map((item) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 80,
+                          width: 90,
                           child: Text(
                             item["day"]! as String,
                             style: const TextStyle(fontWeight: FontWeight.bold),
@@ -171,7 +203,8 @@ class Dashboard extends StatelessWidget {
                             value: item["value"]! as double,
                             backgroundColor: Colors.grey[300],
                             color: Colors.tealAccent,
-                             minHeight: 6, // 프로그레스 바 높이 조절
+                            minHeight: 10,
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ],

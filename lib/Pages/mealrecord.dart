@@ -464,9 +464,9 @@ class _FoodRecordScreenState extends State<FoodRecordScreen> {
                           padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ).copyWith( // 비활성화 스타일
-                           foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey : Colors.orange),
-                           backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey.shade200 : Colors.orange.shade50),
-                           side: MaterialStateProperty.resolveWith<BorderSide?>((states) => states.contains(MaterialState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.orange.shade200)),
+                           foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.orange),
+                           backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.orange.shade50),
+                           side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.orange.shade200)),
                         ),
                         child: Icon(Icons.refresh, size: 24), // 아이콘 고정
                       ),
