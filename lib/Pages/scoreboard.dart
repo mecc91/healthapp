@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷팅을 위해 추가
 import 'dart:math'; // 랜덤 데이터 생성을 위해 추가
+import 'scoreboard_detail.dart'; // 상세 화면 import 추가
 
 // 기본 테마 색상 정의
 const Color primaryColor = Colors.teal;
@@ -136,8 +137,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   double calculateBarHeight(int value, double maxBarHeight) {
      // 현재 주 데이터의 최대값 찾기
      if (currentWeekData.isEmpty) return 0;
+     // 데이터가 모두 0 이하일 경우 maxValue가 0이 될 수 있으므로 기본값 1 설정
      final maxValue = currentWeekData.map((d) => d['value'] as int).reduce((a, b) => a > b ? a : b);
-     if (maxValue <= 0 || maxBarHeight <= 0) return 0; // 0 또는 음수 방지
+     if (maxValue <= 0 || maxBarHeight <= 0) return 0; // 0 또는 음수 방지, 최대값이 0이하일 때 높이 0 반환
      return (value / maxValue) * maxBarHeight;
   }
 
@@ -229,7 +231,15 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                         ],
                       ),
                       OutlinedButton(
-                        onPressed: () { /* TODO: 상세 보기 */ },
+                        // --- 수정된 부분 ---
+                        onPressed: () {
+                          // ScoreboardDetailScreen으로 이동
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ScoreboardDetailScreen()),
+                          );
+                        },
+                        // --- 여기까지 ---
                         style: OutlinedButton.styleFrom(
                           foregroundColor: primaryColor, side: const BorderSide(color: primaryColor),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -268,9 +278,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                       // 스와이프 속도 및 방향 확인
                       // --- 수정: 스와이프 방향 반전 ---
                       if (details.primaryVelocity! > 100) { // 오른쪽 스와이프 (속도 임계값 조절 가능)
-                         _changeWeek(1); // 다음 주
+                          _changeWeek(-1); // 이전 주 (스와이프 방향에 맞춰 수정)
                       } else if (details.primaryVelocity! < -100) { // 왼쪽 스와이프
-                         _changeWeek(-1); // 이전 주
+                          _changeWeek(1); // 다음 주 (스와이프 방향에 맞춰 수정)
                       }
                     },
                     child: Container( // 그래프 컨테이너
@@ -315,15 +325,15 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 ),
                  // 오른쪽 화살표 버튼 (활성화/비활성화)
                  IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  iconSize: 36.0,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  // 다음 주로 갈 수 없으면 onPressed 비활성화 (null)
-                  onPressed: canGoForward ? () => _changeWeek(1) : null,
-                   // 비활성화 시 색상 변경
-                  color: canGoForward ? Colors.grey : Colors.grey.shade300,
-                ),
+                   icon: const Icon(Icons.chevron_right),
+                   iconSize: 36.0,
+                   padding: EdgeInsets.zero,
+                   constraints: const BoxConstraints(),
+                   // 다음 주로 갈 수 없으면 onPressed 비활성화 (null)
+                   onPressed: canGoForward ? () => _changeWeek(1) : null,
+                    // 비활성화 시 색상 변경
+                   color: canGoForward ? Colors.grey : Colors.grey.shade300,
+                 ),
               ],
             ),
             const SizedBox(height: 20),
