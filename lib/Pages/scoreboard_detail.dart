@@ -8,40 +8,31 @@ const Color accentColor = Colors.redAccent; // 그래프 바 색상
 // 그래프 컨테이너 배경색 정의
 final Color graphBackgroundColor = Colors.grey.shade200;
 
+// --- 데이터 시뮬레이션 설정 (scoreboard.dart와 동일하게 유지) ---
+const int weeksOfDataBeforeToday = 4;
+const int weeksOfDataAfterToday = 0; // 미래 데이터 없음
+
 // --- 임시 데이터 ---
 // TODO: 실제 영양소 데이터를 로드하거나 전달받는 로직 구현 필요
-final Map<String, List<Map<String, dynamic>>> nutrientData = {
-  'Carbonhydrate': _generateSimulatedNutrientData(1),
-  'Protein': _generateSimulatedNutrientData(2),
-  'Fat': _generateSimulatedNutrientData(3),
-  'Fiber': _generateSimulatedNutrientData(4),
-  // 필요한 다른 영양소 추가
-};
+// --- 수정: 데이터 구조 변경 없음, 생성 함수에서 날짜 사용 ---
+final List<String> nutrientKeys = ['Carbonhydrate', 'Protein', 'Fat', 'Fiber']; // 영양소 순서 정의
 
-// 임시 영양소 데이터 생성 함수
-List<Map<String, dynamic>> _generateSimulatedNutrientData(int seedOffset) {
-  final random = Random(DateTime.now().millisecondsSinceEpoch + seedOffset);
+// 임시 영양소 데이터 생성 함수 (주차별 일관성 유지)
+List<Map<String, dynamic>> _generateSimulatedNutrientData(String nutrient, DateTime startDate) {
+  // 영양소 이름과 시작 날짜를 조합하여 고유 시드 생성
+  final seed = nutrient.hashCode ^ startDate.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay;
+  final random = Random(seed);
   final List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thr', 'Fri', 'Sat', 'Sun'];
   List<Map<String, dynamic>> weekData = [];
   for (int i = 0; i < 7; i++) {
     weekData.add({
       'day': dayNames[i],
-      // 이미지와 유사한 범위의 값 생성 (예: 30 ~ 100)
+      // 값 범위 유지
       'value': random.nextInt(71) + 30,
     });
   }
-  // 이미지의 'Carbonhydrate' 데이터와 유사하게 값 설정
-  if (seedOffset == 1) { // 'Carbonhydrate' 데이터 시뮬레이션 시
-    weekData[0]['value'] = 46;
-    weekData[1]['value'] = 72;
-    weekData[2]['value'] = 89;
-    weekData[3]['value'] = 58;
-    weekData[4]['value'] = 93;
-    weekData[5]['value'] = 60;
-    // --- 수정: Sunday 값도 이미지와 유사하게 설정 (오버플로우 재현 및 테스트용) ---
-    // weekData[6]['value'] = random.nextInt(71) + 30;
-    weekData[6]['value'] = 99; // 높은 값으로 설정하여 오버플로우 가능성 확인
-  }
+  // 특정 영양소/주에 대한 값 고정 (필요시)
+  // if (nutrient == 'Carbonhydrate' && startDate == someSpecificDate) { ... }
   return weekData;
 }
 
@@ -58,8 +49,12 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
   // --- 상태 변수 ---
   List<bool> _isSelectedPeriod = [true, false, false, false]; // week, month, quater, year
   int _selectedBottomNavIndex = 0; // 하단 네비게이션 인덱스
-  String _selectedNutrient = 'Carbonhydrate'; // 현재 선택된 영양소
-  late DateTime currentWeekStartDate; // 현재 표시 주 시작일 (scoreboard.dart와 동기화 필요)
+  // --- 수정: nutrientKeys 사용 ---
+  int _selectedNutrientIndex = 0; // 현재 선택된 영양소 인덱스
+  late DateTime currentWeekStartDate; // 현재 표시 주 시작일
+  // --- 추가: 주 경계 날짜 ---
+  late DateTime oldestWeekStartDate;
+  late DateTime newestWeekStartDate;
   List<Map<String, dynamic>> currentNutrientWeekData = []; // 현재 주의 선택된 영양소 데이터
 
   // 요일 이름
@@ -68,18 +63,26 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // TODO: scoreboard.dart에서 현재 날짜 정보를 받아오도록 수정 필요
-    // 임시로 오늘 기준 현재 주 설정
-    final now = DateTime.now();
-    currentWeekStartDate = now.subtract(Duration(days: now.weekday - 1));
+    _initializeDates(); // 날짜 초기화
     _loadNutrientData(); // 초기 영양소 데이터 로드
+  }
+
+  // --- 추가: 날짜 초기화 함수 ---
+  void _initializeDates() {
+    final now = DateTime.now();
+    // 현재 주의 월요일 계산
+    currentWeekStartDate = now.subtract(Duration(days: now.weekday - 1));
+    // 가장 오래된 주와 최신 주 계산
+    oldestWeekStartDate = currentWeekStartDate.subtract(Duration(days: weeksOfDataBeforeToday * 7));
+    newestWeekStartDate = currentWeekStartDate.add(Duration(days: weeksOfDataAfterToday * 7)); // 현재 주가 최신
   }
 
   // 선택된 영양소 데이터 로드
   void _loadNutrientData() {
     setState(() {
-      // TODO: 날짜 변경 로직과 연동 필요
-      currentNutrientWeekData = nutrientData[_selectedNutrient] ?? _generateSimulatedNutrientData(0);
+      String selectedNutrient = nutrientKeys[_selectedNutrientIndex];
+      // --- 수정: _generateSimulatedNutrientData 호출 시 nutrient와 startDate 전달 ---
+      currentNutrientWeekData = _generateSimulatedNutrientData(selectedNutrient, currentWeekStartDate);
     });
   }
 
@@ -98,31 +101,27 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
     return "${formatWithSuffix(startDate)} ~ ${formatWithSuffix(endDate)}";
   }
 
-  // 주 변경 로직 구현 (_changeWeek from scoreboard.dart 참고)
+  // 주 변경 로직 구현 (scoreboard.dart 참고 및 경계 확인 강화)
   void _changeWeek(int weeksToAdd) {
-      print("Changing week by $weeksToAdd"); // 로그 추가
-       final now = DateTime.now();
-       const int weeksOfDataBeforeToday = 4;
-       const int weeksOfDataAfterToday = 0;
+      // --- 추가: 'week' 탭이 아닐 경우 주 변경 방지 ---
+      if (!_isSelectedPeriod[0]) return;
 
-       final currentMonday = now.subtract(Duration(days: now.weekday - 1));
-       final oldestWeekStartDate = currentMonday.subtract(Duration(days: weeksOfDataBeforeToday * 7));
-       final newestWeekStartDate = currentMonday.add(Duration(days: weeksOfDataAfterToday * 7));
+      final targetStartDate = currentWeekStartDate.add(Duration(days: weeksToAdd * 7));
 
-       final targetStartDate = currentWeekStartDate.add(Duration(days: weeksToAdd * 7));
-
-       if (targetStartDate.isBefore(oldestWeekStartDate)) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('더 이상 이전 데이터가 없습니다.'), duration: Duration(seconds: 1)),
-         );
-         return;
-       }
-       if (targetStartDate.isAfter(newestWeekStartDate)) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('더 이상 다음 데이터가 없습니다.'), duration: Duration(seconds: 1)),
-         );
-         return;
-       }
+      // 경계 확인 (isBefore는 같은 날짜면 false 반환)
+      if (targetStartDate.isBefore(oldestWeekStartDate)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('더 이상 이전 데이터가 없습니다.'), duration: Duration(seconds: 1)),
+        );
+        return;
+      }
+      // isAfter는 같은 날짜면 false 반환
+      if (targetStartDate.isAfter(newestWeekStartDate)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('더 이상 다음 데이터가 없습니다.'), duration: Duration(seconds: 1)),
+        );
+        return;
+      }
 
        setState(() {
             currentWeekStartDate = targetStartDate;
@@ -130,13 +129,21 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
        _loadNutrientData(); // 변경된 주에 대한 데이터 로드
   }
 
-  // --- 수정: 막대 높이 계산 로직 변경 ---
+  // --- 추가: 영양소 변경 로직 ---
+  void _changeNutrient(int indexOffset) {
+      setState(() {
+          _selectedNutrientIndex = (_selectedNutrientIndex + indexOffset + nutrientKeys.length) % nutrientKeys.length;
+      });
+      _loadNutrientData(); // 변경된 영양소 데이터 로드
+      // 선택된 영양소 이름 표시 (옵션)
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //    SnackBar(content: Text('Selected: ${nutrientKeys[_selectedNutrientIndex]}'), duration: Duration(seconds: 1)),
+      // );
+  }
+
   // 사용 가능한 전체 높이에서 막대가 차지할 수 있는 최대 높이를 계산
   double calculateMaxPossibleBarHeight(double availableHeight) {
-    // 상하 패딩과 텍스트 라벨을 위한 공간을 제외한 높이 계산
-    // 예: 전체 높이의 75% 정도를 최대 막대 높이로 사용
     const double barHeightRatio = 0.75;
-    // 최소 높이 보장
     final calculatedHeight = availableHeight * barHeightRatio;
     return calculatedHeight > 10 ? calculatedHeight : 10.0;
   }
@@ -144,12 +151,10 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
   // 실제 막대 높이 계산
   double calculateBarHeight(int value, double maxPossibleBarHeight, int maxValueInWeek) {
     if (value <= 0 || maxValueInWeek <= 0 || maxPossibleBarHeight <= 0) {
-      return 0; // 값이 0 이하거나 최대값이 0 이하, 또는 최대 막대 높이가 0 이하면 높이 0
+      return 0;
     }
-    // (현재 값 / 주간 최대값) * 최대 가능 막대 높이
     return (value / maxValueInWeek) * maxPossibleBarHeight;
   }
-  // --- 수정 끝 ---
 
 
   @override
@@ -157,22 +162,25 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
     final screenSize = MediaQuery.of(context).size;
     // 그래프 컨테이너 높이를 화면 높이의 1/2로 설정
     final double graphAreaHeight = screenSize.height * 0.5;
+    // 버튼 너비 계산에 필요한 값
+    const double horizontalBodyPadding = 16.0 * 2; // 좌우 패딩 합
+    const double iconButtonApproxWidth = 48.0 * 2; // 양쪽 아이콘 버튼 너비 추정치 합
+    final double graphContainerInnerWidth = screenSize.width - horizontalBodyPadding - iconButtonApproxWidth;
+    final double buttonHorizontalMargin = (screenSize.width - graphContainerInnerWidth) / 2;
+    final double targetButtonWidth = screenSize.width - buttonHorizontalMargin;
 
-    // 주 이동 가능 여부 확인 로직
-    final now = DateTime.now();
-    const int weeksOfDataBeforeToday = 4;
-    const int weeksOfDataAfterToday = 0;
-    final currentMonday = now.subtract(Duration(days: now.weekday - 1));
-    final oldestWeekStartDate = currentMonday.subtract(Duration(days: weeksOfDataBeforeToday * 7));
-    final newestWeekStartDate = currentMonday.add(Duration(days: weeksOfDataAfterToday * 7));
 
+    // 주 이동 가능 여부 확인 로직 (initState에서 계산된 값 사용)
     final bool canGoBack = currentWeekStartDate.isAfter(oldestWeekStartDate);
     final bool canGoForward = currentWeekStartDate.isBefore(newestWeekStartDate);
 
-    // --- 추가: 현재 주 데이터의 최대값 미리 계산 ---
+    // 현재 주 데이터의 최대값 미리 계산
     final int maxValueInCurrentWeek = currentNutrientWeekData.isEmpty
-        ? 1 // 데이터 없으면 기본값 1
+        ? 1
         : currentNutrientWeekData.map((d) => d['value'] as int).reduce((a, b) => a > b ? a : b);
+
+    // 현재 선택된 영양소 이름
+    String selectedNutrientName = nutrientKeys[_selectedNutrientIndex];
 
 
     return Scaffold(
@@ -206,7 +214,7 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
               borderRadius: BorderRadius.circular(8.0),
               selectedColor: Colors.white,
               color: Colors.black54,
-              fillColor: primaryColor, // scoreboard.dart와 동일 색상
+              fillColor: primaryColor,
               borderColor: Colors.grey.shade300,
               selectedBorderColor: primaryColor,
               constraints: const BoxConstraints(minHeight: 35.0, minWidth: 60.0),
@@ -220,127 +228,147 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
             const SizedBox(height: 10),
 
             // --- 날짜 범위 표시 ---
-            Text(
-              _formatDateRange(currentWeekStartDate),
-              style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.bold),
-            ),
+            // --- 수정: 'week' 탭 선택 시에만 표시 (옵션) ---
+            if (_isSelectedPeriod[0])
+              Text(
+                _formatDateRange(currentWeekStartDate),
+                style: const TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            // TODO: 다른 기간 탭 선택 시 해당 기간 표시 로직 추가
             const SizedBox(height: 15),
 
             // --- 영양소 선택 버튼 ---
-            OutlinedButton(
-              onPressed: () {
-                // TODO: 영양소 선택 기능 구현 (팝업, 드롭다운 등)
-                final nutrients = nutrientData.keys.toList();
-                int currentIndex = nutrients.indexOf(_selectedNutrient);
-                int nextIndex = (currentIndex + 1) % nutrients.length;
-                setState(() {
-                  _selectedNutrient = nutrients[nextIndex];
-                });
-                _loadNutrientData();
-                 ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text('Selected: $_selectedNutrient'), duration: Duration(seconds: 1)),
-                 );
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.orange.shade800,
-                side: BorderSide(color: Colors.orange.shade600, width: 1.5),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-              ),
-              child: Text(
-                _selectedNutrient,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            SizedBox(
+              width: targetButtonWidth, // 계산된 너비 적용
+              child: OutlinedButton(
+                onPressed: () {
+                  // 버튼 클릭 시 영양소 변경 (스와이프와 동일 기능)
+                  _changeNutrient(1); // 다음 영양소로 변경
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.orange.shade800,
+                  side: BorderSide(color: Colors.orange.shade600, width: 1.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                ),
+                child: Text(
+                  // --- 수정: 상태 변수에서 영양소 이름 가져오기 ---
+                  selectedNutrientName,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 20),
 
-            // 그래프 영역을 감싸는 컨테이너
-            Container(
-              height: graphAreaHeight, // 화면 높이의 1/2
-              decoration: BoxDecoration(
-                color: graphBackgroundColor, // 연회색 배경
-                borderRadius: BorderRadius.circular(16), // 둥근 모서리
-              ),
-              // --- 수정: 내부 패딩 조정 ---
-              padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 0), // 상하 패딩 줄이고 좌우 제거
-              child: Row( // 화살표 + 그래프 영역 Row
-                crossAxisAlignment: CrossAxisAlignment.center, // 화살표 버튼 세로 중앙 정렬
-                children: [
-                  // 왼쪽 화살표
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left),
-                    iconSize: 36.0,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: canGoBack ? () => _changeWeek(-1) : null,
-                    color: canGoBack ? Colors.grey : Colors.grey.shade300,
-                  ),
-                  // 그래프 컨테이너 (Expanded)
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        // 컨테이너의 실제 높이를 기준으로 maxBarHeight 계산
-                        final double availableHeight = constraints.maxHeight;
-                        // --- 수정: 새로운 함수 사용 ---
-                        final double maxPossibleBarHeight = calculateMaxPossibleBarHeight(availableHeight);
+            // --- 수정: GestureDetector 추가 ---
+            GestureDetector(
+              onHorizontalDragEnd: (details) {
+                // week 탭이 선택되었을 때만 좌우 스와이프 처리
+                if (_isSelectedPeriod[0]) {
+                  // 오른쪽으로 스와이프 (velocity > 0) -> 이전 주
+                  if (details.primaryVelocity! > 100) {
+                    _changeWeek(-1);
+                  }
+                  // 왼쪽으로 스와이프 (velocity < 0) -> 다음 주
+                  else if (details.primaryVelocity! < -100) {
+                    _changeWeek(1);
+                  }
+                }
+              },
+              onVerticalDragEnd: (details) {
+                 // 아래로 스와이프 (velocity > 0) -> 다음 영양소
+                 if (details.primaryVelocity! > 200) { // 임계값 조절 가능
+                    _changeNutrient(1);
+                 }
+                 // 위로 스와이프 (velocity < 0) -> 이전 영양소
+                 else if (details.primaryVelocity! < -200) { // 임계값 조절 가능
+                    _changeNutrient(-1);
+                 }
+              },
+              child: Container( // 그래프 영역을 감싸는 컨테이너
+                height: graphAreaHeight, // 화면 높이의 1/2
+                decoration: BoxDecoration(
+                  color: graphBackgroundColor, // 연회색 배경
+                  borderRadius: BorderRadius.circular(16), // 둥근 모서리
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 0),
+                child: Row( // 화살표 + 그래프 영역 Row
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 왼쪽 화살표
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      iconSize: 36.0,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      // --- 수정: week 탭 활성화 및 이동 가능 여부 동시 체크 ---
+                      onPressed: _isSelectedPeriod[0] && canGoBack ? () => _changeWeek(-1) : null,
+                      color: _isSelectedPeriod[0] && canGoBack ? Colors.grey : Colors.grey.shade300,
+                    ),
+                    // 그래프 컨테이너 (Expanded)
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double availableHeight = constraints.maxHeight;
+                          final double maxPossibleBarHeight = calculateMaxPossibleBarHeight(availableHeight);
 
-                        return Container( // 그래프 바들을 담는 내부 컨테이너 (배경색 없음)
-                          // --- 수정: 내부 패딩 조정 ---
-                          padding: const EdgeInsets.symmetric(horizontal: 5.0), // 좌우 패딩 약간 추가
-                          child: Row( // 막대 그래프 Row
-                            crossAxisAlignment: CrossAxisAlignment.end, // 컬럼들을 아래쪽 기준으로 정렬
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: currentNutrientWeekData.map((dayData) {
-                              // --- 수정: 새로운 함수 사용 및 최대값 전달 ---
-                              final barHeight = calculateBarHeight(
-                                dayData['value'],
-                                maxPossibleBarHeight,
-                                maxValueInCurrentWeek // 현재 주의 최대값 전달
-                              );
-                              return Column( // 각 막대 + 라벨 Column
-                                mainAxisAlignment: MainAxisAlignment.end, // 내부 요소들을 아래쪽 기준으로 정렬
-                                children: [
-                                  Text(
-                                    "${dayData['value']}",
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    height: barHeight < 0 ? 0 : barHeight, // 음수 방지
-                                    width: 20, // 막대 너비
-                                    decoration: BoxDecoration(
-                                      color: accentColor, // 막대 색상
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(6),
-                                        topRight: Radius.circular(6),
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: currentNutrientWeekData.map((dayData) {
+                                final barHeight = calculateBarHeight(
+                                  dayData['value'],
+                                  maxPossibleBarHeight,
+                                  maxValueInCurrentWeek
+                                );
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      "${dayData['value']}",
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      height: barHeight < 0 ? 0 : barHeight,
+                                      width: 20,
+                                      decoration: BoxDecoration(
+                                        color: accentColor,
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(6),
+                                          topRight: Radius.circular(6),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    dayData['day'],
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)
-                                  ),
-                                ],
-                              );
-                            }).toList(),
-                          ),
-                        );
-                      }
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      dayData['day'],
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          );
+                        }
+                      ),
                     ),
-                  ),
-                  // 오른쪽 화살표
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right),
-                    iconSize: 36.0,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: canGoForward ? () => _changeWeek(1) : null,
-                    color: canGoForward ? Colors.grey : Colors.grey.shade300,
-                  ),
-                ],
+                    // 오른쪽 화살표
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      iconSize: 36.0,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      // --- 수정: week 탭 활성화 및 이동 가능 여부 동시 체크 ---
+                      onPressed: _isSelectedPeriod[0] && canGoForward ? () => _changeWeek(1) : null,
+                      color: _isSelectedPeriod[0] && canGoForward ? Colors.grey : Colors.grey.shade300,
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ), // GestureDetector 끝
             const SizedBox(height: 20),
 
             // --- 요약 텍스트 ---
