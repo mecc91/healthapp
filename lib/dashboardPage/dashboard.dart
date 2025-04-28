@@ -11,6 +11,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  // ignore: unused_field
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
   Future<void> _takePicture() async {
