@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:healthymeal/Pages/mealrecord.dart';
 import 'package:healthymeal/Pages/scoreboard.dart'; // scoreboard.dart 파일을 import 합니다.
+import 'package:healthymeal/Pages/recommendation.dart'; // recommendation.dart 파일을 import 합니다.
 import 'package:image_picker/image_picker.dart';
 
 class Dashboard extends StatefulWidget {
@@ -83,6 +84,12 @@ class _DashboardState extends State<Dashboard> {
             Navigator.push( // FoodRecordScreen으로 이동
               context,
               MaterialPageRoute(builder: (context) => const FoodRecordScreen()),
+            );
+          } else if (index == 2) { // 별 아이콘 (인덱스 2)을 탭했을 때 // *** 추가된 부분 ***
+            Navigator.push( // RecommendationScreen으로 이동
+              context,
+              // RecommendationScreen을 MaterialApp 없이 직접 사용합니다.
+              MaterialPageRoute(builder: (context) => const RecommendationScreen()), // *** RecommendationScreen으로 변경 ***
             );
           }
           // 다른 아이템 탭 시 추가 로직 구현 가능
