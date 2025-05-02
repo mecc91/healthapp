@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // import 'package:healthymeal/gptPages/scoreboard.dart'; // 필요하다면 주석 해제
 import 'package:healthymeal/Pages/dashboard.dart'; // Dashboard 위젯 import
+// 안녕!
 
 void main() {
   runApp(const MyApp());
