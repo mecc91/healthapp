@@ -33,7 +33,7 @@ class ScoreboardScreen extends StatefulWidget {
 }
 
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
-  List<bool> _isSelected = [true, false, false, false];
+  final List<bool> _isSelected = [true, false, false, false];
   int _selectedIndex = 0;
 
   // --- 상태 변수 추가 ---

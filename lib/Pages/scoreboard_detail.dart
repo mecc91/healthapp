@@ -47,7 +47,7 @@ class ScoreboardDetailScreen extends StatefulWidget {
 
 class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
   // --- 상태 변수 ---
-  List<bool> _isSelectedPeriod = [true, false, false, false]; // week, month, quater, year
+  final List<bool> _isSelectedPeriod = [true, false, false, false]; // week, month, quater, year
   int _selectedBottomNavIndex = 0; // 하단 네비게이션 인덱스
   // --- 수정: nutrientKeys 사용 ---
   int _selectedNutrientIndex = 0; // 현재 선택된 영양소 인덱스
@@ -93,10 +93,11 @@ class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
     String formatWithSuffix(DateTime date) {
         String day = DateFormat('d').format(date);
         String suffix = 'th';
-        if (day.endsWith('1') && !day.endsWith('11')) suffix = 'st';
-        else if (day.endsWith('2') && !day.endsWith('12')) suffix = 'nd';
+        if (day.endsWith('1') && !day.endsWith('11')) {
+          suffix = 'st';
+        } else if (day.endsWith('2') && !day.endsWith('12')) suffix = 'nd';
         else if (day.endsWith('3') && !day.endsWith('13')) suffix = 'rd';
-        return "${DateFormat('MMMM').format(date)} ${day}${suffix}";
+        return "${DateFormat('MMMM').format(date)} $day$suffix";
     }
     return "${formatWithSuffix(startDate)} ~ ${formatWithSuffix(endDate)}";
   }
