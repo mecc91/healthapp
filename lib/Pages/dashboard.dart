@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:healthymeal/Pages/dailystatus.dart';
 import 'package:healthymeal/Pages/mealrecord.dart';
+import 'package:healthymeal/Pages/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 // scoreboard.dart import 추가
 import 'package:healthymeal/Pages/scoreboard.dart';
@@ -125,10 +126,21 @@ class _DashboardState extends State<Dashboard> {
                 color: Colors.black,
               ),
               SizedBox(width: 12),
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: AssetImage('assets/icons/default_icon.jpg'), // 실제 이미지 경로로 수정 필요
+              GestureDetector(
+                onTap: () {
+                  // 프로필 아이콘 클릭 시 동작
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Recommendation()), //porfile 화면으로 이동으로 나중에 변경경
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundImage: _imageFile != null ? FileImage(_imageFile!) : null,
+                  child: _imageFile == null ? Icon(Icons.person, size: 30) : null,
+                ),
               ),
+              
             ],
           ),
         ],
