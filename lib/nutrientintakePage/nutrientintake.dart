@@ -37,15 +37,15 @@ List<Map<String, dynamic>> _generateSimulatedNutrientData(String nutrient, DateT
 }
 
 
-class ScoreboardDetailScreen extends StatefulWidget {
+class NutrientIntake extends StatefulWidget {
   // 필요시 이전 화면에서 날짜 등의 데이터를 전달받을 수 있도록 생성자 수정
-  const ScoreboardDetailScreen({super.key});
+  const NutrientIntake({super.key});
 
   @override
-  State<ScoreboardDetailScreen> createState() => _ScoreboardDetailScreenState();
+  State<NutrientIntake> createState() => _NutrientIntakeState();
 }
 
-class _ScoreboardDetailScreenState extends State<ScoreboardDetailScreen> {
+class _NutrientIntakeState extends State<NutrientIntake> {
   // --- 상태 변수 ---
   List<bool> _isSelectedPeriod = [true, false, false, false]; // week, month, quater, year
   int _selectedBottomNavIndex = 0; // 하단 네비게이션 인덱스

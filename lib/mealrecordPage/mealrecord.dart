@@ -7,16 +7,16 @@ import 'package:image_picker/image_picker.dart'; // image_picker 패키지 임�
 // main 함수와 MyApp 클래스 제거됨
 
 // 음식 기록 화면 위젯 (StatefulWidget)
-class FoodRecordScreen extends StatefulWidget {
+class MealRecord extends StatefulWidget {
   // 카메라 관련 코드가 생성자에 있었다면 제거됨
-  const FoodRecordScreen({super.key}); // 기본 생성자 유지
+  const MealRecord({super.key}); // 기본 생성자 유지
 
   @override
-  State<FoodRecordScreen> createState() => _FoodRecordScreenState();
+  State<MealRecord> createState() => _MealRecordState();
 }
 
 // FoodRecordScreen 위젯의 상태 관리 클래스
-class _FoodRecordScreenState extends State<FoodRecordScreen> {
+class _MealRecordState extends State<MealRecord> {
   // CameraController 및 관련 Future 제거
   final ImagePicker _picker = ImagePicker(); // ImagePicker 인스턴스 생성
   XFile? _pickedImageFile; // 선택/촬영된 이미지 파일

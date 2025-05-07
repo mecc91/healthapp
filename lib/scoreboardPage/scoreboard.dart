@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷팅을 위해 추가
 import 'dart:math'; // 랜덤 데이터 생성을 위해 추가
-import 'scoreboard_detail.dart'; // 상세 화면 import 추가
+import '../nutrientintakePage/nutrientintake.dart'; // 상세 화면 import 추가
 
 // 기본 테마 색상 정의
 const Color primaryColor = Colors.teal;
@@ -13,26 +13,14 @@ const double arrowButtonHorizontalSpace = 48.0;
 const int weeksOfDataBeforeToday = 4;
 const int weeksOfDataAfterToday = 0; // 미래 데이터는 없다고 가정
 
-class Scoreboard extends StatelessWidget {
+class Scoreboard extends StatefulWidget {
   const Scoreboard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: ScoreboardScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  State<Scoreboard> createState() => _ScoreboardState();
 }
 
-class ScoreboardScreen extends StatefulWidget {
-  const ScoreboardScreen({super.key});
-
-  @override
-  State<ScoreboardScreen> createState() => _ScoreboardScreenState();
-}
-
-class _ScoreboardScreenState extends State<ScoreboardScreen> {
+class _ScoreboardState extends State<Scoreboard> {
   List<bool> _isSelected = [true, false, false, false];
   int _selectedIndex = 0;
 
@@ -236,7 +224,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                           // ScoreboardDetailScreen으로 이동
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const ScoreboardDetailScreen()),
+                            MaterialPageRoute(builder: (context) => const NutrientIntake()),
                           );
                         },
                         // --- 여기까지 ---

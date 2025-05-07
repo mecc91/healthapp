@@ -3,18 +3,6 @@ import 'package:flutter/material.dart';
 class Recommendation extends StatelessWidget {
   const Recommendation({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: RecommendationScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class RecommendationScreen extends StatelessWidget {
-  const RecommendationScreen({super.key});
-
   final List<Map<String, dynamic>> weekData = const [
     {'day': 'Mon', 'value': 46},
     {'day': 'Tue', 'value': 72},

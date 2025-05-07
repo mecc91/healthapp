@@ -3,11 +3,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:healthymeal/Pages/dailystatus.dart';
-import 'package:healthymeal/Pages/mealrecord.dart';
+import 'package:healthymeal/dailystatusPage/dailystatus.dart';
+import 'package:healthymeal/mealrecordPage/mealrecord.dart';
 import 'package:image_picker/image_picker.dart';
 // scoreboard.dart import 추가
-import 'package:healthymeal/Pages/scoreboard.dart';
+import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -91,12 +91,12 @@ class _DashboardState extends State<Dashboard> {
                 // Scoreboard 클래스는 MaterialApp을 반환하므로, ScoreboardScreen을 사용해야 합니다.
                 // scoreboard.dart 파일 내부 구조에 따라 Scoreboard() 또는 ScoreboardScreen()을 사용하세요.
                 // 여기서는 ScoreboardScreen을 가정합니다.
-                MaterialPageRoute(builder: (context) => const ScoreboardScreen()), // ScoreboardScreen 호출
+                MaterialPageRoute(builder: (context) => const Scoreboard()), // ScoreboardScreen 호출
               );
             } else if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
               Navigator.push( // FoodRecordScreen으로 이동
                 context,
-                MaterialPageRoute(builder: (context) => const FoodRecordScreen()),
+                MaterialPageRoute(builder: (context) => const MealRecord()),
               );
             }
             // 다른 아이템(index 2 등) 탭 시 추가 로직 구현 가능
@@ -213,7 +213,7 @@ class _DashboardState extends State<Dashboard> {
         onTap: () {
           Navigator.push( // Scoreboard 화면으로 이동
             context,
-            MaterialPageRoute(builder: (context) => const ScoreboardScreen()),
+            MaterialPageRoute(builder: (context) => const Scoreboard()),
           );
         },
         child: Card(
