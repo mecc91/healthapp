@@ -155,53 +155,6 @@ class NutrientBar extends StatelessWidget {
                 ),
               ),
             ),
-
-
-            /*Center(
-              child: SizedBox(
-                width: totalWidth,
-                child: Stack(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: List.generate(
-                        nutrient.totalBlocks,
-                        (index) => Container(
-                          width: blockWidth,
-                          height: blockHeight,
-                          margin: EdgeInsets.only(
-                              right: index == nutrient.totalBlocks - 1 ? 0 : spacing),
-                          decoration: BoxDecoration(
-                            color: index < nutrient.filledBlocks
-                                ? nutrient.color
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: index < nutrient.filledBlocks
-                                ? nutrient.color
-                                : Colors.black38,
-                              width: 2
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: baselineLeft - 2,
-                      top: 0,
-                      bottom: 0,
-                      child: Container(
-                        width: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),*/
           ],
         ),
       ),
