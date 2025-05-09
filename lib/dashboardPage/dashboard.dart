@@ -63,11 +63,11 @@ class _DashboardState extends State<Dashboard> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color.fromARGB(255, 95, 212, 121), // 더 선명한 연두
-                  Color.fromARGB(255, 217, 161, 82), // 밝고 명확한 오렌지
+                  Color(0xFFFDE68A), // 밝은 Amber (보통)
+                  Color(0xFFC8E6C9), // 연한 Green (양호)
                   Colors.white,
                 ],
-                stops: [0.0, 0.6, 1.0],
+                stops: [0.0, 0.7, 1.0],
               ),
             ),
           ),
@@ -209,7 +209,14 @@ class _DashboardState extends State<Dashboard> {
                                 return LinearProgressIndicator(
                                   value: value,
                                   backgroundColor: Colors.grey[300],
-                                  color: item["color"] as Color,
+                                  color: () {
+                                    final double v = item["value"] as double;
+                                    if (v <= 0.25) return Colors.red;
+                                    if (v <= 0.40) return Colors.orange;
+                                    if (v <= 0.60) return Colors.amber;
+                                    if (v <= 0.85) return Colors.lightGreen;
+                                    return Colors.green;
+                                  }(),
                                   minHeight: 10,
                                   borderRadius: BorderRadius.circular(10),
                                 );
@@ -288,7 +295,15 @@ class _DashboardState extends State<Dashboard> {
                                   return LinearProgressIndicator(
                                     value: value,
                                     backgroundColor: Colors.grey[300],
-                                    color: const Color.fromARGB(255, 0, 77, 59),
+                                    color: (value <= 0.25)
+                                        ? Colors.red
+                                        : (value <= 0.40)
+                                            ? Colors.orange
+                                            : (value <= 0.60)
+                                                ? Colors.amber
+                                                : (value <= 0.85)
+                                                    ? Colors.lightGreen
+                                                    : Colors.green,
                                     minHeight: 10,
                                     borderRadius: BorderRadius.circular(10),
                                   );
