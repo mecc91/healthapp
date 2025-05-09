@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 
 class IntakeLevel extends StatelessWidget {
-  const IntakeLevel({super.key, required IntakeData nutrient}) : _nutrient = nutrient;
+  IntakeLevel({super.key, required IntakeData intake}) 
+    : _intake = intake, 
+    _totalBlocks = intake.requiredintake > 500 ? 20 : 12,
+    _filledBlockNum = 4,
+    _emptyBlockNum = 0;
 
-  final IntakeData _nutrient;
+  final IntakeData _intake;
 
+  // 섭취레벨 블럭세팅 
   final double _totalWidth = 300.0;
+  final int _totalBlocks;
+  final int _filledBlockNum;
+  final int _emptyBlockNum;
   // 섭취기준선 위치비율
   final double _baselineRatio = 0.8;
   final double _blockHeight = 24.0;
@@ -14,13 +22,14 @@ class IntakeLevel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double blockWidth = (_totalWidth - (_nutrient.totalBlocks - 1) * _spacing) /
-        _nutrient.totalBlocks;
+    final double blockWidth = (_totalWidth - (_totalBlocks - 1) * _spacing) /
+        _totalBlocks;
     final double baselineLeft = _totalWidth * _baselineRatio;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
+      //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      //color: Colors.white,
+      elevation: 1,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
         child: Column(
@@ -31,7 +40,7 @@ class IntakeLevel extends StatelessWidget {
               children: [
                 SizedBox(width: 23),
                 Text(
-                  _nutrient.name,
+                  _intake.name,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -48,21 +57,21 @@ class IntakeLevel extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: List.generate(
-                        _nutrient.totalBlocks,
+                        _totalBlocks,
                         (index) => Container(
                           width: blockWidth,
                           height: _blockHeight,
                           margin: EdgeInsets.only(
-                            right: index == _nutrient.totalBlocks - 1 ? 0 : _spacing,
+                            right: index == _totalBlocks - 1 ? 0 : _spacing,
                           ),
                           decoration: BoxDecoration(
-                            color: index < _nutrient.filledBlockNum
-                                ? _nutrient.color
+                            color: index < _filledBlockNum
+                                ? _intake.color
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(4),
                             border: Border.all(
-                              color: index < _nutrient.filledBlockNum
-                                  ? _nutrient.color
+                              color: index < _filledBlockNum
+                                  ? _intake.color
                                   : Colors.white,
                               width: 2,
                             ),
@@ -86,10 +95,10 @@ class IntakeLevel extends StatelessWidget {
                   ),
                   // 수치 텍스트 (채워진 끝 위치 기준)
                   Positioned(
-                    left: (_nutrient.filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 3,
+                    left: (_filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 3,
                     top: _blockHeight + 4 + 6,
                     child: Text(
-                      '${_nutrient.filledBlockNum}/${_nutrient.totalBlocks}',
+                      '$_filledBlockNum/$_totalBlocks',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                   ),
