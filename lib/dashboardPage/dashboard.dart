@@ -18,14 +18,20 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   // ignore: unused_field
+  double _avatarScale = 1.0; //animation add
+
+  //animation field ^
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
   Future<void> _takePicture() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      },);
+      setState(
+        () {
+          _imageFile = File(pickedFile.path);
+        },
+      );
     } else {
       print('사진이 선택되지 않았습니다');
     }
@@ -40,7 +46,10 @@ class _DashboardState extends State<Dashboard> {
           // 페이지 스타일
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color.fromARGB(255, 84, 239, 138), Color.fromARGB(255, 239, 186, 86)],
+              colors: [
+                Color.fromARGB(255, 84, 239, 138),
+                Color.fromARGB(255, 239, 186, 86)
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -71,9 +80,11 @@ class _DashboardState extends State<Dashboard> {
           showUnselectedLabels: false,
           items: [
             // 첫 번째 아이템: 차트 아이콘 (index 0)
-            BottomNavigationBarItem(icon: Icon(Icons.bar_chart, size: 40), label: ''),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.bar_chart, size: 40), label: ''),
             // 두 번째 아이템: 카메라 아이콘 (index 1)
-            BottomNavigationBarItem(icon: Icon(Icons.camera_alt, size: 40), label: ''),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.camera_alt, size: 40), label: ''),
             /*BottomNavigationBarItem(
               icon: IconButton(
                 onPressed: _takePicture,
@@ -81,20 +92,27 @@ class _DashboardState extends State<Dashboard> {
               label: ''
             ),*/
             // 세 번째 아이템: 별 아이콘 (index 2)
-            BottomNavigationBarItem(icon: Icon(Icons.star_border, size: 40), label: ''),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.star_border, size: 40), label: ''),
           ],
           onTap: (index) {
             // 탭된 아이템의 인덱스(index)에 따라 다른 동작 수행
-            if (index == 0) { // 차트 아이콘 (인덱스 0)을 탭했을 때
-              Navigator.push( // Scoreboard 화면으로 이동
+            if (index == 0) {
+              // 차트 아이콘 (인덱스 0)을 탭했을 때
+              Navigator.push(
+                // Scoreboard 화면으로 이동
                 context,
                 // Scoreboard 클래스는 MaterialApp을 반환하므로, ScoreboardScreen을 사용해야 합니다.
                 // scoreboard.dart 파일 내부 구조에 따라 Scoreboard() 또는 ScoreboardScreen()을 사용하세요.
                 // 여기서는 ScoreboardScreen을 가정합니다.
-                MaterialPageRoute(builder: (context) => const Scoreboard()), // ScoreboardScreen 호출
+                MaterialPageRoute(
+                    builder: (context) =>
+                        const Scoreboard()), // ScoreboardScreen 호출
               );
-            } else if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
-              Navigator.push( // FoodRecordScreen으로 이동
+            } else if (index == 1) {
+              // 카메라 아이콘 (인덱스 1)을 탭했을 때
+              Navigator.push(
+                // FoodRecordScreen으로 이동
                 context,
                 MaterialPageRoute(builder: (context) => const MealRecord()),
               );
@@ -115,22 +133,49 @@ class _DashboardState extends State<Dashboard> {
         children: [
           const Text(
             'Dashboard',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, fontStyle: FontStyle.normal),
+            style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.normal),
           ),
           Row(
             children: [
               IconButton(
                 icon: Icon(Icons.notifications_none),
-                onPressed:() {},
+                onPressed: () {},
                 color: Colors.black,
               ),
               SizedBox(width: 12),
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: AssetImage('assets/profile.jpg'), // 실제 이미지 경로로 수정 필요
+              GestureDetector(
+                onTapDown: (_) => setState(() => _avatarScale = 0.8),
+                onTapUp: (_) {
+                  setState(() => _avatarScale = 1.0);
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration: Duration(milliseconds: 300),
+                      pageBuilder: (_, __, ___) => Scoreboard(),
+                      transitionsBuilder: (_, animation, __, child) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
+                onTapCancel: () => setState(() => _avatarScale = 1.0),
+                child: AnimatedScale(
+                  scale: _avatarScale,
+                  duration: Duration(milliseconds: 100),
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundImage: AssetImage('assets/image/default_man.png'),
+                  ),
+                ),
               ),
             ],
-          ),
+          )
         ],
       ),
     );
@@ -151,13 +196,15 @@ class _DashboardState extends State<Dashboard> {
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       child: InkWell(
         onTap: () {
-          Navigator.push( // DailyStatus 화면으로 이동
+          Navigator.push(
+            // DailyStatus 화면으로 이동
             context,
             MaterialPageRoute(builder: (context) => const DailyStatus()),
           );
         },
         child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -166,7 +213,10 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 const Text(
                   "Daily Status",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontStyle: FontStyle.normal),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.normal),
                 ),
                 const SizedBox(height: 16),
                 ...nutrients.map((item) => Padding(
@@ -176,12 +226,19 @@ class _DashboardState extends State<Dashboard> {
                         children: [
                           Text(item["label"]! as String),
                           const SizedBox(height: 4),
-                          LinearProgressIndicator(
-                            value: item["value"]! as double,
-                            backgroundColor: Colors.grey[300],
-                            color: item["color"] as Color,
-                            minHeight: 10,
-                            borderRadius: BorderRadius.circular(10),
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(
+                                begin: 0.0, end: item["value"]! as double),
+                            duration: Duration(milliseconds: 800),
+                            builder: (context, value, child) {
+                              return LinearProgressIndicator(
+                                value: value,
+                                backgroundColor: Colors.grey[300],
+                                color: item["color"] as Color,
+                                minHeight: 10,
+                                borderRadius: BorderRadius.circular(10),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -209,15 +266,18 @@ class _DashboardState extends State<Dashboard> {
     // Weekly Score 카드를 눌렀을 때 Scoreboard 화면으로 이동하도록 InkWell 추가 (선택 사항)
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      child: InkWell( // InkWell 추가
+      child: InkWell(
+        // InkWell 추가
         onTap: () {
-          Navigator.push( // Scoreboard 화면으로 이동
+          Navigator.push(
+            // Scoreboard 화면으로 이동
             context,
             MaterialPageRoute(builder: (context) => const Scoreboard()),
           );
         },
         child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -237,18 +297,25 @@ class _DashboardState extends State<Dashboard> {
                             width: 90,
                             child: Text(
                               item["day"]! as String,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           Expanded(
-                            child: LinearProgressIndicator(
-                              value: item["value"]! as double,
-                              backgroundColor: Colors.grey[300],
-                              color: Colors.tealAccent,
-                              minHeight: 10,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
+                              child: TweenAnimationBuilder<double>(
+                            tween: Tween(
+                                begin: 0.0, end: item["value"]! as double),
+                            duration: Duration(milliseconds: 800),
+                            builder: (context, value, child) {
+                              return LinearProgressIndicator(
+                                value: value,
+                                backgroundColor: Colors.grey[300],
+                                color: const Color.fromARGB(255, 0, 77, 59),
+                                minHeight: 10,
+                                borderRadius: BorderRadius.circular(10),
+                              );
+                            },
+                          )),
                         ],
                       ),
                     )),
