@@ -17,17 +17,27 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  // ignore: unused_field
-  File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
   Future<void> _takePicture() async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      },);
+      // 촬영된 이미지를 MealRecord 페이지로 전달하며 이동
+      if (mounted) { // 위젯이 여전히 마운트되어 있는지 확인
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MealRecord(initialImageFile: pickedFile), // XFile 전달
+          ),
+        );
+      }
     } else {
       print('사진이 선택되지 않았습니다');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사진 촬영이 취소되었거나 실패했습니다.')),
+        );
+      }
     }
   }
 
@@ -62,44 +72,31 @@ class _DashboardState extends State<Dashboard> {
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          // 현재 선택된 인덱스를 상태로 관리하려면 currentIndex도 state 변수로 관리하는 것이 좋습니다.
-          // 여기서는 임시로 1로 설정되어 있습니다. 필요시 수정하세요.
-          currentIndex: 1, // 기본 선택 아이템 (카메라)
+          currentIndex: 1,
           selectedItemColor: Colors.black,
           unselectedItemColor: Colors.grey,
           showSelectedLabels: false,
           showUnselectedLabels: false,
-          items: [
-            // 첫 번째 아이템: 차트 아이콘 (index 0)
+          items: const [ // const 키워드 추가
             BottomNavigationBarItem(icon: Icon(Icons.bar_chart, size: 40), label: ''),
-            // 두 번째 아이템: 카메라 아이콘 (index 1)
             BottomNavigationBarItem(icon: Icon(Icons.camera_alt, size: 40), label: ''),
-            /*BottomNavigationBarItem(
-              icon: IconButton(
-                onPressed: _takePicture,
-                icon: Icon(Icons.camera_alt, size: 40)),
-              label: ''
-            ),*/
-            // 세 번째 아이템: 별 아이콘 (index 2)
             BottomNavigationBarItem(icon: Icon(Icons.star_border, size: 40), label: ''),
           ],
           onTap: (index) {
-            // 탭된 아이템의 인덱스(index)에 따라 다른 동작 수행
-            if (index == 0) { // 차트 아이콘 (인덱스 0)을 탭했을 때
-              Navigator.push( // Scoreboard 화면으로 이동
+            if (index == 0) {
+              Navigator.push(
                 context,
-                // Scoreboard 클래스는 MaterialApp을 반환하므로, ScoreboardScreen을 사용해야 합니다.
-                // scoreboard.dart 파일 내부 구조에 따라 Scoreboard() 또는 ScoreboardScreen()을 사용하세요.
-                // 여기서는 ScoreboardScreen을 가정합니다.
-                MaterialPageRoute(builder: (context) => const Scoreboard()), // ScoreboardScreen 호출
+                MaterialPageRoute(builder: (context) => const Scoreboard()),
               );
             } else if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
-              Navigator.push( // FoodRecordScreen으로 이동
-                context,
-                MaterialPageRoute(builder: (context) => const MealRecord()),
-              );
+              _takePicture(); // _takePicture 함수 호출
+            } else if (index == 2) {
+              // TODO: 별 아이콘 탭 시 동작 추가 (예: Recommendation 페이지로 이동)
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => const Recommendation()),
+              // );
             }
-            // 다른 아이템(index 2 등) 탭 시 추가 로직 구현 가능
           },
         ),
       ),
