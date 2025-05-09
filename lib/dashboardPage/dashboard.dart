@@ -1,4 +1,4 @@
-// Fixed Dashboard.dart with working screen transitions and bottomNavigationBar
+// Dashboard.dart with AnimatedScale (Pop effect) on both cards
 
 import 'dart:io';
 
@@ -18,6 +18,8 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   double _avatarScale = 1.0;
   int _selectedIndex = 0;
+  double _dailyScale = 1.0;
+  double _scoreScale = 1.0;
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
 
@@ -51,7 +53,79 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildMainDashboard(),
+      backgroundColor: Colors.grey.shade100,
+      body: Stack(
+        children: [
+          Container(
+            height: 250,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color.fromARGB(255, 95, 212, 121), // 더 선명한 연두
+                  Color.fromARGB(255, 217, 161, 82), // 밝고 명확한 오렌지
+                  Colors.white,
+                ],
+                stops: [0.0, 0.6, 1.0],
+              ),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Dashboard',
+                          style: TextStyle(
+                              fontSize: 30, fontWeight: FontWeight.bold),
+                        ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.notifications_none),
+                              onPressed: () {},
+                              color: Colors.black,
+                            ),
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              onTapDown: (_) =>
+                                  setState(() => _avatarScale = 0.8),
+                              onTapUp: (_) {
+                                setState(() => _avatarScale = 1.0);
+                                _navigateWithFade(context, const Scoreboard());
+                              },
+                              onTapCancel: () =>
+                                  setState(() => _avatarScale = 1.0),
+                              child: AnimatedScale(
+                                scale: _avatarScale,
+                                duration: const Duration(milliseconds: 100),
+                                child: const CircleAvatar(
+                                  radius: 18,
+                                  backgroundImage: AssetImage(
+                                      'assets/image/default_man.png'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildDailyStatusCard(),
+                  _buildWeeklyScoreCard(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -80,7 +154,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildMainDashboard() {
+  Widget _buildDailyStatusCard() {
     final nutrients = [
       {"label": "탄수화물", "value": 0.95, "color": Colors.orange},
       {"label": "단백질", "value": 0.75, "color": Colors.yellow},
@@ -91,6 +165,69 @@ class _DashboardState extends State<Dashboard> {
       {"label": "콜레스테롤", "value": 0.85, "color": Colors.deepOrange},
     ];
 
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _dailyScale = 1.05),
+        onTapUp: (_) {
+          setState(() => _dailyScale = 1.0);
+          _navigateWithFade(context, const DailyStatus());
+        },
+        onTapCancel: () => setState(() => _dailyScale = 1.0),
+        child: AnimatedScale(
+          scale: _dailyScale,
+          duration: const Duration(milliseconds: 100),
+          child: Card(
+            color: Color(0xFFFCFCFC),
+            elevation: 6,
+            shadowColor: Colors.black.withAlpha(60),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: Colors.grey.shade300, width: 1.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Daily Status",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  ...nutrients.map((item) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item["label"]! as String),
+                            const SizedBox(height: 4),
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(
+                                  begin: 0.0, end: item["value"]! as double),
+                              duration: const Duration(milliseconds: 800),
+                              builder: (context, value, child) {
+                                return LinearProgressIndicator(
+                                  value: value,
+                                  backgroundColor: Colors.grey[300],
+                                  color: item["color"] as Color,
+                                  minHeight: 10,
+                                  borderRadius: BorderRadius.circular(10),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      )),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeeklyScoreCard() {
     final scores = [
       {"day": "Monday", "value": 0.6},
       {"day": "Tuesday", "value": 0.3},
@@ -101,175 +238,69 @@ class _DashboardState extends State<Dashboard> {
       {"day": "Sunday", "value": 0.5},
     ];
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 84, 239, 138),
-            Color.fromARGB(255, 239, 186, 86),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30.0, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Dashboard',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _scoreScale = 1.05),
+        onTapUp: (_) {
+          setState(() => _scoreScale = 1.0);
+          _navigateWithFade(context, const Scoreboard());
+        },
+        onTapCancel: () => setState(() => _scoreScale = 1.0),
+        child: AnimatedScale(
+          scale: _scoreScale,
+          duration: const Duration(milliseconds: 100),
+          child: Card(
+            color: Color(0xFFFCFCFC),
+            elevation: 6,
+            shadowColor: Colors.black.withAlpha(60),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: Colors.grey.shade300, width: 1.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Weekly Score",
                       style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.notifications_none),
-                          onPressed: () {},
-                          color: Colors.black,
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTapDown: (_) => setState(() => _avatarScale = 0.8),
-                          onTapUp: (_) {
-                            setState(() => _avatarScale = 1.0);
-                            _navigateWithFade(context, const Scoreboard());
-                          },
-                          onTapCancel: () => setState(() => _avatarScale = 1.0),
-                          child: AnimatedScale(
-                            scale: _avatarScale,
-                            duration: const Duration(milliseconds: 100),
-                            child: const CircleAvatar(
-                              radius: 18,
-                              backgroundImage:
-                                  AssetImage('assets/image/default_man.png'),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  ...scores.map((item) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 90,
+                              child: Text(
+                                item["day"]! as String,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
                             ),
-                          ),
+                            Expanded(
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween(
+                                    begin: 0.0, end: item["value"]! as double),
+                                duration: const Duration(milliseconds: 800),
+                                builder: (context, value, child) {
+                                  return LinearProgressIndicator(
+                                    value: value,
+                                    backgroundColor: Colors.grey[300],
+                                    color: const Color.fromARGB(255, 0, 77, 59),
+                                    minHeight: 10,
+                                    borderRadius: BorderRadius.circular(10),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      )),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0, vertical: 10.0),
-                child: InkWell(
-                  onTap: () => _navigateWithFade(context, const DailyStatus()),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Daily Status",
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 16),
-                          ...nutrients.map((item) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 6),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(item["label"]! as String),
-                                    const SizedBox(height: 4),
-                                    TweenAnimationBuilder<double>(
-                                      tween: Tween(
-                                          begin: 0.0,
-                                          end: item["value"]! as double),
-                                      duration:
-                                          const Duration(milliseconds: 800),
-                                      builder: (context, value, child) {
-                                        return LinearProgressIndicator(
-                                          value: value,
-                                          backgroundColor: Colors.grey[300],
-                                          color: item["color"] as Color,
-                                          minHeight: 10,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              )),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0, vertical: 10.0),
-                child: InkWell(
-                  onTap: () => _navigateWithFade(context, const Scoreboard()),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Weekly Score",
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 16),
-                          ...scores.map((item) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 6),
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 90,
-                                      child: Text(
-                                        item["day"]! as String,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: TweenAnimationBuilder<double>(
-                                        tween: Tween(
-                                            begin: 0.0,
-                                            end: item["value"]! as double),
-                                        duration:
-                                            const Duration(milliseconds: 800),
-                                        builder: (context, value, child) {
-                                          return LinearProgressIndicator(
-                                            value: value,
-                                            backgroundColor: Colors.grey[300],
-                                            color: const Color.fromARGB(
-                                                255, 0, 77, 59),
-                                            minHeight: 10,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
