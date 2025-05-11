@@ -127,7 +127,7 @@ class _DashboardState extends State<Dashboard> {
               SizedBox(width: 12),
               CircleAvatar(
                 radius: 18,
-                backgroundImage: AssetImage('assets/profile.jpg'), // 실제 이미지 경로로 수정 필요
+                //backgroundImage: AssetImage('assets/profile.jpg'), // 실제 이미지 경로로 수정 필요
               ),
             ],
           ),

@@ -1,29 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 
-class IntakeLevel extends StatelessWidget {
-  IntakeLevel({super.key, required IntakeData intake}) 
-    : _intake = intake, 
-    _totalBlocks = intake.requiredintake > 500 ? 20 : 12,
-    _filledBlockNum = 4,
-    _emptyBlockNum = 0;
+// ignore: must_be_immutable
+class IntakeLevel extends StatefulWidget {
+  IntakeLevel(this._intake, {super.key}) {
+    if (_intake.requiredintake < 50) {
+      _totalBlocks = 12;
+    } else if (_intake.requiredintake < 100) {
+      _totalBlocks = 16;
+    } else if (_intake.requiredintake < 500) {
+      _totalBlocks = 20;
+    } else {
+      _totalBlocks = 24;
+    }
+    double ratio = _intake.intakeamount / _intake.requiredintake;
+    _filledBlockNum = (ratio * _totalBlocks).round();
+    if (ratio < 0.25) {
+      _filledBlockColor = Colors.lightBlue;
+    } else if (ratio < 0.5) {
+      _filledBlockColor = Colors.lightGreen;
+    } else if (ratio < 0.75) {
+      _filledBlockColor = Colors.orange;
+    } else {
+      _filledBlockColor = Colors.red;
+    }
+  }
+
 
   final IntakeData _intake;
 
+  int _totalBlocks = 0;
+  int _filledBlockNum = 0;
+  Color _filledBlockColor = Colors.white;
+
+  @override
+  State<IntakeLevel> createState() => _IntakeLevelState();
+}
+
+class _IntakeLevelState extends State<IntakeLevel> {
   // 섭취레벨 블럭세팅 
   final double _totalWidth = 300.0;
-  final int _totalBlocks;
-  final int _filledBlockNum;
-  final int _emptyBlockNum;
-  // 섭취기준선 위치비율
+
+  //final double _emptyBlockNum;
   final double _baselineRatio = 0.8;
+
   final double _blockHeight = 24.0;
+
   final double _spacing = 4.0;
 
   @override
   Widget build(BuildContext context) {
-    final double blockWidth = (_totalWidth - (_totalBlocks - 1) * _spacing) /
-        _totalBlocks;
+    final double blockWidth = (_totalWidth - (widget._totalBlocks - 1) * _spacing) /
+        widget._totalBlocks;
     final double baselineLeft = _totalWidth * _baselineRatio;
 
     return Card(
@@ -38,14 +66,13 @@ class IntakeLevel extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                SizedBox(width: 23),
+                SizedBox(width: 25),
                 Text(
-                  _intake.name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  widget._intake.nutrientname,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
             SizedBox(
               width: _totalWidth,
               height: _blockHeight + 24 + 8, // 블럭 높이 + 수치 공간 확보
@@ -53,26 +80,26 @@ class IntakeLevel extends StatelessWidget {
                 children: [
                   // 블럭들
                   Positioned(
-                    top: 8,
+                    top: 10,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: List.generate(
-                        _totalBlocks,
+                        widget._totalBlocks,
                         (index) => Container(
                           width: blockWidth,
                           height: _blockHeight,
                           margin: EdgeInsets.only(
-                            right: index == _totalBlocks - 1 ? 0 : _spacing,
+                            right: index == widget._totalBlocks - 1 ? 0 : _spacing,
                           ),
                           decoration: BoxDecoration(
-                            color: index < _filledBlockNum
-                                ? _intake.color
+                            color: index < widget._filledBlockNum
+                                ? widget._filledBlockColor
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(4),
                             border: Border.all(
-                              color: index < _filledBlockNum
-                                  ? _intake.color
-                                  : Colors.white,
+                              color: index < widget._filledBlockNum
+                                  ? widget._filledBlockColor
+                                  : Colors.black26,
                               width: 2,
                             ),
                           ),
@@ -83,7 +110,7 @@ class IntakeLevel extends StatelessWidget {
                   // 기준선
                   Positioned(
                     left: baselineLeft - 2,
-                    top: 8,
+                    top: 10,
                     bottom: 24,
                     child: Container(
                       width: 6,
@@ -95,10 +122,18 @@ class IntakeLevel extends StatelessWidget {
                   ),
                   // 수치 텍스트 (채워진 끝 위치 기준)
                   Positioned(
-                    left: (_filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 3,
-                    top: _blockHeight + 4 + 6,
+                    left: (widget._filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 3,
+                    top: _blockHeight + 4 + 8,
                     child: Text(
-                      '$_filledBlockNum/$_totalBlocks',
+                      '${widget._filledBlockNum}/${widget._totalBlocks - (widget._totalBlocks / 5).round()}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  // 섭취량 텍스트 (채워진 끝 위치 기준)
+                  Positioned(
+                    top: -4,
+                    child: Text(
+                      '${widget._filledBlockNum}/${widget._totalBlocks - (widget._totalBlocks / 5).round()}',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                   ),
