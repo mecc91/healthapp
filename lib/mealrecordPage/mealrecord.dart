@@ -377,7 +377,7 @@ class _MealRecordState extends State<MealRecord> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           decoration: BoxDecoration(
-            color: Colors.lightGreen[100]?.withOpacity(0.6),
+            color: Colors.lightGreen[100]?.withAlpha(153),
             borderRadius: BorderRadius.circular(10.0),
           ),
           child: Row(
@@ -478,7 +478,7 @@ class _MealRecordState extends State<MealRecord> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           decoration: BoxDecoration(
-            color: Colors.lightGreen[100]?.withOpacity(0.6),
+            color: Colors.lightGreen[100]?.withAlpha(153),
             borderRadius: BorderRadius.circular(10.0),
           ),
           child: DropdownButtonHideUnderline(
@@ -512,9 +512,9 @@ class _MealRecordState extends State<MealRecord> {
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ).copyWith(
-                foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey : Colors.teal),
-                backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey.shade200 : Colors.teal.shade50),
-                side: MaterialStateProperty.resolveWith<BorderSide?>((states) => states.contains(MaterialState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.teal.shade200)),
+                foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.teal),
+                backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.teal.shade50),
+                side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.teal.shade200)),
               ),
               child: const Icon(Icons.camera_alt, size: 24),
             ),
@@ -549,9 +549,9 @@ class _MealRecordState extends State<MealRecord> {
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ).copyWith(
-                 foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey : Colors.redAccent.shade700),
-                 backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey.shade200 : Colors.red.shade50), // Keep the red shade50 for disabled
-                 side: MaterialStateProperty.resolveWith<BorderSide?>((states) => states.contains(MaterialState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.redAccent.shade200)),
+                 foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.redAccent.shade700),
+                 backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.red.shade50), // Keep the red shade50 for disabled
+                 side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.redAccent.shade200)),
               ),
               child: const Icon(Icons.delete_outline, size: 24),
             ),

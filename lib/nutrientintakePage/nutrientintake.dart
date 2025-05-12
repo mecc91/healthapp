@@ -17,7 +17,7 @@ class NutrientIntakeScreen extends StatefulWidget {
 
 class _NutrientIntakeScreenState extends State<NutrientIntakeScreen> {
   final NutrientIntakeDataService _dataService = NutrientIntakeDataService();
-  List<bool> _isSelectedPeriod = [true, false, false, false]; // week, month, quarter, year
+  final List<bool> _isSelectedPeriod = [true, false, false, false]; // week, month, quarter, year
   List<Map<String, dynamic>> _currentChartData = [];
   String _currentDateRangeFormatted = "";
   String _currentNutrientName = "";

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // _picker 사용을 위해 필요
-import 'package:healthymeal/mealrecordPage/mealrecord.dart'; // _takePicture에서 사용 (CommonBottomNavBar로 이동 가능)
-import 'package:healthymeal/recommendationPage/recommendation.dart'; // BottomNavBar에서 사용 (CommonBottomNavBar로 이동 가능)
+// import 'package:healthymeal/mealrecordPage/mealrecord.dart'; // _takePicture에서 사용 (CommonBottomNavBar로 이동 가능)
+// import 'package:healthymeal/recommendationPage/recommendation.dart'; // BottomNavBar에서 사용 (CommonBottomNavBar로 이동 가능)
 import '../nutrientintakePage/nutrientintake.dart'; // 상세 보기 버튼에서 사용
 
 // 분리된 위젯 및 서비스 import
@@ -21,7 +21,7 @@ class ScoreboardScreen extends StatefulWidget {
 }
 
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
-  List<bool> _isSelectedToggle = [true, false, false, false]; // 주/월/분기/년 선택 상태
+  final List<bool> _isSelectedToggle = [true, false, false, false]; // 주/월/분기/년 선택 상태
 
   late ScoreboardDataService _dataService;
   List<Map<String, dynamic>> _currentWeekChartData = [];
@@ -92,9 +92,13 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         _currentWeekChartData = [];
         _currentAverageScore = 0;
         String periodName = "";
-        if (index == 1) periodName = "월간";
-        else if (index == 2) periodName = "분기별";
-        else if (index == 3) periodName = "연간";
+        if (index == 1) {
+          periodName = "월간";
+        } else if (index == 2) {
+          periodName = "분기별";
+        } else if (index == 3) {
+          periodName = "연간";
+        }
         _currentDateRangeFormatted = "$periodName 데이터 (미구현)";
       });
     }

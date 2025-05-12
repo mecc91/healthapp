@@ -47,10 +47,14 @@ class ScoreboardDataService {
     String formatWithSuffix(DateTime date) {
       String day = DateFormat('d').format(date);
       String suffix = 'th';
-      if (day.endsWith('1') && !day.endsWith('11')) suffix = 'st';
-      else if (day.endsWith('2') && !day.endsWith('12')) suffix = 'nd';
-      else if (day.endsWith('3') && !day.endsWith('13')) suffix = 'rd';
-      return "${DateFormat('MMMM').format(date)} ${day}${suffix}";
+      if (day.endsWith('1') && !day.endsWith('11')) {
+        suffix = 'st';
+      } else if (day.endsWith('2') && !day.endsWith('12')) {
+        suffix = 'nd';
+      } else if (day.endsWith('3') && !day.endsWith('13')) {
+        suffix = 'rd';
+      }
+      return "${DateFormat('MMMM').format(date)} $day$suffix";
     }
     return "${formatWithSuffix(startDate)} ~ ${formatWithSuffix(endDate)}";
   }
