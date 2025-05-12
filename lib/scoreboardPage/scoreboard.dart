@@ -9,10 +9,7 @@ import '../nutrientintakePage/nutrientintake.dart'; // 상세 화면 import 추�
 
 // 기본 테마 색상 정의
 const Color primaryColor = Colors.teal;
-
 const Color accentColor = Colors.redAccent;
-// const double arrowButtonHorizontalSpace = 48.0; // 이 상수는 "avr" 섹션 패딩에 직접 사용되지 않음
-
 
 // --- 데이터 시뮬레이션 설정 ---
 const int weeksOfDataBeforeToday = 4;
@@ -33,7 +30,6 @@ class _ScoreboardState extends State<Scoreboard> {
   late DateTime newestWeekStartDate;
   List<Map<String, dynamic>> currentWeekData = [];
   double currentAverageScore = 0;
-
 
   final List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   final ImagePicker _picker = ImagePicker();
@@ -58,7 +54,6 @@ class _ScoreboardState extends State<Scoreboard> {
     }
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -68,10 +63,8 @@ class _ScoreboardState extends State<Scoreboard> {
   void _initializeDatesAndData() {
     final now = DateTime.now();
     currentWeekStartDate = now.subtract(Duration(days: now.weekday - 1));
-
     oldestWeekStartDate = currentWeekStartDate.subtract(Duration(days: weeksOfDataBeforeToday * 7));
     newestWeekStartDate = currentWeekStartDate.add(Duration(days: weeksOfDataAfterToday * 7));
-
     _loadWeekData(currentWeekStartDate);
   }
 
@@ -84,9 +77,7 @@ class _ScoreboardState extends State<Scoreboard> {
   }
 
   List<Map<String, dynamic>> _getSimulatedWeekData(DateTime startDate) {
-
     final random = Random(startDate.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay);
-
     List<Map<String, dynamic>> weekData = [];
     for (int i = 0; i < 7; i++) {
       weekData.add({
@@ -99,27 +90,25 @@ class _ScoreboardState extends State<Scoreboard> {
 
   double _calculateAverageScore(List<Map<String, dynamic>> data) {
     if (data.isEmpty) return 0;
-    final totalScore =
-        data.map((d) => d['value'] as int).reduce((a, b) => a + b);
+    final totalScore = data.map((d) => d['value'] as int).reduce((a, b) => a + b);
     return totalScore / data.length;
   }
 
   String _formatDateRange(DateTime startDate) {
     final endDate = startDate.add(const Duration(days: 6));
     String formatWithSuffix(DateTime date) {
-        String day = DateFormat('d').format(date);
-        String suffix = 'th';
-        if (day.endsWith('1') && !day.endsWith('11')) suffix = 'st';
-        else if (day.endsWith('2') && !day.endsWith('12')) suffix = 'nd';
-        else if (day.endsWith('3') && !day.endsWith('13')) suffix = 'rd';
-        return "${DateFormat('MMMM').format(date)} ${day}${suffix}";
+      String day = DateFormat('d').format(date);
+      String suffix = 'th';
+      if (day.endsWith('1') && !day.endsWith('11')) suffix = 'st';
+      else if (day.endsWith('2') && !day.endsWith('12')) suffix = 'nd';
+      else if (day.endsWith('3') && !day.endsWith('13')) suffix = 'rd';
+      return "${DateFormat('MMMM').format(date)} ${day}${suffix}";
     }
     return "${formatWithSuffix(startDate)} ~ ${formatWithSuffix(endDate)}";
   }
 
   void _changeWeek(int weeksToAdd) {
-    final targetStartDate =
-        currentWeekStartDate.add(Duration(days: weeksToAdd * 7));
+    final targetStartDate = currentWeekStartDate.add(Duration(days: weeksToAdd * 7));
 
     if (targetStartDate.isBefore(oldestWeekStartDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -140,19 +129,16 @@ class _ScoreboardState extends State<Scoreboard> {
     _loadWeekData(targetStartDate);
   }
 
-
   double calculateBarHeight(int value, double heightFor100PointBar, int referenceMaxValue) {
-     if (value <= 0 || referenceMaxValue <= 0 || heightFor100PointBar <= 0) return 0;
-     double calculatedHeight = (value / referenceMaxValue.toDouble()) * heightFor100PointBar;
-     return max(0, calculatedHeight);
-
+    if (value <= 0 || referenceMaxValue <= 0 || heightFor100PointBar <= 0) return 0;
+    double calculatedHeight = (value / referenceMaxValue.toDouble()) * heightFor100PointBar;
+    return max(0, calculatedHeight);
   }
 
   @override
   Widget build(BuildContext context) {
     final bool canGoBack = currentWeekStartDate.isAfter(oldestWeekStartDate);
-    final bool canGoForward =
-        currentWeekStartDate.isBefore(newestWeekStartDate);
+    final bool canGoForward = currentWeekStartDate.isBefore(newestWeekStartDate);
 
     return Scaffold(
       appBar: AppBar(
@@ -169,9 +155,7 @@ class _ScoreboardState extends State<Scoreboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-
               child: ToggleButtons(
-                // ... (토글 버튼 설정 - 변경 없음) ...
                 isSelected: _isSelectedToggle,
                 onPressed: (int index) {
                   setState(() {
@@ -205,12 +189,10 @@ class _ScoreboardState extends State<Scoreboard> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-            Padding( // "avr" 점수 섹션 패딩: 그래프 영역과 시각적 정렬을 위해 좌우 패딩을 0 또는 작은 값으로 설정
-              padding: const EdgeInsets.symmetric(horizontal: 0), // 또는 4.0 등 작은 값
+            Padding( // "avr" 점수 섹션 패딩
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: Column(
-                // ... (avr 점수 표시 UI - 변경 없음) ...
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("avr", style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.bold)),
@@ -222,7 +204,7 @@ class _ScoreboardState extends State<Scoreboard> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text.rich(
+                          Text.rich( // Widget 1 in Column
                             TextSpan(
                               style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
                               children: [
@@ -232,44 +214,15 @@ class _ScoreboardState extends State<Scoreboard> {
                                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
                                 ),
                               ],
-
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                                // 날짜 범위 표시
-                                _formatDateRange(currentWeekStartDate),
-                                style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        OutlinedButton(
-                          // --- 수정된 부분 ---
-                          onPressed: () {
-                            // ScoreboardDetailScreen으로 이동
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const NutrientIntake()),
-                            );
-                          },
-                          // --- 여기까지 ---
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: primaryColor,
-                            side: const BorderSide(color: primaryColor),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            minimumSize: Size.zero,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0)),
-                          ),
-
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatDateRange(currentWeekStartDate),
-                            style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
-                          ),
+                          ), // Text.rich 끝
+                          const SizedBox(height: 4), // Text.rich의 형제 위젯
+                          Text( // Text.rich의 형제 위젯
+                              _formatDateRange(currentWeekStartDate),
+                              style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
                       OutlinedButton(
@@ -290,73 +243,66 @@ class _ScoreboardState extends State<Scoreboard> {
                     ],
                   ),
                 ],
-              )
+              ),
             ),
             const SizedBox(height: 12),
             Expanded(
               flex: 6, // 그래프 영역 flex 값
-              child: GestureDetector( // GestureDetector가 전체 그래프 영역(회색 배경)을 감쌈
+              child: GestureDetector(
                 onHorizontalDragEnd: (details) {
                   if (details.primaryVelocity! > 100) {
-                      if (canGoBack) _changeWeek(-1);
+                    if (canGoBack) _changeWeek(-1);
                   } else if (details.primaryVelocity! < -100) {
-                      if (canGoForward) _changeWeek(1);
+                    if (canGoForward) _changeWeek(1);
                   }
                 },
-                child: LayoutBuilder( // LayoutBuilder가 전체 그래프 영역의 제약조건을 제공
+                child: LayoutBuilder(
                   builder: (context, constraints) {
                     final double availableHeightForGraphContainer = constraints.maxHeight;
                     final double availableWidthForGraphContainer = constraints.maxWidth;
 
-                    // 그래프 요소들의 예상 높이 및 패딩 (이전과 유사하게 유지 또는 미세 조정)
                     const double valueTextFontSize = 9.0;
                     const double dayTextFontSize = 9.0;
                     const double textLineHeightApproximation = valueTextFontSize * 1.7;
                     const double topSizedBoxHeight = 1.0;
                     const double bottomSizedBoxHeight = 1.0;
-                    const double graphContainerVerticalPadding = 8.0 * 2; // 회색 컨테이너의 상하 패딩
-                    // 화살표 버튼의 대략적인 너비 (양쪽 합산) 및 내부 패딩 고려
-                    const double iconButtonEffectiveWidth = 36.0; // 아이콘 크기 기준, 실제 터치 영역은 더 클 수 있음
-                    const double horizontalPaddingForBarArea = 5.0 * 2; // 막대 영역 좌우 내부 패딩
+                    const double graphContainerVerticalPadding = 8.0 * 2;
+                    const double iconButtonEffectiveWidth = 36.0;
+                    const double horizontalPaddingForBarArea = 5.0 * 2;
 
-                    // 100점 기준 막대의 시각적 최대 높이 계산
                     final double heightFor100PointBarVisual = availableHeightForGraphContainer -
                         (textLineHeightApproximation * 2) -
                         topSizedBoxHeight -
                         bottomSizedBoxHeight -
                         graphContainerVerticalPadding;
                     
-                    // 실제 막대들이 그려질 영역의 순수 너비 계산
                     final double barDisplayAreaWidth = availableWidthForGraphContainer -
-                                                  (iconButtonEffectiveWidth * 2) - // 양쪽 화살표 너비
-                                                  horizontalPaddingForBarArea; // 막대 영역 내부 패딩
+                                                  (iconButtonEffectiveWidth * 2) -
+                                                  horizontalPaddingForBarArea;
 
-                    // 막대 너비 계산
-                    final double barWidth = barDisplayAreaWidth / (currentWeekData.length * 1.8); // 비율 조정 (막대 두께)
+                    final double barWidth = barDisplayAreaWidth / (currentWeekData.length * 1.8);
 
-                    return Container( // 회색 배경 컨테이너
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), // 좌우 패딩 최소화 (화살표 공간 확보)
-
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(16),
                       ),
-
-                      child: Row( // 화살표와 막대 영역을 포함하는 Row
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          IconButton( // 왼쪽 화살표
+                          IconButton(
                             icon: const Icon(Icons.chevron_left),
                             iconSize: 36.0,
-                            padding: EdgeInsets.zero, // 패딩 최소화
-                            constraints: const BoxConstraints(), // 제약 최소화
-                            visualDensity: VisualDensity.compact, // 밀도 조정
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            visualDensity: VisualDensity.compact,
                             onPressed: canGoBack ? () => _changeWeek(-1) : null,
                             color: canGoBack ? Colors.grey.shade700 : Colors.grey.shade300,
                           ),
-                          Expanded( // 실제 막대들이 그려지는 영역
+                          Expanded(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5.0), // 막대 영역 좌우 패딩
+                              padding: const EdgeInsets.symmetric(horizontal: 5.0),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -364,7 +310,7 @@ class _ScoreboardState extends State<Scoreboard> {
                                   final barHeightValue = calculateBarHeight(
                                       dayData['value'],
                                       heightFor100PointBarVisual > 0 ? heightFor100PointBarVisual : 0,
-                                      100 // 기준 최대값 (100점)
+                                      100
                                   );
                                   return Column(
                                     mainAxisAlignment: MainAxisAlignment.end,
@@ -376,7 +322,7 @@ class _ScoreboardState extends State<Scoreboard> {
                                       const SizedBox(height: topSizedBoxHeight),
                                       Container(
                                         height: barHeightValue,
-                                        width: barWidth > 0 ? barWidth : 0, // 너비 음수 방지
+                                        width: barWidth > 0 ? barWidth : 0,
                                         decoration: BoxDecoration(
                                           color: accentColor,
                                           borderRadius: const BorderRadius.only(
@@ -396,7 +342,7 @@ class _ScoreboardState extends State<Scoreboard> {
                               ),
                             ),
                           ),
-                          IconButton( // 오른쪽 화살표
+                          IconButton(
                             icon: const Icon(Icons.chevron_right),
                             iconSize: 36.0,
                             padding: EdgeInsets.zero,
@@ -406,19 +352,16 @@ class _ScoreboardState extends State<Scoreboard> {
                             color: canGoForward ? Colors.grey.shade700 : Colors.grey.shade300,
                           ),
                         ],
-
                       ),
                     );
                   },
                 ),
-
               ),
             ),
             const SizedBox(height: 10),
             Flexible(
               flex: 1, // 코멘트 영역 flex 값
               child: Container(
-                // ... (코멘트 UI - 변경 없음) ...
                 padding: const EdgeInsets.all(8.0),
                 child: ListView( 
                   shrinkWrap: true,
@@ -448,19 +391,15 @@ class _ScoreboardState extends State<Scoreboard> {
                     ),
                   ],
                 ),
-
               ),
             ),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-
-        // ... (BottomNavigationBar - 변경 없음) ...
         currentIndex: 0,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
-
         showSelectedLabels: false,
         showUnselectedLabels: false,
         items: const [
