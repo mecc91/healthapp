@@ -1,5 +1,7 @@
+
 // lib/dashboardPage/dashboard.dart
 // Jiwoo님의 UI/UX 및 애니메이션 요소를 Gyuhyeong님의 코드에 통합
+
 
 import 'dart:io'; // XFile을 File로 변환하거나 할 때 필요할 수 있으나, 현재 코드에서는 직접 사용되지 않음.
                  // Jiwoo 코드에서는 _imageFile 상태 변수(File 타입)가 있었으나,
@@ -21,6 +23,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+
   final ImagePicker _picker = ImagePicker();
 
   // Jiwoo 코드에서 가져온 상태 변수들
@@ -30,9 +33,12 @@ class _DashboardState extends State<Dashboard> {
   double _scoreScale = 1.0;
 
   // Gyuhyeong 코드의 핵심 기능: 카메라로 사진 촬영 후 MealRecord 페이지로 XFile 전달
+
   Future<void> _takePicture() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
+
       if (mounted) {
         // Jiwoo 코드의 _navigateWithFade를 사용하여 페이지 이동
         _navigateWithFade(
@@ -40,6 +46,7 @@ class _DashboardState extends State<Dashboard> {
           MealRecord(initialImageFile: pickedFile), // XFile 전달
         );
       }
+
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,7 +56,7 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  // Jiwoo 코드에서 가져온 페이지 전환 함수
+
   void _navigateWithFade(BuildContext context, Widget page) {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -60,13 +67,16 @@ class _DashboardState extends State<Dashboard> {
             child: child,
           );
         },
+
         transitionDuration: const Duration(milliseconds: 300), // 300ms 페이드 효과
+
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+
     // MaterialApp은 main.dart에서 관리하므로 여기서는 Scaffold로 시작
     return Scaffold(
       backgroundColor: Colors.grey.shade100, // Jiwoo 스타일 배경색
@@ -74,16 +84,19 @@ class _DashboardState extends State<Dashboard> {
         children: [
           Container( // 그라데이션 배경
             height: 250, // 그라데이션 영역 높이
+
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
+
                   Color(0xFFFDE68A), // 밝은 Amber
                   Color(0xFFC8E6C9), // 연한 Green
                   Colors.white,      // 하단은 흰색으로 자연스럽게 연결
                 ],
                 stops: [0.0, 0.7, 1.0], // 그라데이션 중단점
+
               ),
             ),
           ),
@@ -91,6 +104,7 @@ class _DashboardState extends State<Dashboard> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+
                   _buildHeader(), // 헤더 위젯
                   _buildDailyStatusCard(), // Daily Status 카드 위젯
                   _buildWeeklyScoreCard(), // Weekly Score 카드 위젯
@@ -173,6 +187,7 @@ class _DashboardState extends State<Dashboard> {
               ),
             ],
           ),
+
         ],
       ),
     );
@@ -193,15 +208,18 @@ class _DashboardState extends State<Dashboard> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+
       child: GestureDetector( // Jiwoo 스타일 탭 애니메이션
         onTapDown: (_) => setState(() => _dailyScale = 0.98), // 미세 조정된 스케일
         onTapUp: (_) {
           setState(() => _dailyScale = 1.0);
           _navigateWithFade(context, const DailyStatus()); // DailyStatus 페이지로 이동
+
         },
         onTapCancel: () => setState(() => _dailyScale = 1.0),
         child: AnimatedScale(
           scale: _dailyScale,
+
           duration: const Duration(milliseconds: 150),
           child: Card( // Jiwoo 스타일 카드
             color: const Color(0xFFFCFCFC), // 카드 배경색
@@ -210,12 +228,14 @@ class _DashboardState extends State<Dashboard> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18), // 모서리 둥글게
               side: BorderSide(color: Colors.grey.shade200, width: 1.0), // 테두리
+
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   const Text(
                     "Daily Status",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
@@ -253,6 +273,7 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     );
                   }).toList(),
+
                 ],
               ),
             ),
@@ -264,7 +285,7 @@ class _DashboardState extends State<Dashboard> {
 
   // Weekly Score 카드 위젯 빌드 함수 (Jiwoo 스타일 적용)
   Widget _buildWeeklyScoreCard() {
-    // Gyuhyeong 코드의 데이터 구조 사용
+
     final scores = [
       {"day": "Monday", "value": 0.6},
       {"day": "Tuesday", "value": 0.3},
@@ -277,15 +298,18 @@ class _DashboardState extends State<Dashboard> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+
       child: GestureDetector( // Jiwoo 스타일 탭 애니메이션
         onTapDown: (_) => setState(() => _scoreScale = 0.98),
         onTapUp: (_) {
           setState(() => _scoreScale = 1.0);
           _navigateWithFade(context, const Scoreboard()); // Scoreboard 페이지로 이동
+
         },
         onTapCancel: () => setState(() => _scoreScale = 1.0),
         child: AnimatedScale(
           scale: _scoreScale,
+
           duration: const Duration(milliseconds: 150),
           child: Card( // Jiwoo 스타일 카드
             color: const Color(0xFFFCFCFC),
@@ -294,12 +318,14 @@ class _DashboardState extends State<Dashboard> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
               side: BorderSide(color: Colors.grey.shade200, width: 1.0),
+
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   const Text(
                     "Weekly Score",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
@@ -344,6 +370,7 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     );
                   }).toList(),
+
                 ],
               ),
             ),

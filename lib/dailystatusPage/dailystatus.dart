@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:healthymeal/dailystatusPage/intakelevel.dart';
+import 'package:healthymeal/dailystatusPage/mealinfo.dart';
 
 class DailyStatus extends StatefulWidget {
   const DailyStatus({super.key});
@@ -7,19 +9,92 @@ class DailyStatus extends StatefulWidget {
   State<DailyStatus> createState() => _DailyStatusState();
 }
 
+class IntakeCriterion {
+  const IntakeCriterion(this.carbonhydrateCriterion, this.proteinCriterion, this.fatCriterion, this.sodiumCriterion, this.celluloseCriterion, this.sugarCriterion, this.cholesterolCriterion);
+  final double carbonhydrateCriterion;
+  final double proteinCriterion;
+  final double fatCriterion;
+  final double sodiumCriterion;
+  final double celluloseCriterion;
+  final double sugarCriterion;
+  final double cholesterolCriterion;
+}
+
+class IntakeData {
+  final String nutrientname;
+  final String intakeunit;
+  final double requiredintake;
+  final double intakeamount;
+  IntakeData(this.nutrientname, this.requiredintake, this.intakeamount, this.intakeunit);
+}
+
 class _DailyStatusState extends State<DailyStatus> {
-  final List<NutrientData> nutrients = const [
-    NutrientData('탄수화물', 20, 12, Color.fromARGB(255, 255, 152, 0)),
-    NutrientData('단백질', 12, 9, Color.fromARGB(255, 76, 175, 86)),
-    NutrientData('지방', 16, 11, Colors.lightGreen),
-    NutrientData('나트륨', 20, 12, Colors.orange),
-    NutrientData('식이섬유', 14, 10, Colors.green),
-    NutrientData('당류', 10, 8, Colors.red),
-    NutrientData('콜레스테롤', 16, 9, Colors.blue),
+
+  final List<MealInfo> _meals = [
+    MealInfo(10.93, 1.45, 0.24, 172, 1.2, 0, 0, 
+      intaketime: DateTime(2025, 05, 12, 07, 30), 
+      mealtype: "Breakfast",
+      intakeamount: 1, 
+      meals: ["콩나물 국밥"],
+    ),
+    MealInfo(20.26, 7, 7.22, 335, 1.8, 0.71, 33.45,
+      intaketime: DateTime(2025, 05, 12, 12, 15),
+      mealtype: "Lunch",
+      intakeamount: 1,
+      meals: ["참치 김밥"],
+    ),
+    MealInfo(25.94, 10.58, 12.29, 595, 0, 6.14, 18.43,
+      intaketime: DateTime(2025, 05, 12, 18, 20),
+      mealtype: "Dinner",
+      intakeamount: 1,
+      meals: ["맥치킨 모짜렐라 버거"],
+    ),
+    MealInfo(50, 4.17, 20.83, 42, 0, 41.67, 20.83,
+      intaketime: DateTime(2025, 05, 12, 20, 32),
+      mealtype: "Snack",
+      intakeamount: 1,
+      meals: ["블루베리 마카롱"],
+    ),
   ];
+
+  final List<IntakeData> _intakes = [];
+  final IntakeCriterion criterion = IntakeCriterion(130, 65, 70, 1500, 30, 65, 300);
+
+  void setIntakeLevel()
+  {
+    double totalcarbon=0; double totalprotein=0; double totalfat=0; double totalsodium=0; double totalcellulose=0; double totalsugar=0; double totalcholesterol=0;
+    for (MealInfo meal in _meals)
+    {
+      totalcarbon += meal.carbonhydrate_g;
+      totalprotein += meal.protein_g;
+      totalfat += meal.fat_g;
+      totalsodium += meal.sodium_mg;
+      totalcellulose += meal.cellulose_g;
+      totalsugar += meal.sugar_g;
+      totalcholesterol += meal.cholesterol_mg;
+    }
+    setState(() {
+      _intakes.clear();
+      _intakes.add(IntakeData("탄수화물", criterion.carbonhydrateCriterion, totalcarbon, "g"));
+      _intakes.add(IntakeData("단백질", criterion.proteinCriterion, totalprotein, "g"));
+      _intakes.add(IntakeData("지방", criterion.fatCriterion, totalfat, "g"));
+      _intakes.add(IntakeData("나트륨", criterion.sodiumCriterion, totalsodium, "mg"));
+      _intakes.add(IntakeData("식이섬유", criterion.celluloseCriterion, totalcellulose, "g"));
+      _intakes.add(IntakeData("당류", criterion.sugarCriterion, totalsugar, "g"));
+      _intakes.add(IntakeData("콜레스테롤", criterion.cholesterolCriterion, totalcholesterol, "mg"));
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // _intakes 멤버 초기화
+    setIntakeLevel();
+  }
 
   @override
   Widget build(BuildContext context) {
+    print("dailystatus build");
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daily Status',
@@ -30,181 +105,34 @@ class _DailyStatusState extends State<DailyStatus> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: nutrients
-              .map((nutrient) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2.5),
-                    child: NutrientBar(nutrient: nutrient),
-                  ))
-              .toList(),
+      body: Container(
+        decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFDE68A), // 밝은 Amber (보통)
+                  Color(0xFFC8E6C9), // 연한 Green (양호)
+                  Colors.white,
+                ],
+                stops: [0.0, 0.7, 1.0],
+              ),
+            ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: _intakes
+                .map((intake) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: IntakeLevel(intake),
+                    ))
+                .toList(),
+          ),
         ),
       ),
-      backgroundColor: Colors.white,
+      //backgroundColor: Colors.white70,
     );
   }
 }
 
-class NutrientData {
-  final String name;
-  final int totalBlocks;
-  final int filledBlocks;
-  final Color color;
-
-  const NutrientData(this.name, this.totalBlocks, this.filledBlocks, this.color);
-}
-
-class NutrientBar extends StatelessWidget {
-  final NutrientData nutrient;
-  final double totalWidth = 300.0;
-  final double baselineRatio = 0.8; // 기준선 위치 비율
-
-  const NutrientBar({super.key, required this.nutrient});
-
-  @override
-  Widget build(BuildContext context) {
-    const double blockHeight = 24.0;
-    const double spacing = 4.0;
-
-    final double blockWidth = (totalWidth - (nutrient.totalBlocks - 1) * spacing) /
-        nutrient.totalBlocks;
-
-    final double baselineLeft = totalWidth * baselineRatio;
-
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                SizedBox(width: 15),
-                Text(
-                  nutrient.name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white
-                ),
-                child: SizedBox(
-                  width: totalWidth,
-                  height: blockHeight + 24, // 블럭 높이 + 수치 공간 확보
-                  child: Stack(
-                    children: [
-                      // 블럭들
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: List.generate(
-                          nutrient.totalBlocks,
-                          (index) => Container(
-                            width: blockWidth,
-                            height: blockHeight,
-                            margin: EdgeInsets.only(
-                              right: index == nutrient.totalBlocks - 1 ? 0 : spacing,
-                            ),
-                            decoration: BoxDecoration(
-                              color: index < nutrient.filledBlocks
-                                  ? nutrient.color
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: index < nutrient.filledBlocks
-                                    ? nutrient.color
-                                    : Colors.black38,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // 기준선
-                      Positioned(
-                        left: baselineLeft - 2,
-                        top: 0,
-                        bottom: 24,
-                        child: Container(
-                          width: 6,
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      // 수치 텍스트 (채워진 끝 위치 기준)
-                      Positioned(
-                        left: nutrient.filledBlocks * (blockWidth + spacing) - blockWidth / 2,
-                        top: blockHeight + 4,
-                        child: Text(
-                          '${nutrient.filledBlocks}/${nutrient.totalBlocks}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-
-            /*Center(
-              child: SizedBox(
-                width: totalWidth,
-                child: Stack(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: List.generate(
-                        nutrient.totalBlocks,
-                        (index) => Container(
-                          width: blockWidth,
-                          height: blockHeight,
-                          margin: EdgeInsets.only(
-                              right: index == nutrient.totalBlocks - 1 ? 0 : spacing),
-                          decoration: BoxDecoration(
-                            color: index < nutrient.filledBlocks
-                                ? nutrient.color
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: index < nutrient.filledBlocks
-                                ? nutrient.color
-                                : Colors.black38,
-                              width: 2
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: baselineLeft - 2,
-                      top: 0,
-                      bottom: 0,
-                      child: Container(
-                        width: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),*/
-          ],
-        ),
-      ),
-    );
-  }
-}

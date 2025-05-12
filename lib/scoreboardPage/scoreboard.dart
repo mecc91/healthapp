@@ -9,8 +9,10 @@ import '../nutrientintakePage/nutrientintake.dart'; // 상세 화면 import 추�
 
 // 기본 테마 색상 정의
 const Color primaryColor = Colors.teal;
+
 const Color accentColor = Colors.redAccent;
 // const double arrowButtonHorizontalSpace = 48.0; // 이 상수는 "avr" 섹션 패딩에 직접 사용되지 않음
+
 
 // --- 데이터 시뮬레이션 설정 ---
 const int weeksOfDataBeforeToday = 4;
@@ -31,6 +33,7 @@ class _ScoreboardState extends State<Scoreboard> {
   late DateTime newestWeekStartDate;
   List<Map<String, dynamic>> currentWeekData = [];
   double currentAverageScore = 0;
+
 
   final List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   final ImagePicker _picker = ImagePicker();
@@ -55,6 +58,7 @@ class _ScoreboardState extends State<Scoreboard> {
     }
   }
 
+
   @override
   void initState() {
     super.initState();
@@ -64,8 +68,10 @@ class _ScoreboardState extends State<Scoreboard> {
   void _initializeDatesAndData() {
     final now = DateTime.now();
     currentWeekStartDate = now.subtract(Duration(days: now.weekday - 1));
+
     oldestWeekStartDate = currentWeekStartDate.subtract(Duration(days: weeksOfDataBeforeToday * 7));
     newestWeekStartDate = currentWeekStartDate.add(Duration(days: weeksOfDataAfterToday * 7));
+
     _loadWeekData(currentWeekStartDate);
   }
 
@@ -78,7 +84,9 @@ class _ScoreboardState extends State<Scoreboard> {
   }
 
   List<Map<String, dynamic>> _getSimulatedWeekData(DateTime startDate) {
+
     final random = Random(startDate.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay);
+
     List<Map<String, dynamic>> weekData = [];
     for (int i = 0; i < 7; i++) {
       weekData.add({
@@ -91,7 +99,8 @@ class _ScoreboardState extends State<Scoreboard> {
 
   double _calculateAverageScore(List<Map<String, dynamic>> data) {
     if (data.isEmpty) return 0;
-    final totalScore = data.map((d) => d['value'] as int).reduce((a, b) => a + b);
+    final totalScore =
+        data.map((d) => d['value'] as int).reduce((a, b) => a + b);
     return totalScore / data.length;
   }
 
@@ -109,37 +118,46 @@ class _ScoreboardState extends State<Scoreboard> {
   }
 
   void _changeWeek(int weeksToAdd) {
-    final targetStartDate = currentWeekStartDate.add(Duration(days: weeksToAdd * 7));
+    final targetStartDate =
+        currentWeekStartDate.add(Duration(days: weeksToAdd * 7));
 
     if (targetStartDate.isBefore(oldestWeekStartDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('더 이상 이전 데이터가 없습니다.'), duration: Duration(seconds: 1)),
+        const SnackBar(
+            content: Text('더 이상 이전 데이터가 없습니다.'),
+            duration: Duration(seconds: 1)),
       );
       return;
     }
     if (targetStartDate.isAfter(newestWeekStartDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('더 이상 다음 데이터가 없습니다.'), duration: Duration(seconds: 1)),
+        const SnackBar(
+            content: Text('더 이상 다음 데이터가 없습니다.'),
+            duration: Duration(seconds: 1)),
       );
       return;
     }
     _loadWeekData(targetStartDate);
   }
 
+
   double calculateBarHeight(int value, double heightFor100PointBar, int referenceMaxValue) {
      if (value <= 0 || referenceMaxValue <= 0 || heightFor100PointBar <= 0) return 0;
      double calculatedHeight = (value / referenceMaxValue.toDouble()) * heightFor100PointBar;
      return max(0, calculatedHeight);
+
   }
 
   @override
   Widget build(BuildContext context) {
     final bool canGoBack = currentWeekStartDate.isAfter(oldestWeekStartDate);
-    final bool canGoForward = currentWeekStartDate.isBefore(newestWeekStartDate);
+    final bool canGoForward =
+        currentWeekStartDate.isBefore(newestWeekStartDate);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Scoreboard", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("Scoreboard",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -151,6 +169,7 @@ class _ScoreboardState extends State<Scoreboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
+
               child: ToggleButtons(
                 // ... (토글 버튼 설정 - 변경 없음) ...
                 isSelected: _isSelectedToggle,
@@ -168,15 +187,25 @@ class _ScoreboardState extends State<Scoreboard> {
                 fillColor: primaryColor,
                 borderColor: Colors.grey.shade300,
                 selectedBorderColor: primaryColor,
-                constraints: const BoxConstraints(minHeight: 35.0, minWidth: 60.0),
+                constraints:
+                    const BoxConstraints(minHeight: 35.0, minWidth: 60.0),
                 children: const [
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 12.0), child: Text("week")),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 12.0), child: Text("month")),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 12.0), child: Text("quater")),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 12.0), child: Text("year")),
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Text("week")),
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Text("month")),
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Text("quater")),
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Text("year")),
                 ],
               ),
             ),
+
             const SizedBox(height: 16),
             Padding( // "avr" 점수 섹션 패딩: 그래프 영역과 시각적 정렬을 위해 좌우 패딩을 0 또는 작은 값으로 설정
               padding: const EdgeInsets.symmetric(horizontal: 0), // 또는 4.0 등 작은 값
@@ -203,8 +232,39 @@ class _ScoreboardState extends State<Scoreboard> {
                                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
                                 ),
                               ],
+
                             ),
+                            const SizedBox(height: 4),
+                            Text(
+                                // 날짜 범위 표시
+                                _formatDateRange(currentWeekStartDate),
+                                style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        OutlinedButton(
+                          // --- 수정된 부분 ---
+                          onPressed: () {
+                            // ScoreboardDetailScreen으로 이동
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const NutrientIntake()),
+                            );
+                          },
+                          // --- 여기까지 ---
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: primaryColor,
+                            side: const BorderSide(color: primaryColor),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            minimumSize: Size.zero,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0)),
                           ),
+
                           const SizedBox(height: 4),
                           Text(
                             _formatDateRange(currentWeekStartDate),
@@ -276,10 +336,12 @@ class _ScoreboardState extends State<Scoreboard> {
 
                     return Container( // 회색 배경 컨테이너
                       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), // 좌우 패딩 최소화 (화살표 공간 확보)
+
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(16),
                       ),
+
                       child: Row( // 화살표와 막대 영역을 포함하는 Row
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -344,10 +406,12 @@ class _ScoreboardState extends State<Scoreboard> {
                             color: canGoForward ? Colors.grey.shade700 : Colors.grey.shade300,
                           ),
                         ],
+
                       ),
                     );
                   },
                 ),
+
               ),
             ),
             const SizedBox(height: 10),
@@ -384,16 +448,19 @@ class _ScoreboardState extends State<Scoreboard> {
                     ),
                   ],
                 ),
+
               ),
             ),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+
         // ... (BottomNavigationBar - 변경 없음) ...
         currentIndex: 0,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
+
         showSelectedLabels: false,
         showUnselectedLabels: false,
         items: const [
