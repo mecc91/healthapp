@@ -48,7 +48,7 @@ class NutrientCommentDisplay extends StatelessWidget {
                     text: dynamicTextPart,
                     style: TextStyle(fontWeight: FontWeight.bold, color: dynamicTextColor),
                   ),
-                  const TextSpan(text: "입니다. ${kDefaultComment}"),
+                  const TextSpan(text: "입니다. $kDefaultComment"),
                 ],
               ),
               textAlign: TextAlign.center,

@@ -49,7 +49,7 @@ class DailyStatusSummaryCard extends StatelessWidget {
           child: Card(
             color: const Color(0xFFFCFCFC),
             elevation: 5,
-            shadowColor: Colors.grey.withOpacity(0.3),
+            shadowColor: Colors.grey.withAlpha(77),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
               side: BorderSide(color: Colors.grey.shade200, width: 1.0),
@@ -95,7 +95,7 @@ class DailyStatusSummaryCard extends StatelessWidget {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
