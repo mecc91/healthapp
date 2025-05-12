@@ -1,144 +1,110 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // 날짜 포맷팅을 위해 추가
-import 'dart:math'; // 랜덤 데이터 생성을 위해 추가
-// import 'dart:io'; // Required for _takePicture -> MealRecord if needed // 필요시 활성화
-import 'package:image_picker/image_picker.dart'; // Required for _takePicture
-import 'package:healthymeal/mealrecordPage/mealrecord.dart'; // For MealRecord page
-import 'package:healthymeal/recommendationPage/recommendation.dart'; // For Recommendation page
-import '../nutrientintakePage/nutrientintake.dart'; // 상세 화면 import 추가
+import 'package:image_picker/image_picker.dart'; // _picker 사용을 위해 필요
+import 'package:healthymeal/mealrecordPage/mealrecord.dart'; // _takePicture에서 사용 (CommonBottomNavBar로 이동 가능)
+import 'package:healthymeal/recommendationPage/recommendation.dart'; // BottomNavBar에서 사용 (CommonBottomNavBar로 이동 가능)
+import '../nutrientintakePage/nutrientintake.dart'; // 상세 보기 버튼에서 사용
 
-// 기본 테마 색상 정의
-const Color primaryColor = Colors.teal;
-const Color accentColor = Colors.redAccent;
+// 분리된 위젯 및 서비스 import
+import 'widgets/scoreboard_period_toggle.dart';
+import 'widgets/average_score_display.dart';
+import 'widgets/weekly_score_chart.dart';
+import 'widgets/score_comment_display.dart';
+import 'services/scoreboard_data_service.dart';
+// import 'scoreboard_constants.dart'; // 각 위젯에서 이미 import 하고 있음
+import '../../widgets/common_bottom_navigation_bar.dart'; // 공통 BottomNavBar
 
-// --- 데이터 시뮬레이션 설정 ---
-const int weeksOfDataBeforeToday = 4;
-const int weeksOfDataAfterToday = 0;
-
-class Scoreboard extends StatefulWidget {
-  const Scoreboard({super.key});
+class ScoreboardScreen extends StatefulWidget {
+  const ScoreboardScreen({super.key});
 
   @override
-  State<Scoreboard> createState() => _ScoreboardState();
+  State<ScoreboardScreen> createState() => _ScoreboardScreenState();
 }
 
-class _ScoreboardState extends State<Scoreboard> {
-  List<bool> _isSelectedToggle = [true, false, false, false];
+class _ScoreboardScreenState extends State<ScoreboardScreen> {
+  List<bool> _isSelectedToggle = [true, false, false, false]; // 주/월/분기/년 선택 상태
 
-  late DateTime currentWeekStartDate;
-  late DateTime oldestWeekStartDate;
-  late DateTime newestWeekStartDate;
-  List<Map<String, dynamic>> currentWeekData = [];
-  double currentAverageScore = 0;
+  late ScoreboardDataService _dataService;
+  List<Map<String, dynamic>> _currentWeekChartData = [];
+  double _currentAverageScore = 0;
+  String _currentDateRangeFormatted = "";
 
-  final List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // ImagePicker 인스턴스는 CommonBottomNavigationBar로 전달하거나,
+  // _takePicture 로직 전체를 CommonBottomNavigationBar 또는 별도 서비스로 옮길 수 있습니다.
+  // 여기서는 CommonBottomNavigationBar에 ImagePicker 인스턴스를 전달하는 방식을 택하겠습니다.
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> _takePicture() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MealRecord(initialImageFile: pickedFile),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('사진 촬영이 취소되었거나 실패했습니다.')),
-        );
-      }
-    }
-  }
 
   @override
   void initState() {
     super.initState();
-    _initializeDatesAndData();
+    _dataService = ScoreboardDataService();
+    _loadDataForDate(_dataService.currentWeekStartDate);
   }
 
-  void _initializeDatesAndData() {
-    final now = DateTime.now();
-    currentWeekStartDate = now.subtract(Duration(days: now.weekday - 1));
-    oldestWeekStartDate = currentWeekStartDate.subtract(Duration(days: weeksOfDataBeforeToday * 7));
-    newestWeekStartDate = currentWeekStartDate.add(Duration(days: weeksOfDataAfterToday * 7));
-    _loadWeekData(currentWeekStartDate);
-  }
-
-  void _loadWeekData(DateTime startDate) {
+  void _loadDataForDate(DateTime startDate) {
     setState(() {
-      currentWeekStartDate = startDate;
-      currentWeekData = _getSimulatedWeekData(startDate);
-      currentAverageScore = _calculateAverageScore(currentWeekData);
+      _currentWeekChartData = _dataService.getSimulatedWeekData(startDate);
+      _currentAverageScore = _dataService.calculateAverageScore(_currentWeekChartData);
+      _currentDateRangeFormatted = _dataService.formatDateRange(startDate);
     });
   }
 
-  List<Map<String, dynamic>> _getSimulatedWeekData(DateTime startDate) {
-    final random = Random(startDate.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay);
-    List<Map<String, dynamic>> weekData = [];
-    for (int i = 0; i < 7; i++) {
-      weekData.add({
-        'day': dayNames[i],
-        'value': random.nextInt(71) + 30, // 30 ~ 100 사이의 점수
+  // _takePicture 로직은 CommonBottomNavigationBar로 옮겨졌으므로 여기서는 제거합니다.
+  // 만약 다른 곳(AppBar 등)에서 카메라 기능이 필요하다면 남겨두거나 별도 서비스로 분리합니다.
+
+  void _handleWeekChangeRequest(int weeksToAdd) {
+    final result = _dataService.changeWeek(weeksToAdd);
+    final DateTime newDisplayDate = result['newDate'];
+    final String? snackBarMessage = result['snackBarMessage'];
+    final bool dateActuallyChanged = result['dateChanged'];
+
+    if (mounted && snackBarMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackBarMessage), duration: const Duration(seconds: 1)),
+      );
+    }
+
+    // 날짜가 실제로 변경되었거나, UI에 표시되는 날짜가 서비스의 현재 날짜와 다르면 데이터 다시 로드
+    if (dateActuallyChanged || _currentDateRangeFormatted != _dataService.formatDateRange(newDisplayDate)) {
+        _loadDataForDate(newDisplayDate);
+    }
+  }
+
+  void _onPeriodToggleChanged(int index) {
+    // 현재는 'week'만 제대로 지원. 다른 기간 선택 시 UI 업데이트 및 데이터 로드 로직 필요.
+    setState(() {
+      for (int i = 0; i < _isSelectedToggle.length; i++) {
+        _isSelectedToggle[i] = (i == index);
+      }
+    });
+
+    if (index == 0) { // 'week' 선택됨
+      _loadDataForDate(_dataService.currentWeekStartDate); // 현재 서비스의 주간 데이터 다시 로드
+    } else {
+      // TODO: 월, 분기, 년 단위 데이터 로딩 및 표시 로직 구현
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('월, 분기, 년 단위 표시는 아직 구현되지 않았습니다.')),
+        );
+      }
+      // 임시로 차트 데이터 비우기
+      setState(() {
+        _currentWeekChartData = [];
+        _currentAverageScore = 0;
+        String periodName = "";
+        if (index == 1) periodName = "월간";
+        else if (index == 2) periodName = "분기별";
+        else if (index == 3) periodName = "연간";
+        _currentDateRangeFormatted = "$periodName 데이터 (미구현)";
       });
     }
-    return weekData;
-  }
-
-  double _calculateAverageScore(List<Map<String, dynamic>> data) {
-    if (data.isEmpty) return 0;
-    final totalScore = data.map((d) => d['value'] as int).reduce((a, b) => a + b);
-    return totalScore / data.length;
-  }
-
-  String _formatDateRange(DateTime startDate) {
-    final endDate = startDate.add(const Duration(days: 6));
-    String formatWithSuffix(DateTime date) {
-      String day = DateFormat('d').format(date);
-      String suffix = 'th';
-      if (day.endsWith('1') && !day.endsWith('11')) suffix = 'st';
-      else if (day.endsWith('2') && !day.endsWith('12')) suffix = 'nd';
-      else if (day.endsWith('3') && !day.endsWith('13')) suffix = 'rd';
-      return "${DateFormat('MMMM').format(date)} ${day}${suffix}";
-    }
-    return "${formatWithSuffix(startDate)} ~ ${formatWithSuffix(endDate)}";
-  }
-
-  void _changeWeek(int weeksToAdd) {
-    final targetStartDate = currentWeekStartDate.add(Duration(days: weeksToAdd * 7));
-
-    if (targetStartDate.isBefore(oldestWeekStartDate)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('더 이상 이전 데이터가 없습니다.'),
-            duration: Duration(seconds: 1)),
-      );
-      return;
-    }
-    if (targetStartDate.isAfter(newestWeekStartDate)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('더 이상 다음 데이터가 없습니다.'),
-            duration: Duration(seconds: 1)),
-      );
-      return;
-    }
-    _loadWeekData(targetStartDate);
-  }
-
-  double calculateBarHeight(int value, double heightFor100PointBar, int referenceMaxValue) {
-    if (value <= 0 || referenceMaxValue <= 0 || heightFor100PointBar <= 0) return 0;
-    double calculatedHeight = (value / referenceMaxValue.toDouble()) * heightFor100PointBar;
-    return max(0, calculatedHeight);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool canGoBack = currentWeekStartDate.isAfter(oldestWeekStartDate);
-    final bool canGoForward = currentWeekStartDate.isBefore(newestWeekStartDate);
+    // 이전/다음 주 이동 가능 여부는 서비스의 날짜 경계를 기준으로 판단
+    final bool canGoBack = _dataService.currentWeekStartDate.isAfter(_dataService.oldestWeekStartDate);
+    final bool canGoForward = _dataService.currentWeekStartDate.isBefore(_dataService.newestWeekStartDate);
 
     return Scaffold(
       appBar: AppBar(
@@ -154,272 +120,39 @@ class _ScoreboardState extends State<Scoreboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: ToggleButtons(
-                isSelected: _isSelectedToggle,
-                onPressed: (int index) {
-                  setState(() {
-                    for (int i = 0; i < _isSelectedToggle.length; i++) {
-                      _isSelectedToggle[i] = false;
-                    }
-                    _isSelectedToggle[index] = true;
-                  });
-                },
-                borderRadius: BorderRadius.circular(8.0),
-                selectedColor: Colors.white,
-                color: Colors.black54,
-                fillColor: primaryColor,
-                borderColor: Colors.grey.shade300,
-                selectedBorderColor: primaryColor,
-                constraints:
-                    const BoxConstraints(minHeight: 35.0, minWidth: 60.0),
-                children: const [
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Text("week")),
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Text("month")),
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Text("quater")),
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Text("year")),
-                ],
-              ),
+            ScoreboardPeriodToggle(
+              isSelected: _isSelectedToggle,
+              onPressed: _onPeriodToggleChanged,
             ),
             const SizedBox(height: 16),
-            Padding( // "avr" 점수 섹션 패딩
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("avr", style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text.rich( // Widget 1 in Column
-                            TextSpan(
-                              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
-                              children: [
-                                TextSpan(text: currentAverageScore.toStringAsFixed(0)),
-                                const TextSpan(
-                                  text: ' point',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-                                ),
-                              ],
-                            ),
-                          ), // Text.rich 끝
-                          const SizedBox(height: 4), // Text.rich의 형제 위젯
-                          Text( // Text.rich의 형제 위젯
-                              _formatDateRange(currentWeekStartDate),
-                              style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      OutlinedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const NutrientIntake()),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: primaryColor, side: const BorderSide(color: primaryColor),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          minimumSize: Size.zero,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                        ),
-                        child: const Text("detail"),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            AverageScoreDisplay(
+              averageScore: _currentAverageScore,
+              dateRangeFormatted: _currentDateRangeFormatted,
+              onDetailPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NutrientIntakeScreen()),
+                );
+              },
             ),
             const SizedBox(height: 12),
-            Expanded(
-              flex: 6, // 그래프 영역 flex 값
-              child: GestureDetector(
-                onHorizontalDragEnd: (details) {
-                  if (details.primaryVelocity! > 100) {
-                    if (canGoBack) _changeWeek(-1);
-                  } else if (details.primaryVelocity! < -100) {
-                    if (canGoForward) _changeWeek(1);
-                  }
-                },
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final double availableHeightForGraphContainer = constraints.maxHeight;
-                    final double availableWidthForGraphContainer = constraints.maxWidth;
-
-                    const double valueTextFontSize = 9.0;
-                    const double dayTextFontSize = 9.0;
-                    const double textLineHeightApproximation = valueTextFontSize * 1.7;
-                    const double topSizedBoxHeight = 1.0;
-                    const double bottomSizedBoxHeight = 1.0;
-                    const double graphContainerVerticalPadding = 8.0 * 2;
-                    const double iconButtonEffectiveWidth = 36.0;
-                    const double horizontalPaddingForBarArea = 5.0 * 2;
-
-                    final double heightFor100PointBarVisual = availableHeightForGraphContainer -
-                        (textLineHeightApproximation * 2) -
-                        topSizedBoxHeight -
-                        bottomSizedBoxHeight -
-                        graphContainerVerticalPadding;
-                    
-                    final double barDisplayAreaWidth = availableWidthForGraphContainer -
-                                                  (iconButtonEffectiveWidth * 2) -
-                                                  horizontalPaddingForBarArea;
-
-                    final double barWidth = barDisplayAreaWidth / (currentWeekData.length * 1.8);
-
-                    return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.chevron_left),
-                            iconSize: 36.0,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            visualDensity: VisualDensity.compact,
-                            onPressed: canGoBack ? () => _changeWeek(-1) : null,
-                            color: canGoBack ? Colors.grey.shade700 : Colors.grey.shade300,
-                          ),
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: currentWeekData.map((dayData) {
-                                  final barHeightValue = calculateBarHeight(
-                                      dayData['value'],
-                                      heightFor100PointBarVisual > 0 ? heightFor100PointBarVisual : 0,
-                                      100
-                                  );
-                                  return Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        "${dayData['value']}",
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: valueTextFontSize)
-                                      ),
-                                      const SizedBox(height: topSizedBoxHeight),
-                                      Container(
-                                        height: barHeightValue,
-                                        width: barWidth > 0 ? barWidth : 0,
-                                        decoration: BoxDecoration(
-                                          color: accentColor,
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(6),
-                                            topRight: Radius.circular(6),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: bottomSizedBoxHeight),
-                                      Text(
-                                        dayData['day'],
-                                        style: const TextStyle(fontSize: dayTextFontSize, fontWeight: FontWeight.bold)
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.chevron_right),
-                            iconSize: 36.0,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            visualDensity: VisualDensity.compact,
-                            onPressed: canGoForward ? () => _changeWeek(1) : null,
-                            color: canGoForward ? Colors.grey.shade700 : Colors.grey.shade300,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+            Expanded( // 그래프 영역이 남은 공간을 최대한 활용하도록 Expanded 사용
+              flex: 6, // 다른 Flexible 위젯과의 공간 비율 조정
+              child: WeeklyScoreChart(
+                weekData: _currentWeekChartData,
+                onChangeWeek: _handleWeekChangeRequest,
+                canGoBack: canGoBack,
+                canGoForward: canGoForward,
               ),
             ),
             const SizedBox(height: 10),
-            Flexible(
-              flex: 1, // 코멘트 영역 flex 값
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                child: ListView( 
-                  shrinkWrap: true,
-                  children: [
-                    Text.rich(
-                      TextSpan(
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black87),
-                        children: const [
-                          TextSpan(text: "이번 주는 전반적으로 양호한 점수를 기록했습니다. 특히 "),
-                          TextSpan(text: "단백질과 식이섬유 ", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                          TextSpan(text: "섭취가 잘 이루어졌습니다. "),
-                        ],
-                      ),
-                       textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text.rich(
-                      TextSpan(
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black87),
-                        children: const [
-                          TextSpan(text: "다만, "),
-                          TextSpan(text: "탄수화물과 나트륨 ", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                          TextSpan(text: "섭취량에 조금 더 주의가 필요해 보입니다. 다음 주에는 균형 잡힌 식단을 유지해 보세요!"),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            const ScoreCommentDisplay(), // 분리된 코멘트 위젯 사용
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart, size: 40), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt, size: 40), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.star_border, size: 40), label: ''),
-        ],
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          if (index == 0) {
-            // 현재 화면
-          } else if (index == 1) {
-            _takePicture();
-          } else if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const Recommendation()),
-            );
-          }
-        },
+      bottomNavigationBar: CommonBottomNavigationBar(
+        currentPage: AppPage.scoreboard, // 현재 페이지가 Scoreboard임을 알림
+        imagePickerInstance: _picker, // 카메라 기능 사용을 위해 ImagePicker 인스턴스 전달
       ),
     );
   }
