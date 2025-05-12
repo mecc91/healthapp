@@ -22,9 +22,10 @@ class IntakeCriterion {
 
 class IntakeData {
   final String nutrientname;
+  final String intakeunit;
   final double requiredintake;
   final double intakeamount;
-  IntakeData(this.nutrientname, this.requiredintake, this.intakeamount);
+  IntakeData(this.nutrientname, this.requiredintake, this.intakeamount, this.intakeunit);
 }
 
 class _DailyStatusState extends State<DailyStatus> {
@@ -74,13 +75,13 @@ class _DailyStatusState extends State<DailyStatus> {
     }
     setState(() {
       _intakes.clear();
-      _intakes.add(IntakeData("탄수화물", criterion.carbonhydrateCriterion, totalcarbon));
-      _intakes.add(IntakeData("단백질", criterion.proteinCriterion, totalprotein));
-      _intakes.add(IntakeData("지방", criterion.fatCriterion, totalfat));
-      _intakes.add(IntakeData("나트륨", criterion.sodiumCriterion, totalsodium));
-      _intakes.add(IntakeData("식이섬유", criterion.celluloseCriterion, totalcellulose));
-      _intakes.add(IntakeData("당류", criterion.sugarCriterion, totalsugar));
-      _intakes.add(IntakeData("콜레스테롤", criterion.cholesterolCriterion, totalcholesterol));
+      _intakes.add(IntakeData("탄수화물", criterion.carbonhydrateCriterion, totalcarbon, "g"));
+      _intakes.add(IntakeData("단백질", criterion.proteinCriterion, totalprotein, "g"));
+      _intakes.add(IntakeData("지방", criterion.fatCriterion, totalfat, "g"));
+      _intakes.add(IntakeData("나트륨", criterion.sodiumCriterion, totalsodium, "mg"));
+      _intakes.add(IntakeData("식이섬유", criterion.celluloseCriterion, totalcellulose, "g"));
+      _intakes.add(IntakeData("당류", criterion.sugarCriterion, totalsugar, "g"));
+      _intakes.add(IntakeData("콜레스테롤", criterion.cholesterolCriterion, totalcholesterol, "mg"));
     });
   }
 

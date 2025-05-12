@@ -14,12 +14,12 @@ class IntakeLevel extends StatefulWidget {
       _totalBlocks = 24;
     }
     double ratio = _intake.intakeamount / _intake.requiredintake;
-    _filledBlockNum = (ratio * _totalBlocks).round();
-    if (ratio < 0.25) {
+    _filledBlockNum = (ratio * (_totalBlocks - (_totalBlocks / 5).round())).round();
+    if (ratio < 0.5) {
       _filledBlockColor = Colors.lightBlue;
-    } else if (ratio < 0.5) {
-      _filledBlockColor = Colors.lightGreen;
     } else if (ratio < 0.75) {
+      _filledBlockColor = Colors.lightGreen;
+    } else if (ratio < 0.9) {
       _filledBlockColor = Colors.orange;
     } else {
       _filledBlockColor = Colors.red;
@@ -71,6 +71,11 @@ class _IntakeLevelState extends State<IntakeLevel> {
                   widget._intake.nutrientname,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                 ),
+                SizedBox(width: 5),
+                Text(
+                  '${widget._intake.intakeamount.round()}${widget._intake.intakeunit}',
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                ),
               ],
             ),
             SizedBox(
@@ -80,7 +85,7 @@ class _IntakeLevelState extends State<IntakeLevel> {
                 children: [
                   // 블럭들
                   Positioned(
-                    top: 10,
+                    top: 12,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: List.generate(
@@ -110,8 +115,8 @@ class _IntakeLevelState extends State<IntakeLevel> {
                   // 기준선
                   Positioned(
                     left: baselineLeft - 2,
-                    top: 10,
-                    bottom: 24,
+                    top: 12,
+                    bottom: 20,
                     child: Container(
                       width: 6,
                       decoration: BoxDecoration(
@@ -120,18 +125,19 @@ class _IntakeLevelState extends State<IntakeLevel> {
                       ),
                     ),
                   ),
-                  // 수치 텍스트 (채워진 끝 위치 기준)
+                  // 섭취기준 텍스트 (채워진 끝 위치 기준)
                   Positioned(
-                    left: (widget._filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 3,
-                    top: _blockHeight + 4 + 8,
+                    left: baselineLeft - 14,
+                    top : -4,
                     child: Text(
-                      '${widget._filledBlockNum}/${widget._totalBlocks - (widget._totalBlocks / 5).round()}',
+                      '${widget._intake.requiredintake.round()}${widget._intake.intakeunit}',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                   ),
-                  // 섭취량 텍스트 (채워진 끝 위치 기준)
+                  // 수치 텍스트 (채워진 끝 위치 기준)
                   Positioned(
-                    top: -4,
+                    left: (widget._filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 3,
+                    top: _blockHeight + 4 + 10,
                     child: Text(
                       '${widget._filledBlockNum}/${widget._totalBlocks - (widget._totalBlocks / 5).round()}',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
