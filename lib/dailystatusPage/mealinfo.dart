@@ -1,9 +1,4 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
-final formatter = DateFormat.yMd();
 
 class MealInfo
 {

@@ -105,19 +105,33 @@ class _DailyStatusState extends State<DailyStatus> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: _intakes
-              .map((intake) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: IntakeLevel(intake),
-                  ))
-              .toList(),
+      body: Container(
+        decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFDE68A), // 밝은 Amber (보통)
+                  Color(0xFFC8E6C9), // 연한 Green (양호)
+                  Colors.white,
+                ],
+                stops: [0.0, 0.7, 1.0],
+              ),
+            ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: _intakes
+                .map((intake) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: IntakeLevel(intake),
+                    ))
+                .toList(),
+          ),
         ),
       ),
-      backgroundColor: Colors.white70,
+      //backgroundColor: Colors.white70,
     );
   }
 }
