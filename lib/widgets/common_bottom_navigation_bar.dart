@@ -5,6 +5,7 @@ import 'package:healthymeal/mealrecordPage/mealrecord.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 // import 'package:healthymeal/dashboardPage/dashboard.dart'; // 필요시 활성화
 import 'package:healthymeal/underconstructionPage/underconstruction.dart';
+import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
 
 // 현재 페이지를 나타내는 enum (탭 인덱스 관리용)
 enum AppPage { scoreboard, cameraTrigger, recommendation, dashboard } // 'cameraTrigger'는 탭을 의미
@@ -78,8 +79,17 @@ class CommonBottomNavigationBar extends StatelessWidget {
         if (index == currentIndex && index != 1) {
             // Scoreboard 화면에서 Scoreboard 탭을 누른 경우, Dashboard로 돌아가는 로직 등
             // 특별한 동작이 필요하면 여기에 추가. 현재는 아무것도 안함.
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MealDiaryScreen(
+                  // Pass the specific date you want to show, e.g., 2025-04-02
+                  displayDate: DateTime(2025, 4, 2),
+                ),
+              ),
+            );
             return;
-        }
+          }
 
         switch (index) {
           case 0: // Scoreboard
