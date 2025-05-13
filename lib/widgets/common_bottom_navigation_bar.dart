@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
-import 'package:healthymeal/recommendationPage/recommendation.dart';
+// import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 // import 'package:healthymeal/dashboardPage/dashboard.dart'; // 필요시 활성화
+import 'package:healthymeal/underconstructionPage/underconstruction.dart';
 
 // 현재 페이지를 나타내는 enum (탭 인덱스 관리용)
 enum AppPage { scoreboard, cameraTrigger, recommendation, dashboard } // 'cameraTrigger'는 탭을 의미
@@ -99,7 +100,7 @@ class CommonBottomNavigationBar extends StatelessWidget {
                 // Recommendation 페이지로 이동
                 Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Recommendation()),
+                    MaterialPageRoute(builder: (context) => const Underconstruction()),
                 );
             }
             break;
