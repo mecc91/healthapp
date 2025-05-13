@@ -5,6 +5,7 @@ import 'package:healthymeal/mealrecordPage/mealrecord.dart';
 import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
+import 'package:healthymeal/underconstructionPage/underconstruction.dart';
 
 // 분리된 위젯 import
 import 'widgets/dashboard_header.dart';
@@ -69,7 +70,7 @@ class _DashboardState extends State<Dashboard> {
     } else if (index == 1) {
       _takePicture();
     } else if (index == 2) {
-      _navigateWithFade(context, const Recommendation());
+      _navigateWithFade(context, const MenuRecommendScreen());
     }
   }
 
@@ -103,12 +104,12 @@ class _DashboardState extends State<Dashboard> {
                     onAvatarTapDown: (_) => setState(() => _avatarScale = 0.85),
                     onAvatarTapUp: (_) {
                       setState(() => _avatarScale = 1.0);
-                      _navigateWithFade(context, const Recommendation());
+                      _navigateWithFade(context, const Underconstruction());
                     },
                     onAvatarTapCancel: () =>
                         setState(() => _avatarScale = 1.0),
                     onNotificationsPressed: () {
-                      _navigateWithFade(context, const Recommendation());
+                      _navigateWithFade(context, const Underconstruction());
                       // 알림 버튼 기능 (추후 구현)
                     },
                   ),
