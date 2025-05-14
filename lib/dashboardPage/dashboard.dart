@@ -6,11 +6,13 @@ import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 import 'package:healthymeal/underconstructionPage/underconstruction.dart';
+import 'package:intl/intl.dart'; // 날짜 포맷을 위해 추가
 
 // 분리된 위젯 import
 import 'widgets/dashboard_header.dart';
 import 'widgets/daily_status_summary_card.dart';
 import 'widgets/weekly_score_summary_card.dart';
+import 'widgets/meal_diary_card.dart'; // <<< 새 카드 import
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -26,6 +28,14 @@ class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 1; // 초기 선택 인덱스를 카메라(1)로 설정
   double _dailyCardScale = 1.0;
   double _scoreCardScale = 1.0;
+  // double _mealDiaryCardScale = 1.0; // 필요시 탭 애니메이션을 위한 스케일 변수
+
+  // 현재 날짜를 가져와 포맷팅하는 함수
+  String getCurrentDateFormatted() {
+    final now = DateTime.now();
+    final formatter = DateFormat('yyyy-MM-dd');
+    return formatter.format(now);
+  }
 
   Future<void> _takePicture() async {
     final XFile? pickedFile =
@@ -76,6 +86,8 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final String currentDate = getCurrentDateFormatted(); // 현재 날짜 가져오기
+
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       body: Stack(
@@ -110,7 +122,6 @@ class _DashboardState extends State<Dashboard> {
                         setState(() => _avatarScale = 1.0),
                     onNotificationsPressed: () {
                       _navigateWithFade(context, const Underconstruction());
-                      // 알림 버튼 기능 (추후 구현)
                     },
                   ),
                   DailyStatusSummaryCard(
@@ -131,6 +142,8 @@ class _DashboardState extends State<Dashboard> {
                     },
                     onTapCancel: () => setState(() => _scoreCardScale = 1.0),
                   ),
+                  MealDiaryCard(diaryDate: currentDate), // <<< 새 카드 추가 및 날짜 전달
+                  const SizedBox(height: 20), // 하단 여백 추가
                 ],
               ),
             ),
