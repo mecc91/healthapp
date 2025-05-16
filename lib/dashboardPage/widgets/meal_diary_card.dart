@@ -27,14 +27,16 @@ class MealDiaryCard extends StatelessWidget {
       time: '13:04',
       menu: '짜장면',
       intake: '600g',
-      notes: '오늘 아침은 평소보다 따뜻하게 먹고 싶어서 동네 중국집에서 짜장면을 포장해왔다. 살짝 매콤하긴 했지만 면도 쫄깃하고 양파랑 고기도 적당히 들어있어서 만족스러웠다. 다음엔 계란 후라이 하나 올려 먹으면 더 좋을 것 같다.',
+      notes:
+          '오늘 아침은 평소보다 따뜻하게 먹고 싶어서 동네 중국집에서 짜장면을 포장해왔다. 살짝 매콤하긴 했지만 면도 쫄깃하고 양파랑 고기도 적당히 들어있어서 만족스러웠다. 다음엔 계란 후라이 하나 올려 먹으면 더 좋을 것 같다.',
       imagePath: 'assets/image/placeholder_meal.png', // 실제 이미지 경로로 변경 필요
     ),
     MealEntry(
       time: '20:14',
       menu: '짜장면', // 이미지에는 치킨이 있지만, 텍스트는 짜장면으로 되어 있어 텍스트를 따름
       intake: '600g',
-      notes: '저녁엔 친구들이랑 황금올리브 치킨을 시켜서 먹었다. 겉은 바삭하고 속은 촉촉해서 늘 먹어도 맛있다. 소스 없이도 짜지지도 않고 혼자 반 마리 정도는 충분히 먹는 느낌. 야채나 샐러드가 없어 좀 아쉽긴 했지만, 맛있게 먹었다!',
+      notes:
+          '저녁엔 친구들이랑 황금올리브 치킨을 시켜서 먹었다. 겉은 바삭하고 속은 촉촉해서 늘 먹어도 맛있다. 소스 없이도 짜지지도 않고 혼자 반 마리 정도는 충분히 먹는 느낌. 야채나 샐러드가 없어 좀 아쉽긴 했지만, 맛있게 먹었다!',
       imagePath: 'assets/image/placeholder_meal_2.png', // 실제 이미지 경로로 변경 필요
     ),
     MealEntry(
@@ -94,7 +96,7 @@ class MealDiaryCard extends StatelessWidget {
             children: [
               Text(
                 // "$diaryDate 식단 일기", // 날짜를 동적으로 표시
-                "식단 일기 요약 (${diaryDate})",
+                "식단 일기 요약 ($diaryDate)",
                 style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -114,17 +116,20 @@ class MealDiaryCard extends StatelessWidget {
               else
                 ListView.separated(
                   shrinkWrap: true, // Column 내부에서 ListView가 올바르게 작동하도록 설정
-                  physics: const NeverScrollableScrollPhysics(), // ListView 자체 스크롤 비활성화
+                  physics:
+                      const NeverScrollableScrollPhysics(), // ListView 자체 스크롤 비활성화
                   itemCount: recentEntries.length,
                   itemBuilder: (context, index) {
                     final entry = recentEntries[index];
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0), // 항목 간 간격 증가
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12.0), // 항목 간 간격 증가
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(12.0), // 이미지 모서리 둥글게
+                            borderRadius:
+                                BorderRadius.circular(12.0), // 이미지 모서리 둥글게
                             child: Image.asset(
                               entry.imagePath, // 동적 경로 사용
                               width: 100, // 이미지 크기 조정
@@ -187,7 +192,8 @@ class MealDiaryCard extends StatelessWidget {
                                     height: 1.4, // 줄 간격 조정
                                   ),
                                   maxLines: 3, // 메모 표시 줄 수 제한
-                                  overflow: TextOverflow.ellipsis, // 내용이 넘칠 경우 ... 처리
+                                  overflow:
+                                      TextOverflow.ellipsis, // 내용이 넘칠 경우 ... 처리
                                 ),
                               ],
                             ),

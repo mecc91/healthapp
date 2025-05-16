@@ -20,7 +20,7 @@ class DailyStatusSummaryCard extends StatelessWidget {
   ];
 
   const DailyStatusSummaryCard({
-    super.key,
+    super.key, //애니매이션 강제 리부트트
     required this.scale,
     required this.onTapDown,
     required this.onTapUp,
