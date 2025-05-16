@@ -92,15 +92,7 @@ class CommonBottomNavigationBar extends StatelessWidget {
         if (index == currentIndex && index != 1 && index != 2) { // recommendation (index 2) 제외
             // Scoreboard 화면에서 Scoreboard 탭을 누른 경우, Dashboard로 돌아가는 로직 등
             // 특별한 동작이 필요하면 여기에 추가.
-            // 예시: Dashboard (MealDiaryScreen)로 이동
-            if (index == 0 && currentPage == AppPage.scoreboard) { // Scoreboard 탭을 Scoreboard 화면에서 누른 경우
-                 Navigator.pushAndRemoveUntil( // 예시: Dashboard로 이동하고 이전 기록 지우기
-                    context,
-                    MaterialPageRoute(builder: (context) => MealDiaryScreen(displayDate: DateTime.now())), // 현재 날짜로 Diary 보기
-                    (Route<dynamic> route) => false,
-                );
-                return;
-            }
+            
             return;
           }
 

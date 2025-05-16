@@ -69,140 +69,148 @@ class MealDiaryCard extends StatelessWidget {
   ];
 
   final String diaryDate; // 식단 일기 날짜
+  final VoidCallback? onTap; // <<< MODIFIED: Added onTap callback
 
-  MealDiaryCard({super.key, this.diaryDate = "날짜 정보 없음"}); // 기본값 설정
+  MealDiaryCard({
+    super.key,
+    this.diaryDate = "날짜 정보 없음",
+    this.onTap, // <<< MODIFIED: Added to constructor
+  });
 
   @override
   Widget build(BuildContext context) {
     // 최근 5개 항목만 표시 (또는 데이터가 5개 미만이면 그만큼만)
     final recentEntries = mealEntries.take(5).toList();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      child: Card(
-        color: const Color(0xFFFCFCFC), // 기존 카드와 유사한 배경색
-        elevation: 5,
-        shadowColor: Colors.grey.withAlpha(77),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: Colors.grey.shade200, width: 1.0),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                // "$diaryDate 식단 일기", // 날짜를 동적으로 표시
-                "식단 일기 요약 (${diaryDate})",
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
-              ),
-              const SizedBox(height: 16),
-              if (recentEntries.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20.0),
-                    child: Text(
-                      "최근 식단 기록이 없습니다.",
-                      style: TextStyle(fontSize: 15, color: Colors.black54),
+    return GestureDetector( // <<< MODIFIED: Wrapped with GestureDetector
+      onTap: onTap,       // <<< MODIFIED: Assigned onTap
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Card(
+          color: const Color(0xFFFCFCFC), // 기존 카드와 유사한 배경색
+          elevation: 5,
+          shadowColor: Colors.grey.withAlpha(77),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: Colors.grey.shade200, width: 1.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  // "$diaryDate 식단 일기", // 날짜를 동적으로 표시
+                  "식단 일기 요약 (${diaryDate})",
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
+                ),
+                const SizedBox(height: 16),
+                if (recentEntries.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20.0),
+                      child: Text(
+                        "최근 식단 기록이 없습니다.",
+                        style: TextStyle(fontSize: 15, color: Colors.black54),
+                      ),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true, // Column 내부에서 ListView가 올바르게 작동하도록 설정
+                    physics: const NeverScrollableScrollPhysics(), // ListView 자체 스크롤 비활성화
+                    itemCount: recentEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = recentEntries[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0), // 항목 간 간격 증가
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12.0), // 이미지 모서리 둥글게
+                              child: Image.asset(
+                                entry.imagePath, // 동적 경로 사용
+                                width: 100, // 이미지 크기 조정
+                                height: 100,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // 이미지 로드 실패 시 플레이스홀더 아이콘 표시
+                                  return Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade200,
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    child: Icon(
+                                      Icons.restaurant_menu, // 식단 관련 아이콘
+                                      color: Colors.grey.shade400,
+                                      size: 40,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 16), // 이미지와 텍스트 사이 간격
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.time,
+                                    style: const TextStyle(
+                                      fontSize: 17, // 시간 폰트 크기 조정
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6), // 시간과 메뉴 사이 간격
+                                  Text(
+                                    "Menu: ${entry.menu}",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600, // 메뉴 텍스트 굵게
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "섭취량: ${entry.intake}",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    entry.notes,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                      height: 1.4, // 줄 간격 조정
+                                    ),
+                                    maxLines: 3, // 메모 표시 줄 수 제한
+                                    overflow: TextOverflow.ellipsis, // 내용이 넘칠 경우 ... 처리
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, index) => Divider(
+                      color: Colors.grey.shade200, // 구분선 색상 연하게
+                      thickness: 1, // 구분선 두께
+                      height: 24, // 구분선 위아래 간격
                     ),
                   ),
-                )
-              else
-                ListView.separated(
-                  shrinkWrap: true, // Column 내부에서 ListView가 올바르게 작동하도록 설정
-                  physics: const NeverScrollableScrollPhysics(), // ListView 자체 스크롤 비활성화
-                  itemCount: recentEntries.length,
-                  itemBuilder: (context, index) {
-                    final entry = recentEntries[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0), // 항목 간 간격 증가
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12.0), // 이미지 모서리 둥글게
-                            child: Image.asset(
-                              entry.imagePath, // 동적 경로 사용
-                              width: 100, // 이미지 크기 조정
-                              height: 100,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                // 이미지 로드 실패 시 플레이스홀더 아이콘 표시
-                                return Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade200,
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  child: Icon(
-                                    Icons.restaurant_menu, // 식단 관련 아이콘
-                                    color: Colors.grey.shade400,
-                                    size: 40,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16), // 이미지와 텍스트 사이 간격
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  entry.time,
-                                  style: const TextStyle(
-                                    fontSize: 17, // 시간 폰트 크기 조정
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 6), // 시간과 메뉴 사이 간격
-                                Text(
-                                  "Menu: ${entry.menu}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600, // 메뉴 텍스트 굵게
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "섭취량: ${entry.intake}",
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  entry.notes,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.black54,
-                                    height: 1.4, // 줄 간격 조정
-                                  ),
-                                  maxLines: 3, // 메모 표시 줄 수 제한
-                                  overflow: TextOverflow.ellipsis, // 내용이 넘칠 경우 ... 처리
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) => Divider(
-                    color: Colors.grey.shade200, // 구분선 색상 연하게
-                    thickness: 1, // 구분선 두께
-                    height: 24, // 구분선 위아래 간격
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

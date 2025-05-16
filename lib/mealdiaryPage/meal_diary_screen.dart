@@ -34,11 +34,11 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
 
   void _loadEntriesForDate(DateTime date) {
     // Simulate fetching data for 2025-04-02
-    // Replace with your actual data fetching logic
-    if (DateFormat('yyyy-MM-dd').format(date) == '2025-04-02') {
+    // Replace with your actual data fetching logic and actual asset paths
+    if (DateFormat('yyyy-MM-dd').format(date) == '2025-05-16') {
       _diaryEntries = [
         MealDiaryEntry(
-          imageUrl: 'https://picsum.photos/seed/jjm/300/300', // Placeholder Jajangmyeon
+          imagePath: 'assets/image/jajangmyeon.jpg', // MODIFIED: Placeholder asset path
           time: '13:04',
           menuName: '짜장면',
           intakeAmount: '600g',
@@ -46,15 +46,17 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
           dateTime: DateTime(2025, 4, 2, 13, 4),
         ),
         MealDiaryEntry(
-          imageUrl: 'https://picsum.photos/seed/chicken/300/300', // Placeholder Fried Chicken
+          imagePath: 'assets/image/chicken.jpg', // MODIFIED: Placeholder asset path
           time: '20:14',
-          menuName: '짜장면', // Image shows chicken, but text says 짜장면. Using text from image. You might want to correct this based on the image if needed.
-          intakeAmount: '600g',
+          // menuName: '짜장면', // Image shows chicken, but text says 짜장면. Using text from image. You might want to correct this based on the image if needed.
+          // For consistency, let's assume the menuName should reflect the image if we are changing it to a local asset.
+          menuName: '후라이드 치킨', // MODIFIED for clarity
+          intakeAmount: '600g', // This might also need adjustment if menuName changes
           notes: '저녁엔 친구들이랑 황금올리브 치킨을 시켜 먹었다. 겉은 바삭하고 속은 촉촉해서 역시 맛있었다. 소스 없이도 짜지 않고 혼자 반 마리 정도는 충분히 먹는 느낌. 양배추 샐러드가 없어 좀 아쉽긴 했지만, 맛있게 먹었다!',
           dateTime: DateTime(2025, 4, 2, 20, 14),
         ),
          MealDiaryEntry(
-          imageUrl: 'https://picsum.photos/seed/bibimbap/300/300', // Placeholder 3
+          imagePath: 'assets/image/bibimbap.jpg', // MODIFIED: Placeholder asset path
           time: '08:30',
           menuName: '비빔밥',
           intakeAmount: '450g',

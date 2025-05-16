@@ -7,12 +7,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 import 'package:healthymeal/underconstructionPage/underconstruction.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷을 위해 추가
+import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart'; // <<< MODIFIED: Added import
 
 // 분리된 위젯 import
 import 'widgets/dashboard_header.dart';
 import 'widgets/daily_status_summary_card.dart';
 import 'widgets/weekly_score_summary_card.dart';
-import 'widgets/meal_diary_card.dart'; // <<< 새 카드 import
+import 'widgets/meal_diary_card.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -28,7 +29,7 @@ class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 1; // 초기 선택 인덱스를 카메라(1)로 설정
   double _dailyCardScale = 1.0;
   double _scoreCardScale = 1.0;
-  // double _mealDiaryCardScale = 1.0; // 필요시 탭 애니메이션을 위한 스케일 변수
+  double _mealDiaryCardScale = 1.0; // <<< ADDED: For tap animation on MealDiaryCard
 
   // 현재 날짜를 가져와 포맷팅하는 함수
   String getCurrentDateFormatted() {
@@ -86,7 +87,14 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final String currentDate = getCurrentDateFormatted(); // 현재 날짜 가져오기
+    final String currentDateString = getCurrentDateFormatted(); // 현재 날짜 가져오기 (String)
+    DateTime currentDateAsDateTime; // For MealDiaryScreen
+    try {
+      currentDateAsDateTime = DateFormat('yyyy-MM-dd').parse(currentDateString);
+    } catch (e) {
+      currentDateAsDateTime = DateTime.now(); // Fallback
+    }
+
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -142,7 +150,28 @@ class _DashboardState extends State<Dashboard> {
                     },
                     onTapCancel: () => setState(() => _scoreCardScale = 1.0),
                   ),
-                  MealDiaryCard(diaryDate: currentDate), // <<< 새 카드 추가 및 날짜 전달
+                  // <<< MODIFIED: Added onTap logic for MealDiaryCard >>>
+                  GestureDetector(
+                    onTapDown: (_) => setState(() => _mealDiaryCardScale = 0.98),
+                    onTapUp: (_) {
+                      setState(() => _mealDiaryCardScale = 1.0);
+                      _navigateWithFade(context, MealDiaryScreen(displayDate: currentDateAsDateTime));
+                    },
+                    onTapCancel: () => setState(() => _mealDiaryCardScale = 1.0),
+                    child: AnimatedScale(
+                      scale: _mealDiaryCardScale,
+                      duration: const Duration(milliseconds: 150),
+                      child: MealDiaryCard(
+                        diaryDate: currentDateString,
+                        // The onTap is now handled by the parent GestureDetector for animation consistency
+                        // If you prefer MealDiaryCard to handle its own navigation without dashboard-level scale animation,
+                        // you can revert to passing the onTap directly:
+                        // onTap: () {
+                        //  _navigateWithFade(context, MealDiaryScreen(displayDate: currentDateAsDateTime));
+                        // },
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20), // 하단 여백 추가
                 ],
               ),
