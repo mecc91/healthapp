@@ -23,36 +23,32 @@ class MealDiaryCard extends StatelessWidget {
           // Image on the left
           ClipRRect(
             borderRadius: BorderRadius.circular(12.0),
-            child: Image.network(
-              entry.imageUrl,
+            child: Image.asset( // MODIFIED: Was Image.network
+              entry.imagePath,  // MODIFIED: Was entry.imageUrl
               width: imageSize,
               height: imageSize,
               fit: BoxFit.cover,
-              // Add placeholder and error handling for network images
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  width: imageSize,
-                  height: imageSize,
-                  color: Colors.grey[300],
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                      strokeWidth: 2.0,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                );
-              },
+              // MODIFIED: loadingBuilder is not directly applicable to Image.asset in the same way.
+              // Image.asset loads quickly from local assets. If you need a frameBuilder for custom effects:
+              // frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              //   if (wasSynchronouslyLoaded) {
+              //     return child;
+              //   }
+              //   return AnimatedOpacity(
+              //     opacity: frame == null ? 0 : 1,
+              //     duration: const Duration(seconds: 1),
+              //     curve: Curves.easeOut,
+              //     child: child,
+              //   );
+              // },
               errorBuilder: (context, error, stackTrace) {
+                // This will be called if the asset is not found or is corrupted
+                print('Error loading asset: ${entry.imagePath}, Error: $error');
                 return Container(
                   width: imageSize,
                   height: imageSize,
                   color: Colors.grey[300],
-                  child: Icon(Icons.broken_image, color: Colors.grey[600]),
+                  child: Icon(Icons.broken_image, color: Colors.grey[600], size: imageSize * 0.5),
                 );
               },
             ),
