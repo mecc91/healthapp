@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/intakelevel.dart';
-import 'package:healthymeal/dailystatusPage/mealinfo.dart';
+import 'package:healthymeal/models/mealinfo.dart';
 
 class DailyStatus extends StatefulWidget {
   const DailyStatus({super.key});

@@ -1,5 +1,8 @@
 // import 'package:flutter/material.dart';
 
+// 
+
+
 class MealInfo
 {
   MealInfo(this.carbonhydrate_g, this.protein_g, this.fat_g, this.sodium_mg, this.cellulose_g, this.sugar_g, this.cholesterol_mg, {

@@ -133,10 +133,6 @@ class _MealRecordState extends State<MealRecord> {
     }
   }
 
-  Future<void> _retakePictureAndAnalyze() async {
-    await _pickImageAndAnalyze(ImageSource.camera);
-  }
-
   Future<void> _analyzeImage(String? imagePath) async {
     if (imagePath == null || imagePath.isEmpty) {
       _resetMenuAnalysisStateOnError(errorMessage: MealRecordStrings.statusImagePathError);
@@ -504,7 +500,7 @@ class _MealRecordState extends State<MealRecord> {
           Tooltip(
             message: MealRecordStrings.retakeTooltip,
             child: OutlinedButton(
-              onPressed: _isAnalyzingMenu ? null : _retakePictureAndAnalyze,
+              onPressed: _isAnalyzingMenu ? null : () => _pickImageAndAnalyze(ImageSource.camera),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.teal,
                 backgroundColor: Colors.teal.shade50,
@@ -575,7 +571,7 @@ class _MealRecordState extends State<MealRecord> {
         ),
         title: const Text(
           MealRecordStrings.appBarTitle,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
