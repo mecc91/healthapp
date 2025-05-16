@@ -1,15 +1,14 @@
-// lib/nutrientintakePage/widgets/nutrient_weekly_chart.dart
 import 'package:flutter/material.dart';
 import '../nutrient_intake_constants.dart';
-import '../services/nutrient_intake_data_service.dart'; // For calculateBarHeight
+import '../services/nutrient_intake_data_service.dart';
 
-class NutrientWeeklyChart extends StatelessWidget {
+class NutrientWeeklyChart extends StatefulWidget {
   final List<Map<String, dynamic>> weekData;
-  final Function(int) onChangeWeek; // Callback for week change
-  final Function(int) onChangeNutrientViaSwipe; // Callback for nutrient change via vertical swipe
+  final Function(int) onChangeWeek;
+  final Function(int) onChangeNutrientViaSwipe;
   final bool canGoBack;
   final bool canGoForward;
-  final bool isWeekPeriodSelected; // To enable/disable week change interactions
+  final bool isWeekPeriodSelected;
 
   const NutrientWeeklyChart({
     super.key,
@@ -22,123 +21,193 @@ class NutrientWeeklyChart extends StatelessWidget {
   });
 
   @override
+  State<NutrientWeeklyChart> createState() => _NutrientWeeklyChartState();
+}
+
+class _NutrientWeeklyChartState extends State<NutrientWeeklyChart>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.forward(from: 0);
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant NutrientWeeklyChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.weekData != widget.weekData) {
+      _controller.forward(from: 0); // 데이터 바뀌면 애니메이션 재실행
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final int maxValueInCurrentWeek = weekData.isEmpty
-        ? 100 // Default max value to prevent division by zero if data is empty
-        : weekData.map((d) => d['value'] as int).fold(0, (max, current) => current > max ? current : max);
+    final int maxValue = widget.weekData.isEmpty
+        ? 100
+        : widget.weekData
+            .map((d) => d['value'] as int)
+            .reduce((a, b) => a > b ? a : b);
 
     return GestureDetector(
       onHorizontalDragEnd: (details) {
-        if (isWeekPeriodSelected && details.primaryVelocity != null) {
-          if (details.primaryVelocity! > 100) { // Swipe Right (Previous week)
-            if (canGoBack) onChangeWeek(-1);
-          } else if (details.primaryVelocity! < -100) { // Swipe Left (Next week)
-            if (canGoForward) onChangeWeek(1);
+        if (widget.isWeekPeriodSelected && details.primaryVelocity != null) {
+          if (details.primaryVelocity! > 100 && widget.canGoBack) {
+            widget.onChangeWeek(-1);
+          } else if (details.primaryVelocity! < -100 && widget.canGoForward) {
+            widget.onChangeWeek(1);
           }
         }
       },
       onVerticalDragEnd: (details) {
         if (details.primaryVelocity != null) {
-          if (details.primaryVelocity! > 200) { // Swipe Down
-            onChangeNutrientViaSwipe(1); // Or -1 depending on desired direction
-          } else if (details.primaryVelocity! < -200) { // Swipe Up
-            onChangeNutrientViaSwipe(-1); // Or 1
+          if (details.primaryVelocity! > 200) {
+            widget.onChangeNutrientViaSwipe(1);
+          } else if (details.primaryVelocity! < -200) {
+            widget.onChangeNutrientViaSwipe(-1);
           }
         }
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final double availableHeightForGraphContainer = constraints.maxHeight;
-          final double availableWidthForGraphContainer = constraints.maxWidth;
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double maxBarHeight = constraints.maxHeight -
+                  (kGraphTextLineHeightApproximation * 2) -
+                  kGraphTopSizedBoxHeight -
+                  kGraphBottomSizedBoxHeight -
+                  kGraphContainerVerticalPadding;
 
-          final double maxVisualBarHeight = availableHeightForGraphContainer -
-              (kGraphTextLineHeightApproximation * 2) -
-              kGraphTopSizedBoxHeight -
-              kGraphBottomSizedBoxHeight -
-              kGraphContainerVerticalPadding;
+              final double barWidth = widget.weekData.isEmpty
+                  ? 0
+                  : constraints.maxWidth / (widget.weekData.length * 3.0);
 
-          final double barWidth = weekData.isEmpty
-              ? 0
-              : availableWidthForGraphContainer / (weekData.length * 3.0); // Adjusted ratio
-
-          return Container(
-            decoration: BoxDecoration(
-              color: kNutrientIntakeGraphBackgroundColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.symmetric(
-                vertical: kGraphContainerVerticalPadding / 2, horizontal: 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  iconSize: 36.0,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: isWeekPeriodSelected && canGoBack ? () => onChangeWeek(-1) : null,
-                  color: isWeekPeriodSelected && canGoBack
-                      ? Colors.grey.shade700
-                      : Colors.grey.shade300,
+              return Container(
+                decoration: BoxDecoration(
+                  color: kNutrientIntakeGraphBackgroundColor,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: weekData.map((dayData) {
-                        final barHeightValue = NutrientIntakeDataService.calculateBarHeight(
-                          dayData['value'],
-                          maxVisualBarHeight > 0 ? maxVisualBarHeight : 0,
-                          maxValueInCurrentWeek,
-                        );
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              "${dayData['value']}",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: kGraphValueTextFontSize),
-                            ),
-                            const SizedBox(height: kGraphTopSizedBoxHeight),
-                            Container(
-                              height: barHeightValue,
-                              width: barWidth > 0 ? barWidth : 0,
-                              decoration: BoxDecoration(
-                                color: kNutrientIntakeGraphAccentColor,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(6),
-                                  topRight: Radius.circular(6),
+                padding: const EdgeInsets.symmetric(
+                    vertical: kGraphContainerVerticalPadding / 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      iconSize: 36.0,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: widget.isWeekPeriodSelected && widget.canGoBack
+                          ? () => widget.onChangeWeek(-1)
+                          : null,
+                      color: widget.isWeekPeriodSelected && widget.canGoBack
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade300,
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: widget.weekData.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final data = entry.value;
+                          final barHeight =
+                              NutrientIntakeDataService.calculateBarHeight(
+                            data['value'],
+                            maxBarHeight,
+                            maxValue,
+                          );
+
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                "${data['value']}",
+                                style: const TextStyle(
+                                  fontSize: kGraphValueTextFontSize,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: kGraphBottomSizedBoxHeight),
-                            Text(
-                              dayData['day'],
-                              style: const TextStyle(
-                                  fontSize: kGraphDayTextFontSize, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        );
-                      }).toList(),
+                              const SizedBox(height: kGraphTopSizedBoxHeight),
+                              TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0.0, end: barHeight),
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, animatedHeight, child) {
+                                  return Container(
+                                    height: animatedHeight,
+                                    width: barWidth,
+                                    decoration: BoxDecoration(
+                                      color: kNutrientIntakeGraphAccentColor,
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(6),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(
+                                  height: kGraphBottomSizedBoxHeight),
+                              Text(
+                                data['day'],
+                                style: const TextStyle(
+                                  fontSize: kGraphDayTextFontSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
                     ),
-                  ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      iconSize: 36.0,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed:
+                          widget.isWeekPeriodSelected && widget.canGoForward
+                              ? () => widget.onChangeWeek(1)
+                              : null,
+                      color: widget.isWeekPeriodSelected && widget.canGoForward
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade300,
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  iconSize: 36.0,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: isWeekPeriodSelected && canGoForward ? () => onChangeWeek(1) : null,
-                  color: isWeekPeriodSelected && canGoForward
-                      ? Colors.grey.shade700
-                      : Colors.grey.shade300,
-                ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

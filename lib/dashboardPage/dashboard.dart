@@ -1,4 +1,3 @@
-// lib/dashboardPage/dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
@@ -6,10 +5,11 @@ import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 import 'package:healthymeal/underconstructionPage/underconstruction.dart';
-import 'package:intl/intl.dart'; // 날짜 포맷을 위해 추가
+import 'package:intl/intl.dart';
+
+import '../../main.dart'; // RouteObserver 사용
 import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart'; // <<< MODIFIED: Added import
 
-// 분리된 위젯 import
 import 'widgets/dashboard_header.dart';
 import 'widgets/daily_status_summary_card.dart';
 import 'widgets/weekly_score_summary_card.dart';
@@ -22,16 +22,83 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
+class _DashboardState extends State<Dashboard>
+    with RouteAware, SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
 
+  int _scoreCardKey = DateTime.now().microsecondsSinceEpoch;
+  int _dailyCardKey = DateTime.now().microsecondsSinceEpoch + 1;
+
   double _avatarScale = 1.0;
-  int _selectedIndex = 1; // 초기 선택 인덱스를 카메라(1)로 설정
+  int _selectedIndex = 1;
   double _dailyCardScale = 1.0;
   double _scoreCardScale = 1.0;
-  double _mealDiaryCardScale = 1.0; // <<< ADDED: For tap animation on MealDiaryCard
 
-  // 현재 날짜를 가져와 포맷팅하는 함수
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.forward(from: 0);
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void didPopNext() {
+    _controller.forward(from: 0);
+    final now = DateTime.now().microsecondsSinceEpoch;
+
+    setState(() {
+      _scoreCardKey = now;
+      _dailyCardKey = now + 1;
+      _avatarScale = 0.9;
+      _dailyCardScale = 0.95;
+      _scoreCardScale = 0.95;
+    });
+
+    Future.delayed(const Duration(milliseconds: 20), () {
+      if (mounted) {
+        setState(() {
+          _avatarScale = 1.0;
+          _dailyCardScale = 1.0;
+          _scoreCardScale = 1.0;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    _controller.dispose();
+    super.dispose();
+  }
+
   String getCurrentDateFormatted() {
     final now = DateTime.now();
     final formatter = DateFormat('yyyy-MM-dd');
@@ -43,10 +110,7 @@ class _DashboardState extends State<Dashboard> {
         await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       if (mounted) {
-        _navigateWithFade(
-          context,
-          MealRecord(initialImageFile: pickedFile),
-        );
+        _navigateWithFade(context, MealRecord(initialImageFile: pickedFile));
       }
     } else {
       if (mounted) {
@@ -62,10 +126,7 @@ class _DashboardState extends State<Dashboard> {
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => page,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),
@@ -73,9 +134,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _onBottomNavigationTap(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
     if (index == 0) {
       _navigateWithFade(context, const ScoreboardScreen());
     } else if (index == 1) {
@@ -87,7 +146,7 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final String currentDateString = getCurrentDateFormatted(); // 현재 날짜 가져오기 (String)
+    final String currentDateString = getCurrentDateFormatted(); (String)
     DateTime currentDateAsDateTime; // For MealDiaryScreen
     try {
       currentDateAsDateTime = DateFormat('yyyy-MM-dd').parse(currentDateString);
@@ -117,63 +176,55 @@ class _DashboardState extends State<Dashboard> {
           ),
           SafeArea(
             child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  DashboardHeader(
-                    avatarScale: _avatarScale,
-                    onAvatarTapDown: (_) => setState(() => _avatarScale = 0.85),
-                    onAvatarTapUp: (_) {
-                      setState(() => _avatarScale = 1.0);
-                      _navigateWithFade(context, const Underconstruction());
-                    },
-                    onAvatarTapCancel: () =>
-                        setState(() => _avatarScale = 1.0),
-                    onNotificationsPressed: () {
-                      _navigateWithFade(context, const Underconstruction());
-                    },
-                  ),
-                  DailyStatusSummaryCard(
-                    scale: _dailyCardScale,
-                    onTapDown: (_) => setState(() => _dailyCardScale = 0.98),
-                    onTapUp: (_) {
-                      setState(() => _dailyCardScale = 1.0);
-                      _navigateWithFade(context, const DailyStatus());
-                    },
-                    onTapCancel: () => setState(() => _dailyCardScale = 1.0),
-                  ),
-                  WeeklyScoreSummaryCard(
-                    scale: _scoreCardScale,
-                    onTapDown: (_) => setState(() => _scoreCardScale = 0.98),
-                    onTapUp: (_) {
-                      setState(() => _scoreCardScale = 1.0);
-                      _navigateWithFade(context, const ScoreboardScreen());
-                    },
-                    onTapCancel: () => setState(() => _scoreCardScale = 1.0),
-                  ),
-                  // <<< MODIFIED: Added onTap logic for MealDiaryCard >>>
-                  GestureDetector(
-                    onTapDown: (_) => setState(() => _mealDiaryCardScale = 0.98),
-                    onTapUp: (_) {
-                      setState(() => _mealDiaryCardScale = 1.0);
-                      _navigateWithFade(context, MealDiaryScreen(displayDate: currentDateAsDateTime));
-                    },
-                    onTapCancel: () => setState(() => _mealDiaryCardScale = 1.0),
-                    child: AnimatedScale(
-                      scale: _mealDiaryCardScale,
-                      duration: const Duration(milliseconds: 150),
-                      child: MealDiaryCard(
-                        diaryDate: currentDateString,
-                        // The onTap is now handled by the parent GestureDetector for animation consistency
-                        // If you prefer MealDiaryCard to handle its own navigation without dashboard-level scale animation,
-                        // you can revert to passing the onTap directly:
-                        // onTap: () {
-                        //  _navigateWithFade(context, MealDiaryScreen(displayDate: currentDateAsDateTime));
-                        // },
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    children: [
+                      DashboardHeader(
+                        avatarScale: _avatarScale,
+                        onAvatarTapDown: (_) =>
+                            setState(() => _avatarScale = 0.85),
+                        onAvatarTapUp: (_) {
+                          setState(() => _avatarScale = 1.0);
+                          _navigateWithFade(context, const Underconstruction());
+                        },
+                        onAvatarTapCancel: () =>
+                            setState(() => _avatarScale = 1.0),
+                        onNotificationsPressed: () {
+                          _navigateWithFade(context, const Underconstruction());
+                        },
                       ),
-                    ),
+                      DailyStatusSummaryCard(
+                        key: ValueKey(_dailyCardKey),
+                        scale: _dailyCardScale,
+                        onTapDown: (_) =>
+                            setState(() => _dailyCardScale = 0.98),
+                        onTapUp: (_) {
+                          setState(() => _dailyCardScale = 1.0);
+                          _navigateWithFade(context, const DailyStatus());
+                        },
+                        onTapCancel: () =>
+                            setState(() => _dailyCardScale = 1.0),
+                      ),
+                      WeeklyScoreSummaryCard(
+                        key: ValueKey(_scoreCardKey),
+                        scale: _scoreCardScale,
+                        onTapDown: (_) =>
+                            setState(() => _scoreCardScale = 0.98),
+                        onTapUp: (_) {
+                          setState(() => _scoreCardScale = 1.0);
+                          _navigateWithFade(context, const ScoreboardScreen());
+                        },
+                        onTapCancel: () =>
+                            setState(() => _scoreCardScale = 1.0),
+                      ),
+                      MealDiaryCard(diaryDate: currentDate),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  const SizedBox(height: 20), // 하단 여백 추가
-                ],
+                ),
               ),
             ),
           ),

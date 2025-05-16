@@ -1,6 +1,6 @@
 // lib/mealDiaryPage/meal_diary_screen.dart
 import 'package:flutter/material.dart';
-import 'package:healthymeal/widgets/common_bottom_navigation_bar.dart'; // Assuming you might want this
+// Assuming you might want this
 import 'package:intl/intl.dart'; // For date formatting
 
 import 'meal_diary_entry.dart';
@@ -38,29 +38,37 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
     if (DateFormat('yyyy-MM-dd').format(date) == '2025-05-16') {
       _diaryEntries = [
         MealDiaryEntry(
-          imagePath: 'assets/image/jajangmyeon.jpg', // MODIFIED: Placeholder asset path
+          imagePath:
+              'assets/image/jajangmyeon.jpg', // MODIFIED: Placeholder asset path
           time: '13:04',
           menuName: '짜장면',
           intakeAmount: '600g',
-          notes: '오늘 아침은 평소보다 든든하게 먹고 싶어서 동네 중국집에서 짜장면을 포장해왔다. 살짝 불긴 했지만 면도 좋고 건더기 고기도 적당히 들어있어서 만족스러웠다. 다음엔 계란 후라이 하나 올려 먹으면 더 좋을 것 같다.',
+          notes:
+              '오늘 아침은 평소보다 든든하게 먹고 싶어서 동네 중국집에서 짜장면을 포장해왔다. 살짝 불긴 했지만 면도 좋고 건더기 고기도 적당히 들어있어서 만족스러웠다. 다음엔 계란 후라이 하나 올려 먹으면 더 좋을 것 같다.',
           dateTime: DateTime(2025, 4, 2, 13, 4),
         ),
         MealDiaryEntry(
-          imagePath: 'assets/image/chicken.jpg', // MODIFIED: Placeholder asset path
+          imagePath:
+              'assets/image/chicken.jpg', // MODIFIED: Placeholder asset path
           time: '20:14',
-          // menuName: '짜장면', // Image shows chicken, but text says 짜장면. Using text from image. You might want to correct this based on the image if needed.
+          // menuName:
+          '짜장면', // Image shows chicken, but text says 짜장면. Using text from image. You might want to correct this based on the image if needed.
           // For consistency, let's assume the menuName should reflect the image if we are changing it to a local asset.
           menuName: '후라이드 치킨', // MODIFIED for clarity
-          intakeAmount: '600g', // This might also need adjustment if menuName changes
-          notes: '저녁엔 친구들이랑 황금올리브 치킨을 시켜 먹었다. 겉은 바삭하고 속은 촉촉해서 역시 맛있었다. 소스 없이도 짜지 않고 혼자 반 마리 정도는 충분히 먹는 느낌. 양배추 샐러드가 없어 좀 아쉽긴 했지만, 맛있게 먹었다!',
+          intakeAmount:
+              '600g', // This might also need adjustment if menuName changes
+          notes:
+              '저녁엔 친구들이랑 황금올리브 치킨을 시켜 먹었다. 겉은 바삭하고 속은 촉촉해서 역시 맛있었다. 소스 없이도 짜지 않고 혼자 반 마리 정도는 충분히 먹는 느낌. 양배추 샐러드가 없어 좀 아쉽긴 했지만, 맛있게 먹었다!',
           dateTime: DateTime(2025, 4, 2, 20, 14),
         ),
-         MealDiaryEntry(
-          imagePath: 'assets/image/bibimbap.jpg', // MODIFIED: Placeholder asset path
+        MealDiaryEntry(
+          imagePath:
+              'assets/image/bibimbap.jpg', // MODIFIED: Placeholder asset path
           time: '08:30',
           menuName: '비빔밥',
           intakeAmount: '450g',
-          notes: '아침은 간단하게 냉장고에 있던 나물들과 계란 후라이를 넣어 비빔밥을 만들어 먹었다. 고추장을 조금만 넣어 간을 맞추니 건강하고 맛있었다.',
+          notes:
+              '아침은 간단하게 냉장고에 있던 나물들과 계란 후라이를 넣어 비빔밥을 만들어 먹었다. 고추장을 조금만 넣어 간을 맞추니 건강하고 맛있었다.',
           dateTime: DateTime(2025, 4, 2, 8, 30),
         ),
       ];
@@ -76,7 +84,6 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
     }
   }
   // --- End Placeholder Data ---
-
 
   @override
   Widget build(BuildContext context) {
@@ -119,16 +126,17 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               itemCount: _diaryEntries.length,
               itemBuilder: (context, index) {
                 return MealDiaryCard(entry: _diaryEntries[index]);
               },
             ),
-       // Optional: Add the common bottom navigation bar if needed for this screen
-       // bottomNavigationBar: const CommonBottomNavigationBar(
-       //   currentPage: AppPage.dashboard, // Or whichever page this relates to
-       // ),
+      // Optional: Add the common bottom navigation bar if needed for this screen
+      // bottomNavigationBar: const CommonBottomNavigationBar(
+      //   currentPage: AppPage.dashboard, // Or whichever page this relates to
+      // ),
     );
   }
 }

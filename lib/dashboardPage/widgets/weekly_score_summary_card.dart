@@ -20,11 +20,11 @@ class WeeklyScoreSummaryCard extends StatelessWidget {
   ];
 
   const WeeklyScoreSummaryCard({
-    super.key,
     required this.scale,
     required this.onTapDown,
     required this.onTapUp,
     required this.onTapCancel,
+    super.key,
   });
 
   Color _getProgressColor(double animatedValue) {
