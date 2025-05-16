@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:healthymeal/mealrecordPage/mealrecord.dart';
 import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 import 'package:healthymeal/dashboardPage/dashboard.dart'; // ✅ Dashboard import
-import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
 
 enum AppPage {
   scoreboard,

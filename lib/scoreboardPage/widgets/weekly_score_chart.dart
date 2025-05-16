@@ -9,7 +9,9 @@ double _calculateBarHeight(
     int value, double heightForMaxPossibleBar, int referenceMaxValueInPeriod) {
   if (value <= 0 ||
       referenceMaxValueInPeriod <= 0 ||
-      heightForMaxPossibleBar <= 0) return 0;
+      heightForMaxPossibleBar <= 0) {
+    return 0;
+  }
   double calculatedHeight = (value / 100.0) * heightForMaxPossibleBar;
   return max(0, calculatedHeight);
 }
@@ -106,7 +108,7 @@ class _WeeklyScoreChartState extends State<WeeklyScoreChart>
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: LayoutBuilder(builder: (context, constraints) {
-            final double heightFor100 = constraints.maxHeight - 40;
+            final double heightFor100 = constraints.maxHeight - 45;
             final double barAreaWidth = constraints.maxWidth - 36 * 2 - 5.0 * 2;
             final double barWidth = widget.weekData.isEmpty
                 ? 0
