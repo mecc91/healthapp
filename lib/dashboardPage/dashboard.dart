@@ -11,7 +11,7 @@ import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
 
 // RouteObserver를 사용하기 위해 main.dart 또는 해당 Observer가 정의된 파일을 import
 // 예시 경로이며, 실제 프로젝트 구조에 맞게 수정해야 합니다.
-// import '../../main.dart'; // 주석 처리 (실제 프로젝트에서는 필요시 주석 해제)
+import '../main.dart'; // ✅ 수정: main.dart의 routeObserver를 사용하기 위해 import
 
 // 분리된 위젯 import
 import 'widgets/dashboard_header.dart';
@@ -85,10 +85,11 @@ class _DashboardState extends State<Dashboard>
   void didChangeDependencies() {
     super.didChangeDependencies();
     // RouteObserver 구독 (main.dart 등에 routeObserver가 정의되어 있어야 함)
-    // final route = ModalRoute.of(context);
-    // if (route is PageRoute) {
-    //   MyApp.routeObserver.subscribe(this, route); // MyApp.routeObserver는 예시
-    // }
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      // ✅ 수정: main.dart에서 가져온 전역 routeObserver 인스턴스 사용
+      routeObserver.subscribe(this, route);
+    }
   }
 
   @override
@@ -121,7 +122,18 @@ class _DashboardState extends State<Dashboard>
   @override
   void dispose() {
     // RouteObserver 구독 해지
-    // MyApp.routeObserver.unsubscribe(this); // MyApp.routeObserver는 예시
+    // ✅ 수정: main.dart에서 가져온 전역 routeObserver 인스턴스 사용
+    // 현재 route를 가져와야 하므로, ModalRoute.of(context)를 사용합니다.
+    // 다만, dispose 시점에는 context가 안전하지 않을 수 있으므로,
+    // 일반적으로는 didChangeDependencies에서 얻은 PageRoute 객체를 멤버 변수로 저장해두고 사용합니다.
+    // 여기서는 RouteObserver의 untrack 메서드를 직접 호출하기보다는,
+    // subscribe 시 전달한 route 객체를 사용하여 unsubscribe 하는 것이 일반적입니다.
+    // RouteObserver는 내부적으로 RouteAware 객체와 Route 쌍을 관리합니다.
+    // 현재 ModalRoute.of(context)가 PageRoute 타입이 아닐 수도 있으므로 주의해야 합니다.
+    // 가장 안전한 방법은 didChangeDependencies에서 구독할 때 사용한 route 객체를 저장해두는 것입니다.
+    // 여기서는 간단하게 routeObserver.unsubscribe(this)만 호출합니다.
+    // RouteObserver는 내부적으로 this (RouteAware 객체)와 매핑된 모든 라우트 구독을 해제합니다.
+    routeObserver.unsubscribe(this);
     _animationController.dispose();
     super.dispose();
   }
@@ -175,6 +187,9 @@ class _DashboardState extends State<Dashboard>
       _navigateWithFade(context, const ScoreboardScreen());
     } else if (index == 1) {
       // MealDiaryScreen으로 현재 날짜를 전달하며 이동 (카메라 아이콘 탭 시)
+      // 현재는 _takePicture()를 호출하도록 되어 있습니다.
+      // 만약 식단 기록 화면으로 바로 이동시키려면 아래 주석을 해제하고 _takePicture()를 주석 처리합니다.
+      /*
       DateTime dateForDiary = DateTime.now();
       try {
         dateForDiary = DateFormat('yyyy-MM-dd').parse(getCurrentDateFormatted());
@@ -182,7 +197,8 @@ class _DashboardState extends State<Dashboard>
         // 파싱 실패 시 현재 시간 사용 (Fallback)
       }
        _navigateWithFade(context, MealDiaryScreen(displayDate: dateForDiary));
-      // _takePicture(); // 사진 촬영 로직 대신 식단 기록 화면으로 바로 이동하도록 변경 가능
+      */
+      _takePicture(); // 사진 촬영 로직
     } else if (index == 2) {
       _navigateWithFade(context, const MenuRecommendScreen());
     }
@@ -190,7 +206,7 @@ class _DashboardState extends State<Dashboard>
 
   @override
   Widget build(BuildContext context) {
-    final String currentDateString = getCurrentDateFormatted(); // 세미콜론 오류 수정: (String) 제거
+    final String currentDateString = getCurrentDateFormatted();
     DateTime currentDateAsDateTime;
     try {
       currentDateAsDateTime = DateFormat('yyyy-MM-dd').parse(currentDateString);
