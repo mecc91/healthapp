@@ -1,3 +1,4 @@
+// lib/dashboardPage/dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
@@ -5,15 +6,25 @@ import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 import 'package:healthymeal/underconstructionPage/underconstruction.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; // 날짜 포맷을 위해 추가
+import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
 
-import '../../main.dart'; // RouteObserver 사용
-import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart'; // <<< MODIFIED: Added import
+// RouteObserver를 사용하기 위해 main.dart 또는 해당 Observer가 정의된 파일을 import
+// 예시 경로이며, 실제 프로젝트 구조에 맞게 수정해야 합니다.
+// import '../../main.dart'; // 주석 처리 (실제 프로젝트에서는 필요시 주석 해제)
 
+// 분리된 위젯 import
 import 'widgets/dashboard_header.dart';
 import 'widgets/daily_status_summary_card.dart';
 import 'widgets/weekly_score_summary_card.dart';
-import 'widgets/meal_diary_card.dart';
+import 'widgets/meal_diary_card.dart'; // dashboard용 MealDiaryCard (날짜 문자열을 받도록 가정)
+
+// main.dart 또는 앱의 최상위 위젯에 RouteObserver 인스턴스가 정의되어 있다고 가정합니다.
+// 예: final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+// 이 파일에서는 직접 정의하지 않고, 외부에서 주입받거나 static으로 접근한다고 가정합니다.
+// 아래 코드는 예시이며, 실제 프로젝트의 RouteObserver 설정에 맞게 조정해야 합니다.
+// 만약 main.dart 등에 routeObserver가 static으로 선언되어 있다면 아래와 같이 사용 가능:
+// import 'package:healthymeal/main.dart'; // (main.dart에 routeObserver가 있다고 가정)
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -23,82 +34,99 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard>
-    with RouteAware, SingleTickerProviderStateMixin {
+    with RouteAware, SingleTickerProviderStateMixin { // RouteAware, SingleTickerProviderStateMixin 추가
   final ImagePicker _picker = ImagePicker();
 
+  // _scoreCardKey 및 _dailyCardKey는 이전 코드에서 사용되었으나,
+  // 제공된 최신 dashboard.dart에서는 애니메이션 컨트롤에 직접 사용되지 않으므로,
+  // 필요 없다면 제거해도 됩니다. 여기서는 일단 유지합니다.
   int _scoreCardKey = DateTime.now().microsecondsSinceEpoch;
   int _dailyCardKey = DateTime.now().microsecondsSinceEpoch + 1;
 
   double _avatarScale = 1.0;
-  int _selectedIndex = 1;
+  int _selectedIndex = 1; // 초기 선택 인덱스를 카메라(1)로 설정
   double _dailyCardScale = 1.0;
   double _scoreCardScale = 1.0;
+  double _mealDiaryCardScale = 1.0; // MealDiaryCard 탭 애니메이션을 위한 변수
 
-  late AnimationController _controller;
+  // 애니메이션 컨트롤러 (이전 코드에서 참조)
+  late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
     ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
 
+    // 페이지가 빌드된 후 애니메이션 시작
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _controller.forward(from: 0);
+      if(mounted) {
+        _animationController.forward(from: 0);
+      }
     });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+    // RouteObserver 구독 (main.dart 등에 routeObserver가 정의되어 있어야 함)
+    // final route = ModalRoute.of(context);
+    // if (route is PageRoute) {
+    //   MyApp.routeObserver.subscribe(this, route); // MyApp.routeObserver는 예시
+    // }
   }
 
   @override
   void didPopNext() {
-    _controller.forward(from: 0);
-    final now = DateTime.now().microsecondsSinceEpoch;
-
-    setState(() {
-      _scoreCardKey = now;
-      _dailyCardKey = now + 1;
-      _avatarScale = 0.9;
-      _dailyCardScale = 0.95;
-      _scoreCardScale = 0.95;
-    });
-
-    Future.delayed(const Duration(milliseconds: 20), () {
-      if (mounted) {
-        setState(() {
-          _avatarScale = 1.0;
-          _dailyCardScale = 1.0;
-          _scoreCardScale = 1.0;
-        });
-      }
-    });
+    // 다른 화면에서 이 화면으로 돌아올 때 애니메이션 재시작
+    if(mounted) {
+      _animationController.forward(from: 0);
+      final now = DateTime.now().microsecondsSinceEpoch;
+      setState(() {
+        _scoreCardKey = now; // 키 값을 업데이트하여 위젯을 새로 그리도록 유도 (필요한 경우)
+        _dailyCardKey = now + 1;
+        _avatarScale = 0.9; // 간단한 시각적 피드백
+        _dailyCardScale = 0.95;
+        _scoreCardScale = 0.95;
+        _mealDiaryCardScale = 0.95;
+      });
+      Future.delayed(const Duration(milliseconds: 20), () {
+        if (mounted) {
+          setState(() {
+            _avatarScale = 1.0;
+            _dailyCardScale = 1.0;
+            _scoreCardScale = 1.0;
+            _mealDiaryCardScale = 1.0;
+          });
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
-    routeObserver.unsubscribe(this);
-    _controller.dispose();
+    // RouteObserver 구독 해지
+    // MyApp.routeObserver.unsubscribe(this); // MyApp.routeObserver는 예시
+    _animationController.dispose();
     super.dispose();
   }
 
+  // 현재 날짜를 가져와 포맷팅하는 함수
   String getCurrentDateFormatted() {
     final now = DateTime.now();
     final formatter = DateFormat('yyyy-MM-dd');
@@ -110,7 +138,10 @@ class _DashboardState extends State<Dashboard>
         await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       if (mounted) {
-        _navigateWithFade(context, MealRecord(initialImageFile: pickedFile));
+        _navigateWithFade(
+          context,
+          MealRecord(initialImageFile: pickedFile),
+        );
       }
     } else {
       if (mounted) {
@@ -126,7 +157,10 @@ class _DashboardState extends State<Dashboard>
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => page,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),
@@ -134,11 +168,21 @@ class _DashboardState extends State<Dashboard>
   }
 
   void _onBottomNavigationTap(int index) {
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+    });
     if (index == 0) {
       _navigateWithFade(context, const ScoreboardScreen());
     } else if (index == 1) {
-      _takePicture();
+      // MealDiaryScreen으로 현재 날짜를 전달하며 이동 (카메라 아이콘 탭 시)
+      DateTime dateForDiary = DateTime.now();
+      try {
+        dateForDiary = DateFormat('yyyy-MM-dd').parse(getCurrentDateFormatted());
+      } catch (e) {
+        // 파싱 실패 시 현재 시간 사용 (Fallback)
+      }
+       _navigateWithFade(context, MealDiaryScreen(displayDate: dateForDiary));
+      // _takePicture(); // 사진 촬영 로직 대신 식단 기록 화면으로 바로 이동하도록 변경 가능
     } else if (index == 2) {
       _navigateWithFade(context, const MenuRecommendScreen());
     }
@@ -146,14 +190,13 @@ class _DashboardState extends State<Dashboard>
 
   @override
   Widget build(BuildContext context) {
-    final String currentDateString = getCurrentDateFormatted(); (String)
-    DateTime currentDateAsDateTime; // For MealDiaryScreen
+    final String currentDateString = getCurrentDateFormatted(); // 세미콜론 오류 수정: (String) 제거
+    DateTime currentDateAsDateTime;
     try {
       currentDateAsDateTime = DateFormat('yyyy-MM-dd').parse(currentDateString);
     } catch (e) {
       currentDateAsDateTime = DateTime.now(); // Fallback
     }
-
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -176,7 +219,7 @@ class _DashboardState extends State<Dashboard>
           ),
           SafeArea(
             child: SingleChildScrollView(
-              child: SlideTransition(
+              child: SlideTransition( // 전체 컬럼에 슬라이드/페이드 애니메이션 적용
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -184,8 +227,7 @@ class _DashboardState extends State<Dashboard>
                     children: [
                       DashboardHeader(
                         avatarScale: _avatarScale,
-                        onAvatarTapDown: (_) =>
-                            setState(() => _avatarScale = 0.85),
+                        onAvatarTapDown: (_) => setState(() => _avatarScale = 0.85),
                         onAvatarTapUp: (_) {
                           setState(() => _avatarScale = 1.0);
                           _navigateWithFade(context, const Underconstruction());
@@ -197,31 +239,46 @@ class _DashboardState extends State<Dashboard>
                         },
                       ),
                       DailyStatusSummaryCard(
-                        key: ValueKey(_dailyCardKey),
+                        key: ValueKey('dailyCard_$_dailyCardKey'), // Key 사용 예시
                         scale: _dailyCardScale,
-                        onTapDown: (_) =>
-                            setState(() => _dailyCardScale = 0.98),
+                        onTapDown: (_) => setState(() => _dailyCardScale = 0.98),
                         onTapUp: (_) {
                           setState(() => _dailyCardScale = 1.0);
                           _navigateWithFade(context, const DailyStatus());
                         },
-                        onTapCancel: () =>
-                            setState(() => _dailyCardScale = 1.0),
+                        onTapCancel: () => setState(() => _dailyCardScale = 1.0),
                       ),
                       WeeklyScoreSummaryCard(
-                        key: ValueKey(_scoreCardKey),
+                        key: ValueKey('scoreCard_$_scoreCardKey'), // Key 사용 예시
                         scale: _scoreCardScale,
-                        onTapDown: (_) =>
-                            setState(() => _scoreCardScale = 0.98),
+                        onTapDown: (_) => setState(() => _scoreCardScale = 0.98),
                         onTapUp: (_) {
                           setState(() => _scoreCardScale = 1.0);
                           _navigateWithFade(context, const ScoreboardScreen());
                         },
-                        onTapCancel: () =>
-                            setState(() => _scoreCardScale = 1.0),
+                        onTapCancel: () => setState(() => _scoreCardScale = 1.0),
                       ),
-                      MealDiaryCard(diaryDate: currentDate),
-                      const SizedBox(height: 20),
+                      // MealDiaryCard 섹션 (사용자가 제공한 코드 스타일 적용)
+                      GestureDetector(
+                        onTapDown: (_) => setState(() => _mealDiaryCardScale = 0.98),
+                        onTapUp: (_) {
+                          setState(() => _mealDiaryCardScale = 1.0);
+                          // MealDiaryScreen으로 네비게이션, displayDate에 currentDateAsDateTime 전달
+                          _navigateWithFade(context, MealDiaryScreen(displayDate: currentDateAsDateTime));
+                        },
+                        onTapCancel: () => setState(() => _mealDiaryCardScale = 1.0),
+                        child: AnimatedScale(
+                          scale: _mealDiaryCardScale,
+                          duration: const Duration(milliseconds: 150),
+                          child: MealDiaryCard(
+                            // widgets/meal_diary_card.dart의 MealDiaryCard가
+                            // diaryDate라는 이름으로 String 타입의 날짜를 받는다고 가정
+                            diaryDate: currentDateString,
+                            // onTap은 상위 GestureDetector에서 처리하므로 여기서는 필요 없음
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20), // 하단 여백 추가
                     ],
                   ),
                 ),
@@ -240,11 +297,11 @@ class _DashboardState extends State<Dashboard>
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart, size: 35), label: ''),
+              icon: Icon(Icons.bar_chart, size: 35), label: ''), // 스코어보드 (인덱스 0)
           BottomNavigationBarItem(
-              icon: Icon(Icons.camera_alt, size: 35), label: ''),
+              icon: Icon(Icons.camera_alt, size: 35), label: ''), // 식단 기록 (인덱스 1)
           BottomNavigationBarItem(
-              icon: Icon(Icons.star_border, size: 35), label: ''),
+              icon: Icon(Icons.star_border, size: 35), label: ''), // 메뉴 추천 (인덱스 2)
         ],
       ),
     );

@@ -51,8 +51,8 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
           imagePath:
               'assets/image/chicken.jpg', // MODIFIED: Placeholder asset path
           time: '20:14',
-          // menuName:
-          '짜장면', // Image shows chicken, but text says 짜장면. Using text from image. You might want to correct this based on the image if needed.
+          // menuName: // 이전 주석 처리된 라인 (선택적으로 유지 또는 삭제)
+          // '짜장면', // Image shows chicken, but text says 짜장면. ... <<-- 이 줄이 문제의 원인이었으며 삭제되었습니다.
           // For consistency, let's assume the menuName should reflect the image if we are changing it to a local asset.
           menuName: '후라이드 치킨', // MODIFIED for clarity
           intakeAmount:
