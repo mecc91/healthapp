@@ -1,14 +1,36 @@
 // lib/dashboardPage/widgets/daily_status_summary_card.dart
 import 'package:flutter/material.dart';
+import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart';
 
-class DailyStatusSummaryCard extends StatelessWidget {
+class DailyStatusSummaryCard extends StatefulWidget {
   final double scale;
   final Function(TapDownDetails) onTapDown;
   final Function(TapUpDetails) onTapUp;
   final VoidCallback onTapCancel;
 
+  const DailyStatusSummaryCard({
+    super.key, //애니매이션 강제 리부트트
+    required this.scale,
+    required this.onTapDown,
+    required this.onTapUp,
+    required this.onTapCancel,
+  });
+
+  @override
+  State<DailyStatusSummaryCard> createState() => _DailyStatusSummaryCardState();
+}
+
+class _DailyStatusSummaryCardState extends State<DailyStatusSummaryCard> {
+
+  // 추후 API Request를 위한 Service
+  final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://...");
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   // 실제 데이터는 외부에서 주입받거나 상태 관리로 처리하는 것이 좋습니다.
-  // 여기서는 기존 하드코딩된 데이터를 유지합니다.
   final List<Map<String, dynamic>> nutrients = const [
     {"label": "탄수화물", "value": 0.95, "color": Colors.orange},
     {"label": "단백질", "value": 0.75, "color": Colors.yellow},
@@ -18,14 +40,6 @@ class DailyStatusSummaryCard extends StatelessWidget {
     {"label": "당류", "value": 0.5, "color": Colors.lightBlue},
     {"label": "콜레스테롤", "value": 0.85, "color": Colors.deepOrange},
   ];
-
-  const DailyStatusSummaryCard({
-    super.key, //애니매이션 강제 리부트트
-    required this.scale,
-    required this.onTapDown,
-    required this.onTapUp,
-    required this.onTapCancel,
-  });
 
   Color _getProgressColor(double animatedValue) {
     if (animatedValue <= 0.25) return Colors.red.shade400;
@@ -40,11 +54,11 @@ class DailyStatusSummaryCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       child: GestureDetector(
-        onTapDown: onTapDown,
-        onTapUp: onTapUp,
-        onTapCancel: onTapCancel,
+        onTapDown: widget.onTapDown,
+        onTapUp: widget.onTapUp,
+        onTapCancel: widget.onTapCancel,
         child: AnimatedScale(
-          scale: scale,
+          scale: widget.scale,
           duration: const Duration(milliseconds: 150),
           child: Card(
             color: const Color(0xFFFCFCFC),
@@ -67,6 +81,7 @@ class DailyStatusSummaryCard extends StatelessWidget {
                         color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
+                  // 7개 막대에 대하여
                   ...nutrients.map((item) {
                     final double value = item["value"]! as double;
                     return Padding(
@@ -83,6 +98,7 @@ class DailyStatusSummaryCard extends StatelessWidget {
                             duration: Duration(
                                 milliseconds: 700 + (value * 300).toInt()),
                             builder: (context, animatedValue, child) {
+                              // 그래프 막대바 부분
                               return LinearProgressIndicator(
                                 value: animatedValue,
                                 backgroundColor: Colors.grey.shade300,

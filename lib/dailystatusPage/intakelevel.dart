@@ -17,7 +17,7 @@ class IntakeLevel extends StatefulWidget {
     _filledBlockNum = (ratio * (_totalBlocks - (_totalBlocks / 5).round())).round();
     if (ratio < 0.5) {
       _filledBlockColor = Colors.lightBlue;
-    } else if (ratio < 0.75) {
+    } else if (ratio < 0.8) {
       _filledBlockColor = Colors.lightGreen;
     } else if (ratio < 0.9) {
       _filledBlockColor = Colors.orange;
@@ -43,9 +43,7 @@ class _IntakeLevelState extends State<IntakeLevel> {
 
   //final double _emptyBlockNum;
   final double _baselineRatio = 0.8;
-
   final double _blockHeight = 24.0;
-
   final double _spacing = 4.0;
 
   @override
@@ -53,6 +51,7 @@ class _IntakeLevelState extends State<IntakeLevel> {
     final double blockWidth = (_totalWidth - (widget._totalBlocks - 1) * _spacing) /
         widget._totalBlocks;
     final double baselineLeft = _totalWidth * _baselineRatio;
+    final double intakeLevel = (widget._filledBlockNum * (blockWidth + _spacing) - blockWidth / 2);
 
     return Card(
       //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -67,13 +66,15 @@ class _IntakeLevelState extends State<IntakeLevel> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(width: 25),
+                // 영양소 텍스트
                 Text(
                   widget._intake.nutrientname,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                 ),
                 SizedBox(width: 5),
+                // 섭취량 텍스트
                 Text(
-                  '${widget._intake.intakeamount.round()}${widget._intake.intakeunit}',
+                  '${widget._intake.intakeamount.round()}${widget._intake.intakeunit} 섭취',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
                 ),
               ],
@@ -83,30 +84,27 @@ class _IntakeLevelState extends State<IntakeLevel> {
               height: _blockHeight + 24 + 8, // 블럭 높이 + 수치 공간 확보
               child: Stack(
                 children: [
-                  // 블럭들
+                  // 가로막대 그래프
                   Positioned(
                     top: 12,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: List.generate(
-                        widget._totalBlocks,
-                        (index) => Container(
-                          width: blockWidth,
-                          height: _blockHeight,
-                          margin: EdgeInsets.only(
-                            right: index == widget._totalBlocks - 1 ? 0 : _spacing,
-                          ),
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: _blockHeight,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.black26, width: 2),
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: widget._totalBlocks == 0
+                            ? 0
+                            : widget._filledBlockNum / widget._totalBlocks,
+                        child: Container(
                           decoration: BoxDecoration(
-                            color: index < widget._filledBlockNum
-                                ? widget._filledBlockColor
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: index < widget._filledBlockNum
-                                  ? widget._filledBlockColor
-                                  : Colors.black26,
-                              width: 2,
-                            ),
+                            color: widget._filledBlockColor,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                       ),
@@ -136,10 +134,15 @@ class _IntakeLevelState extends State<IntakeLevel> {
                   ),
                   // 수치 텍스트 (채워진 끝 위치 기준)
                   Positioned(
-                    left: (widget._filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 3,
+                    //left: (widget._filledBlockNum * (blockWidth + _spacing) - blockWidth / 2) - 4,
+                    //left: 0,
+                    //left: (widget._filledBlockNum * (blockWidth + _spacing) - blockWidth / 2),
+                    left: 
+                      intakeLevel <= 5 ? 0
+                        : intakeLevel < 265 ? intakeLevel - 5 : 265,
                     top: _blockHeight + 4 + 10,
                     child: Text(
-                      '${widget._filledBlockNum}/${widget._totalBlocks - (widget._totalBlocks / 5).round()}',
+                      '${((widget._filledBlockNum)/(widget._totalBlocks - (widget._totalBlocks / 5).round())*100).round()}%',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                   ),
