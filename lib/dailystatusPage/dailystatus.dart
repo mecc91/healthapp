@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/intakelevel.dart';
 import 'package:healthymeal/dailystatusPage/model/mealinfo.dart';
+import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart';
 
 class DailyStatus extends StatefulWidget {
   const DailyStatus({super.key});
@@ -31,33 +32,63 @@ class IntakeData {
 class _DailyStatusState extends State<DailyStatus> {
 
   final List<MealInfo> _meals = [
-    MealInfo(10.93, 1.45, 0.24, 172, 1.2, 0, 0, 
+    MealInfo(
+      carbonhydrate_g: 10.93,
+      protein_g: 1.45,
+      fat_g: 0.24,
+      sodium_mg: 172,
+      cellulose_g: 1.2,
+      sugar_g: 0,
+      cholesterol_mg: 0, 
       intaketime: DateTime(2025, 05, 12, 07, 30), 
       mealtype: "Breakfast",
       intakeamount: 1, 
       meals: ["콩나물 국밥"],
     ),
-    MealInfo(20.26, 7, 7.22, 335, 1.8, 0.71, 33.45,
+    MealInfo(
+      carbonhydrate_g: 20.26, 
+      protein_g: 7, 
+      fat_g: 7.22, 
+      sodium_mg: 335,
+      cellulose_g: 1.8,
+      sugar_g: 0.71,
+      cholesterol_mg: 33.45,
       intaketime: DateTime(2025, 05, 12, 12, 15),
       mealtype: "Lunch",
       intakeamount: 1,
       meals: ["참치 김밥"],
     ),
-    MealInfo(25.94, 10.58, 12.29, 595, 0, 6.14, 18.43,
+    MealInfo(
+      carbonhydrate_g: 25.94,
+      protein_g: 10.58,
+      fat_g: 12.29,
+      sodium_mg: 595,
+      cellulose_g: 0,
+      sugar_g: 6.14,
+      cholesterol_mg: 18.43,
       intaketime: DateTime(2025, 05, 12, 18, 20),
       mealtype: "Dinner",
       intakeamount: 1,
       meals: ["맥치킨 모짜렐라 버거"],
     ),
-    MealInfo(50, 4.17, 20.83, 42, 0, 41.67, 20.83,
+    MealInfo(
+      carbonhydrate_g: 50,
+      protein_g: 4.17,
+      fat_g: 20.83,
+      sodium_mg: 42,
+      cellulose_g: 0,
+      sugar_g: 41.67,
+      cholesterol_mg: 20.83,
       intaketime: DateTime(2025, 05, 12, 20, 32),
       mealtype: "Snack",
       intakeamount: 1,
       meals: ["블루베리 마카롱"],
     ),
   ];
-
-  final List<IntakeData> _intakes = [];
+  // API Request Service
+  final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://...");
+  
+  final List<IntakeData> _intakes = []; 
   final IntakeCriterion criterion = IntakeCriterion(130, 65, 70, 1500, 30, 65, 300);
 
   void setIntakeLevel()
@@ -88,6 +119,12 @@ class _DailyStatusState extends State<DailyStatus> {
   @override
   void initState() {
     super.initState();
+    // API Request 로 _meals 초기화
+    /*_dailyStatusService.fetchMeals().then((meals) {
+      setState(() {
+        _meals = meals;
+      });
+    });*/
     // _intakes 멤버 초기화
     setIntakeLevel();
   }
