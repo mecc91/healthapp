@@ -7,6 +7,8 @@ import 'services/nutrient_intake_data_service.dart';
 import 'widgets/nutrient_selector_button.dart';
 import 'widgets/nutrient_weekly_chart.dart';
 import 'widgets/nutrient_comment_display.dart';
+import 'widgets/nutrient_monthly_calendar_view.dart'; // Import new monthly calendar
+import '../../scoreboardPage/scoreboard_constants.dart'; // For dayNamesKorean
 
 class NutrientIntakeScreen extends StatefulWidget {
   const NutrientIntakeScreen({super.key});
@@ -18,45 +20,98 @@ class NutrientIntakeScreen extends StatefulWidget {
 class _NutrientIntakeScreenState extends State<NutrientIntakeScreen> {
   final NutrientIntakeDataService _dataService = NutrientIntakeDataService();
   final List<bool> _isSelectedPeriod = [true, false, false, false]; // week, month, quarter, year
-  List<Map<String, dynamic>> _currentChartData = [];
+
+  // State for weekly view
+  List<Map<String, dynamic>> _currentWeekChartData = [];
+
+  // State for monthly view
+  Map<int, int> _currentMonthNutrientData = {};
+  // double _currentAverageMonthlyIntake = 0.0; // Optional: if you want to display this
+
+  // Common state
+  late DateTime _displayedDate; // Manages the current date context for week or month
   String _currentDateRangeFormatted = "";
   String _currentNutrientName = "";
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _displayedDate = _dataService.currentWeekStartDate; // Initialize with current week
+    _loadDataForCurrentSelection();
   }
 
-  void _loadData() {
+  void _loadDataForCurrentSelection() {
+    if (!mounted) return;
+
+    _currentNutrientName = _dataService.getCurrentNutrientName();
+
+    if (_isSelectedPeriod[0]) { // Week selected
+      _loadDataForWeek(_displayedDate);
+    } else if (_isSelectedPeriod[1]) { // Month selected
+      _loadDataForMonth(_displayedDate);
+    } else {
+      // Handle other periods (Quarter/Year) if implemented
+      setState(() {
+        _currentWeekChartData = [];
+        _currentMonthNutrientData = {};
+        _currentDateRangeFormatted = "${_getPeriodName(_isSelectedPeriod.indexWhere((e) => e))} 데이터 (미구현)";
+      });
+    }
+  }
+
+  void _loadDataForWeek(DateTime startDate) {
+    if (!mounted) return;
+    // Ensure startDate is the beginning of a week if it's not already
+    final weekStartDate = startDate.subtract(Duration(days: startDate.weekday - 1));
+    _dataService.currentWeekStartDate = weekStartDate; // Update service's current week
+
     setState(() {
-      _currentChartData = _dataService.getCurrentNutrientWeekData();
-      _currentDateRangeFormatted = _dataService.formatDateRange(_dataService.currentWeekStartDate);
-      _currentNutrientName = _dataService.getCurrentNutrientName();
+      _displayedDate = weekStartDate;
+      _currentWeekChartData = _dataService.getCurrentNutrientWeekData(); // Uses service's currentWeekStartDate
+      _currentDateRangeFormatted = _dataService.formatDateRange(weekStartDate);
+      // _currentNutrientName is already set in _loadDataForCurrentSelection
+    });
+  }
+
+  void _loadDataForMonth(DateTime monthDate) {
+    if (!mounted) return;
+    final firstDayOfMonth = DateTime(monthDate.year, monthDate.month, 1);
+    _dataService.currentSelectedMonth = firstDayOfMonth; // Update service's current month
+
+    setState(() {
+      _displayedDate = firstDayOfMonth;
+      _currentMonthNutrientData = _dataService.getNutrientDataForMonth(firstDayOfMonth, _currentNutrientName);
+      // _currentAverageMonthlyIntake = _dataService.calculateAverageMonthlyNutrientIntake(_currentMonthNutrientData); // Optional
+      _currentDateRangeFormatted = _dataService.formatMonth(firstDayOfMonth);
+      // _currentNutrientName is already set in _loadDataForCurrentSelection
     });
   }
 
   void _onPeriodToggleChanged(int index) {
-    setState(() {
-      for (int i = 0; i < _isSelectedPeriod.length; i++) {
-        _isSelectedPeriod[i] = (i == index);
-      }
-    });
+    if (!mounted) return;
 
-    if (index == 0) { // 'week' selected
-      _dataService.resetToCurrentWeekAndDefaultNutrient(); // 수정된 부분: public 메소드 호출
-      _loadData();
+    DateTime newDateToDisplay;
+    if (index == 0) { // Week
+      newDateToDisplay = _dataService.currentWeekStartDate;
+    } else if (index == 1) { // Month
+      newDateToDisplay = _dataService.currentSelectedMonth;
     } else {
+      // For Quarter/Year, decide on a default display date or logic
+      newDateToDisplay = _displayedDate; // Keep current for now
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${_getPeriodName(index)} 데이터 표시는 아직 구현되지 않았습니다.')),
         );
       }
-      setState(() {
-        _currentChartData = []; 
-        _currentDateRangeFormatted = "${_getPeriodName(index)} 데이터 (미구현)";
-      });
     }
+
+    setState(() {
+      for (int i = 0; i < _isSelectedPeriod.length; i++) {
+        _isSelectedPeriod[i] = (i == index);
+      }
+      _displayedDate = newDateToDisplay;
+    });
+    _loadDataForCurrentSelection();
   }
 
   String _getPeriodName(int index) {
@@ -70,25 +125,87 @@ class _NutrientIntakeScreenState extends State<NutrientIntakeScreen> {
     final result = _dataService.changeWeek(weeksToAdd);
     final String? snackBarMessage = result['snackBarMessage'];
     final bool dateActuallyChanged = result['dateChanged'];
+    final DateTime newDisplayDate = result['newDate'];
 
     if (mounted && snackBarMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(snackBarMessage), duration: const Duration(seconds: 1)),
       );
     }
-    if (dateActuallyChanged) {
-      _loadData();
+    if (dateActuallyChanged || _displayedDate != newDisplayDate) {
+      _loadDataForWeek(newDisplayDate); // This will call setState
     }
   }
 
+  void _handleMonthChangeRequest(int monthsToAdd) {
+    final result = _dataService.changeMonth(monthsToAdd);
+    final String? snackBarMessage = result['snackBarMessage'];
+    final bool dateActuallyChanged = result['dateChanged'];
+    final DateTime newDisplayMonth = result['newDate'];
+
+    if (mounted && snackBarMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackBarMessage), duration: const Duration(seconds: 1)),
+      );
+    }
+    if (dateActuallyChanged || _displayedDate != newDisplayMonth) {
+       _loadDataForMonth(newDisplayMonth); // This will call setState
+    }
+  }
+
+
   void _handleChangeNutrient(int indexOffset) {
     _dataService.changeNutrient(indexOffset);
-    _loadData();
+    _loadDataForCurrentSelection(); // Reloads data for the currently selected period and new nutrient
   }
+
+  void _switchToWeekViewForDate(DateTime date) {
+    if (!mounted) return;
+    final newWeekStartDate = date.subtract(Duration(days: date.weekday - 1));
+    setState(() {
+      _isSelectedPeriod[0] = true; // Switch to week
+      _isSelectedPeriod[1] = false;
+      _isSelectedPeriod[2] = false;
+      _isSelectedPeriod[3] = false;
+      _displayedDate = newWeekStartDate;
+    });
+    _loadDataForWeek(newWeekStartDate);
+  }
+
+  Widget _buildDayOfWeekHeader() {
+    const List<String> displayDayNames = dayNamesKorean; // 일 월 화 수 목 금 토
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // Adjusted horizontal padding
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: displayDayNames.map((day) {
+          return Expanded(
+            child: Center(
+              child: Text(
+                day,
+                style: const TextStyle(
+                    fontSize: 11, // Slightly smaller
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+
+    bool canGoMonthBack = false;
+    bool canGoMonthForward = false;
+    if (_isSelectedPeriod[1]) { // Only relevant for month view
+        canGoMonthBack = _dataService.canGoBackMonth;
+        canGoMonthForward = _dataService.canGoForwardMonth;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -107,12 +224,13 @@ class _NutrientIntakeScreenState extends State<NutrientIntakeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ScoreboardPeriodToggle( 
+            ScoreboardPeriodToggle(
               isSelected: _isSelectedPeriod,
               onPressed: _onPeriodToggleChanged,
             ),
             const SizedBox(height: 8),
-            if (_isSelectedPeriod[0]) 
+            // Date Range Display - shows for week or month
+            if (_isSelectedPeriod[0] || _isSelectedPeriod[1])
               Text(
                 _currentDateRangeFormatted,
                 style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold),
@@ -120,23 +238,77 @@ class _NutrientIntakeScreenState extends State<NutrientIntakeScreen> {
             const SizedBox(height: 12),
             NutrientSelectorButton(
               selectedNutrientName: _currentNutrientName,
-              onPressed: () => _handleChangeNutrient(1), 
+              onPressed: () => _handleChangeNutrient(1),
               buttonWidth: screenSize.width - (16.0 * 2),
             ),
             const SizedBox(height: 12),
             Expanded(
-              flex: 6,
-              child: NutrientWeeklyChart(
-                weekData: _currentChartData,
-                onChangeWeek: _handleChangeWeek,
-                onChangeNutrientViaSwipe: _handleChangeNutrient,
-                canGoBack: _dataService.canGoBack,
-                canGoForward: _dataService.canGoForward,
-                isWeekPeriodSelected: _isSelectedPeriod[0],
-              ),
+              flex: _isSelectedPeriod[1] ? 9 : 6, // More flex for month view if needed
+              child: _isSelectedPeriod[0] // WEEK VIEW
+                  ? NutrientWeeklyChart(
+                      weekData: _currentWeekChartData,
+                      onChangeWeek: _handleChangeWeek,
+                      onChangeNutrientViaSwipe: _handleChangeNutrient, // 주간 차트의 영양소 변경
+                      canGoBack: _dataService.canGoBackWeek,
+                      canGoForward: _dataService.canGoForwardWeek,
+                      isWeekPeriodSelected: _isSelectedPeriod[0],
+                    )
+                  : _isSelectedPeriod[1] // MONTH VIEW
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 4.0), // Reduced vertical padding
+                          decoration: BoxDecoration(
+                            color: kNutrientIntakeGraphBackgroundColor, // Match weekly chart background
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            children: [
+                              Padding( // Padding for month navigation row
+                                padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 0.0), // Reduced padding
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.chevron_left),
+                                      iconSize: 30.0,
+                                      padding: EdgeInsets.zero, // Compact
+                                      constraints: const BoxConstraints(), // Compact
+                                      onPressed: canGoMonthBack ? () => _handleMonthChangeRequest(-1) : null,
+                                      color: canGoMonthBack ? Colors.grey.shade700 : Colors.grey.shade300,
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.chevron_right),
+                                      iconSize: 30.0,
+                                      padding: EdgeInsets.zero, // Compact
+                                      constraints: const BoxConstraints(), // Compact
+                                      onPressed: canGoMonthForward ? () => _handleMonthChangeRequest(1) : null,
+                                      color: canGoMonthForward ? Colors.grey.shade700 : Colors.grey.shade300,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              _buildDayOfWeekHeader(),
+                              Expanded(
+                                child: NutrientMonthlyCalendarView(
+                                  selectedMonth: DateTime(_displayedDate.year, _displayedDate.month, 1),
+                                  monthlyNutrientData: _currentMonthNutrientData,
+                                  dataService: _dataService,
+                                  onDateSelected: (date) {
+                                     _switchToWeekViewForDate(date);
+                                  },
+                                  onChangeMonthBySwipe: _handleMonthChangeRequest,
+                                  onChangeNutrientBySwipe: _handleChangeNutrient, // ✅ 월간 달력의 영양소 변경 연결
+                                  canGoBackMonth: canGoMonthBack,
+                                  canGoForwardMonth: canGoMonthForward,
+                                  currentNutrientName: _currentNutrientName,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Center(child: Text("${_getPeriodName(_isSelectedPeriod.indexWhere((e) => e))} 데이터 표시는 아직 구현되지 않았습니다.")),
             ),
             const SizedBox(height: 10),
-            Flexible(
+            Flexible( // Keep comment display flexible
               flex: 1,
               child: NutrientCommentDisplay(
                 nutrientName: _currentNutrientName,
@@ -146,7 +318,7 @@ class _NutrientIntakeScreenState extends State<NutrientIntakeScreen> {
         ),
       ),
       bottomNavigationBar: const CommonBottomNavigationBar(
-        currentPage: AppPage.scoreboard, 
+        currentPage: AppPage.scoreboard, // Or adjust as per actual navigation context
       ),
     );
   }
