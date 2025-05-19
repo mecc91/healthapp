@@ -157,13 +157,117 @@ class _DailyStatusState extends State<DailyStatus> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: _intakes
-                .map((intake) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      child: IntakeLevel(intake),
-                    ))
-                .toList(),
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: _intakes
+                    .map((intake) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: IntakeLevel(intake),
+                        ))
+                    .toList(),
+              ),
+              SizedBox(height: 20),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _meals.map((meal) => Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => {print("clicked!")},
+                        child: Container(
+                          width: 200,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.black12),
+                          ),
+                          child: Row(
+                            children: [
+                              // 원형 이미지
+                              ClipOval(
+                                child: Image.asset(
+                                  'assets/image/bibimbap.jpg',// 이미지 경로
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              // 텍스트 정보
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    meal.meals[0],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    meal.mealtype,
+                                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                    ],
+                  )).toList(),
+                  /*[
+                    GestureDetector(
+                      onTap: () => {print("clicked!")},
+                      child: Container(
+                        width: 120,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.black12),
+                        ),
+                        child: Row(
+                          children: [
+                            // 원형 이미지
+                            ClipOval(
+                              child: Image.asset(
+                                'assets/image/bibimbap.jpg',// 이미지 경로
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            // 텍스트 정보
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  '아침식사',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  '참나물',
+                                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),             
+                  ],*/
+                ),
+              ),
+              SizedBox(height: 50),
+            ],
           ),
         ),
       ),
