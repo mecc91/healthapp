@@ -39,8 +39,8 @@ class _DailyStatusState extends State<DailyStatus> {
       sodium_mg: 172,
       cellulose_g: 1.2,
       sugar_g: 0,
-      cholesterol_mg: 0, 
-      intaketime: DateTime(2025, 05, 12, 07, 30), 
+      cholesterol_mg: 0,
+      intaketime: DateTime(2025, 05, 12, 07, 30),
       mealtype: "Breakfast",
       intakeamount: 1, 
       meals: ["콩나물 국밥"],
@@ -86,7 +86,7 @@ class _DailyStatusState extends State<DailyStatus> {
     ),
   ];
   // API Request Service
-  final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://...");
+  final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://152.67.196.3:4912/foods");
   
   final List<IntakeData> _intakes = []; 
   final IntakeCriterion criterion = IntakeCriterion(130, 65, 70, 1500, 30, 65, 300);
@@ -131,7 +131,6 @@ class _DailyStatusState extends State<DailyStatus> {
 
   @override
   Widget build(BuildContext context) {
-    print("dailystatus build");
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daily Status',

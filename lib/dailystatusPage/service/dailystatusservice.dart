@@ -9,7 +9,7 @@ class DailyStatusService
   final String baseUrl;
 
   Future<List<MealInfo>> fetchMeals() async {
-    final url = Uri.parse('$baseUrl/api/meals');  // 실제 엔드포인트에 맞게 수정
+    final url = Uri.parse('$baseUrl/foods');  // 실제 엔드포인트에 맞게 수정
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
