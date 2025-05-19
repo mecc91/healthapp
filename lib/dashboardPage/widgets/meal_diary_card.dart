@@ -29,36 +29,36 @@ class MealDiaryCard extends StatelessWidget {
       intake: '600g',
       notes:
           '오늘 아침은 평소보다 따뜻하게 먹고 싶어서 동네 중국집에서 짜장면을 포장해왔다. 살짝 매콤하긴 했지만 면도 쫄깃하고 양파랑 고기도 적당히 들어있어서 만족스러웠다. 다음엔 계란 후라이 하나 올려 먹으면 더 좋을 것 같다.',
-      imagePath: 'assets/image/placeholder_meal.png', // 실제 이미지 경로로 변경 필요
+      imagePath: 'assets/image/jajangmyeon.jpg', // 실제 이미지 경로로 변경 필요
     ),
     MealEntry(
       time: '20:14',
-      menu: '짜장면', // 이미지에는 치킨이 있지만, 텍스트는 짜장면으로 되어 있어 텍스트를 따름
+      menu: '후라이드', // 이미지에는 치킨이 있지만, 텍스트는 짜장면으로 되어 있어 텍스트를 따름
       intake: '600g',
       notes:
           '저녁엔 친구들이랑 황금올리브 치킨을 시켜서 먹었다. 겉은 바삭하고 속은 촉촉해서 늘 먹어도 맛있다. 소스 없이도 짜지지도 않고 혼자 반 마리 정도는 충분히 먹는 느낌. 야채나 샐러드가 없어 좀 아쉽긴 했지만, 맛있게 먹었다!',
-      imagePath: 'assets/image/placeholder_meal_2.png', // 실제 이미지 경로로 변경 필요
+      imagePath: 'assets/image/chicken.jpg', // 실제 이미지 경로로 변경 필요
     ),
     MealEntry(
       time: '08:30',
       menu: '스크램블 에그와 토스트',
       intake: '350g',
       notes: '간단하지만 든든한 아침! 우유 한 잔과 함께.',
-      imagePath: 'assets/image/placeholder_meal_3.png', // 실제 이미지 경로로 변경 필요
+      imagePath: 'assets/image/toast.jpg', // 실제 이미지 경로로 변경 필요
     ),
     MealEntry(
       time: '12:15',
       menu: '김치볶음밥',
       intake: '450g',
       notes: '어제 남은 김치와 찬밥으로 만든 김치볶음밥. 계란후라이는 반숙이 진리!',
-      imagePath: 'assets/image/placeholder_meal_4.png', // 실제 이미지 경로로 변경 필요
+      imagePath: 'assets/image/kimchirice.jpg', // 실제 이미지 경로로 변경 필요
     ),
     MealEntry(
       time: '19:00',
       menu: '닭가슴살 샐러드',
       intake: '400g',
       notes: '가볍게 먹고 싶어서 선택한 닭가슴살 샐러드. 오리엔탈 드레싱과 함께.',
-      imagePath: 'assets/image/placeholder_meal_5.png', // 실제 이미지 경로로 변경 필요
+      imagePath: 'assets/image/salad.jpg', // 실제 이미지 경로로 변경 필요
     ),
     // 5개 이상 항목이 있어도 상위 5개만 표시됨
     MealEntry(
