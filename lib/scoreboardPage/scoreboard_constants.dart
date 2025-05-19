@@ -8,5 +8,8 @@ const Color accentScoreboardColor = Colors.redAccent;
 const int weeksOfDataBeforeToday = 4;
 const int weeksOfDataAfterToday = 0;
 
-// 요일 이름 (차트 등에서 사용)
+// 요일 이름 (차트 등에서 사용 - 영어)
 const List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+// 요일 이름 (달력 표시용 - 한국어, 일요일 시작)
+const List<String> dayNamesKorean = ['일', '월', '화', '수', '목', '금', '토'];
