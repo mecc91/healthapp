@@ -25,4 +25,10 @@ flutter:
   assets:
     - assets/files/
     - assets/image/
+  fonts:
+    - family: korfont1
+      fonts:
+        - asset: assets/fonts/Jua-Regular.ttf
+
+
 
