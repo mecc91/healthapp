@@ -9,7 +9,7 @@ import 'widgets/score_comment_display.dart';
 import 'services/scoreboard_data_service.dart';
 import '../../widgets/common_bottom_navigation_bar.dart';
 import 'widgets/monthly_calendar_view.dart';
-import 'scoreboard_constants.dart'; // For dayNamesKorean
+import 'scoreboard_constants.dart';
 
 class ScoreboardScreen extends StatefulWidget {
   const ScoreboardScreen({super.key});
@@ -75,7 +75,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     if (!mounted) return;
     final firstDayOfMonth = DateTime(monthDate.year, monthDate.month, 1);
     setState(() {
-      _displayedDate = firstDayOfMonth;
+      _displayedDate = firstDayOfMonth; // _displayedDate 업데이트
       _currentMonthScores = _dataService.getScoresForMonth(firstDayOfMonth);
       _currentAverageScore = _dataService.calculateAverageMonthlyScore(_currentMonthScores);
       _currentDateRangeFormatted = _dataService.formatMonth(firstDayOfMonth);
@@ -87,18 +87,28 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final result = _dataService.changeWeek(weeksToAdd);
     final DateTime newDisplayDate = result['newDate'];
     _showSnackBarMessage(result['snackBarMessage']);
+
+    // 주간 데이터 로드 전에 _displayedDate를 먼저 업데이트하여 애니메이션이 올바르게 트리거되도록 함
     if (result['dateChanged'] || _displayedDate != newDisplayDate) {
+        // setState(() { // _loadDataForWeek 내부에서 setState가 호출되므로 중복 호출 방지
+        //   _displayedDate = newDisplayDate;
+        // });
         _loadDataForWeek(newDisplayDate);
     }
   }
 
+  // _handleMonthChangeRequest는 스와이프 및 버튼 클릭 모두에 사용됨
   void _handleMonthChangeRequest(int monthsToAdd) {
     final result = _dataService.changeMonth(monthsToAdd);
     final DateTime newDisplayMonth = result['newDate'];
-     _showSnackBarMessage(result['snackBarMessage']);
+    _showSnackBarMessage(result['snackBarMessage']);
+
     final firstOfNewDisplayMonth = DateTime(newDisplayMonth.year, newDisplayMonth.month, 1);
     if (result['dateChanged'] || _displayedDate != firstOfNewDisplayMonth ) {
-      _loadDataForMonth(firstOfNewDisplayMonth);
+        // setState(() { // _loadDataForMonth 내부에서 setState가 호출되므로 중복 호출 방지
+        //   _displayedDate = firstOfNewDisplayMonth;
+        // });
+        _loadDataForMonth(firstOfNewDisplayMonth); // 이 함수 내부에서 _displayedDate가 업데이트 됨
     }
   }
 
@@ -112,39 +122,42 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   void _onPeriodToggleChanged(int index) {
     if (!mounted) return;
+    DateTime newDateToDisplay;
+    if (index == 0) {
+      newDateToDisplay = _dataService.currentWeekStartDate;
+    } else if (index == 1) {
+      newDateToDisplay = DateTime(_dataService.currentSelectedMonth.year, _dataService.currentSelectedMonth.month, 1);
+    } else {
+      newDateToDisplay = _displayedDate; // 다른 탭은 현재 날짜 유지 (또는 특정 로직 추가)
+    }
+
+    // _displayedDate를 먼저 설정하고 _loadDataForCurrentSelection를 호출하여 애니메이션 트리거
     setState(() {
       for (int i = 0; i < _isSelectedToggle.length; i++) {
         _isSelectedToggle[i] = (i == index);
       }
-      if (index == 0) { 
-        _displayedDate = _dataService.currentWeekStartDate;
-      } else if (index == 1) { 
-        _displayedDate = DateTime(_dataService.currentSelectedMonth.year, _dataService.currentSelectedMonth.month, 1);
-      }
+      _displayedDate = newDateToDisplay; // _displayedDate 상태 업데이트
     });
     _loadDataForCurrentSelection();
   }
 
   void _switchToWeekViewForDate(DateTime date) {
     if (!mounted) return;
+    final newWeekStartDate = date.subtract(Duration(days: date.weekday - 1));
     setState(() {
       _isSelectedToggle[0] = true;
       _isSelectedToggle[1] = false;
       _isSelectedToggle[2] = false;
       _isSelectedToggle[3] = false;
-      _displayedDate = date.subtract(Duration(days: date.weekday - 1));
+      _displayedDate = newWeekStartDate; // _displayedDate 상태 업데이트
     });
-    _loadDataForWeek(_displayedDate);
+    _loadDataForWeek(newWeekStartDate);
   }
 
-  // Helper widget to build the day of week header for the calendar
   Widget _buildDayOfWeekHeader() {
-    // Using dayNamesKorean as defined in scoreboard_constants.dart
-    // Ensure this list matches the visual start of your week (e.g., Sunday-first)
     const List<String> displayDayNames = dayNamesKorean;
-
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), // Add some horizontal padding
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: displayDayNames.map((day) {
@@ -153,9 +166,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               child: Text(
                 day,
                 style: const TextStyle(
-                    fontSize: 12, // Adjusted size
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black54), // Adjusted color
+                    color: Colors.black54),
               ),
             ),
           );
@@ -167,21 +180,22 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool canGoBack = true;
-    bool canGoForward = true;
+    bool canGoWeekBack = false;
+    bool canGoWeekForward = false;
+    bool canGoMonthBack = false;
+    bool canGoMonthForward = false;
 
-    if (_isSelectedToggle[0]) {
-      canGoBack = _displayedDate.isAfter(_dataService.oldestWeekStartDate);
-      canGoForward = _displayedDate.isBefore(_dataService.newestWeekStartDate.add(const Duration(days: 1)));
-    } else if (_isSelectedToggle[1]) {
+    if (_isSelectedToggle[0]) { // 주간 뷰일 때
+      canGoWeekBack = _displayedDate.isAfter(_dataService.oldestWeekStartDate);
+      canGoWeekForward = _displayedDate.isBefore(_dataService.newestWeekStartDate.add(const Duration(days: 1)));
+    } else if (_isSelectedToggle[1]) { // 월간 뷰일 때
         DateTime now = DateTime.now();
         DateTime oldestMonth = DateTime(now.year - 2, 1, 1);
         DateTime newestMonth = DateTime(now.year + 1, 12, 1);
         DateTime currentMonthStart = DateTime(_displayedDate.year, _displayedDate.month, 1);
 
-        canGoBack = currentMonthStart.isAfter(oldestMonth);
-        // Allow going forward if current month is before or the same as newestMonth
-        canGoForward = currentMonthStart.isBefore(newestMonth) || currentMonthStart.isAtSameMomentAs(newestMonth);
+        canGoMonthBack = currentMonthStart.isAfter(oldestMonth);
+        canGoMonthForward = currentMonthStart.isBefore(newestMonth) || currentMonthStart.isAtSameMomentAs(newestMonth);
     }
 
 
@@ -218,18 +232,18 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             Expanded(
               flex: _isSelectedToggle[1] ? 9 : 6,
               child: _isSelectedToggle[0]
-                  ? WeeklyScoreChart( // This widget already has its own internal padding and box decoration
+                  ? WeeklyScoreChart(
                       weekData: _currentWeekChartData,
                       onChangeWeek: _handleWeekChangeRequest,
-                      canGoBack: canGoBack,
-                      canGoForward: canGoForward,
+                      canGoBack: canGoWeekBack,
+                      canGoForward: canGoWeekForward,
                     )
                   : _isSelectedToggle[1]
-                      ? Container( // Box container for the calendar
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), // Inner padding for the box content
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200, // Similar to WeeklyScoreChart
-                            borderRadius: BorderRadius.circular(16), // Similar to WeeklyScoreChart
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
                             children: [
@@ -238,29 +252,32 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.chevron_left),
-                                    iconSize: 30.0, // Adjusted size
+                                    iconSize: 30.0,
                                     padding: EdgeInsets.zero,
-                                    onPressed: canGoBack ? () => _handleMonthChangeRequest(-1) : null,
-                                    color: canGoBack ? Colors.grey.shade700 : Colors.grey.shade300,
+                                    onPressed: canGoMonthBack ? () => _handleMonthChangeRequest(-1) : null,
+                                    color: canGoMonthBack ? Colors.grey.shade700 : Colors.grey.shade300,
                                   ),
-                                  // Month name is already in AverageScoreDisplay
                                   IconButton(
                                     icon: const Icon(Icons.chevron_right),
-                                    iconSize: 30.0, // Adjusted size
+                                    iconSize: 30.0,
                                     padding: EdgeInsets.zero,
-                                    onPressed: canGoForward ? () => _handleMonthChangeRequest(1) : null,
-                                    color: canGoForward ? Colors.grey.shade700 : Colors.grey.shade300,
+                                    onPressed: canGoMonthForward ? () => _handleMonthChangeRequest(1) : null,
+                                    color: canGoMonthForward ? Colors.grey.shade700 : Colors.grey.shade300,
                                   ),
                                 ],
                               ),
-                              _buildDayOfWeekHeader(), // 요일 헤더 추가
+                              _buildDayOfWeekHeader(),
                               Expanded(
                                 child: MonthlyCalendarView(
+                                  // selectedMonth는 _displayedDate (항상 월의 첫날)로 전달
                                   selectedMonth: DateTime(_displayedDate.year, _displayedDate.month, 1),
                                   dataService: _dataService,
                                   onDateSelected: (date) {
                                     _switchToWeekViewForDate(date);
                                   },
+                                  onChangeMonthBySwipe: _handleMonthChangeRequest, // 스와이프 콜백 연결
+                                  canGoBackMonth: canGoMonthBack,       // 이전 달 이동 가능 여부 전달
+                                  canGoForwardMonth: canGoMonthForward, // 다음 달 이동 가능 여부 전달
                                 ),
                               ),
                             ],
