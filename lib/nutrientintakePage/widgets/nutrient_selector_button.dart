@@ -13,7 +13,7 @@ class NutrientSelectorButton extends StatelessWidget {
     this.buttonWidth,
   });
 
-  @override
+  /*@override
   Widget build(BuildContext context) {
     return SizedBox(
       width: buttonWidth ?? MediaQuery.of(context).size.width - (16.0 * 2), // Default width
@@ -28,6 +28,31 @@ class NutrientSelectorButton extends StatelessWidget {
         child: Text(
           selectedNutrientName,
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }*/
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.orange, width: 2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            selectedNutrientName,
+            style: const TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
         ),
       ),
     );

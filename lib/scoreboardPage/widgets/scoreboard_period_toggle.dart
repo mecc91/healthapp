@@ -23,7 +23,7 @@ class ScoreboardPeriodToggle extends StatelessWidget {
         fillColor: primaryScoreboardColor,
         borderColor: Colors.grey.shade300,
         selectedBorderColor: primaryScoreboardColor,
-        constraints: const BoxConstraints(minHeight: 35.0, minWidth: 60.0),
+        constraints: const BoxConstraints(minHeight: 35.0, minWidth: 50.0),
         children: const [
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 12.0),
