@@ -1,39 +1,65 @@
 import 'dart:math';
 import 'package:intl/intl.dart';
 import '../scoreboard_constants.dart'; // 상수 파일 import
+import 'package:flutter/material.dart';
 
 class ScoreboardDataService {
   DateTime currentWeekStartDate;
   late DateTime oldestWeekStartDate;
   late DateTime newestWeekStartDate;
+  DateTime currentSelectedMonth; // Keep track of the selected month
 
-  ScoreboardDataService() : currentWeekStartDate = _getInitialWeekStartDate() {
+  ScoreboardDataService() : currentWeekStartDate = _getInitialWeekStartDate(), currentSelectedMonth = DateTime.now() {
     _initializeDateBoundaries();
   }
 
   static DateTime _getInitialWeekStartDate() {
     final now = DateTime.now();
-    // 주의 시작을 월요일로 설정 (weekday: 1=월요일, ..., 7=일요일)
     return now.subtract(Duration(days: now.weekday - 1));
   }
 
   void _initializeDateBoundaries() {
-    oldestWeekStartDate = currentWeekStartDate.subtract(Duration(days: weeksOfDataBeforeToday * 7));
-    newestWeekStartDate = currentWeekStartDate.add(Duration(days: weeksOfDataAfterToday * 7));
+    // For weekly view
+    final now = DateTime.now();
+    oldestWeekStartDate = _getInitialWeekStartDate().subtract(Duration(days: weeksOfDataBeforeToday * 7));
+    newestWeekStartDate = _getInitialWeekStartDate().add(Duration(days: weeksOfDataAfterToday * 7));
+
+    // You might want different boundaries for monthly view or reuse weekly boundaries
   }
 
   List<Map<String, dynamic>> getSimulatedWeekData(DateTime startDate) {
-    // 각 주의 데이터가 고유하도록 시드 값에 startDate.millisecondsSinceEpoch 사용
     final random = Random(startDate.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay);
     List<Map<String, dynamic>> weekData = [];
     for (int i = 0; i < 7; i++) {
       weekData.add({
         'day': dayNames[i],
-        'value': random.nextInt(71) + 30, // 30 ~ 100 사이의 점수
+        'value': random.nextInt(71) + 30,
       });
     }
     return weekData;
   }
+
+  // New method for monthly scores
+  Map<int, int> getScoresForMonth(DateTime month) {
+    final random = Random(month.year * 100 + month.month); // Seed per month
+    Map<int, int> scores = {};
+    final daysInMonth = DateUtils.getDaysInMonth(month.year, month.month);
+    for (int day = 1; day <= daysInMonth; day++) {
+      // Simulate some days having scores and some not
+      if (random.nextDouble() > 0.3) { // 70% chance of having a score
+        scores[day] = random.nextInt(71) + 30; // 30 - 100
+      }
+    }
+    return scores;
+  }
+
+  // New method to calculate average monthly score
+  double calculateAverageMonthlyScore(Map<int, int> monthlyScores) {
+    if (monthlyScores.isEmpty) return 0;
+    final totalScore = monthlyScores.values.reduce((a, b) => a + b);
+    return totalScore / monthlyScores.values.length;
+  }
+
 
   double calculateAverageScore(List<Map<String, dynamic>> data) {
     if (data.isEmpty) return 0;
@@ -43,7 +69,6 @@ class ScoreboardDataService {
 
   String formatDateRange(DateTime startDate) {
     final endDate = startDate.add(const Duration(days: 6));
-    // 날짜 포맷 (예: "May 12th ~ May 18th")
     String formatWithSuffix(DateTime date) {
       String day = DateFormat('d').format(date);
       String suffix = 'th';
@@ -57,6 +82,11 @@ class ScoreboardDataService {
       return "${DateFormat('MMMM').format(date)} $day$suffix";
     }
     return "${formatWithSuffix(startDate)} ~ ${formatWithSuffix(endDate)}";
+  }
+
+  // New method to format month name
+  String formatMonth(DateTime month) {
+    return DateFormat('MMMM yyyy').format(month);
   }
 
   Map<String, dynamic> changeWeek(int weeksToAdd) {
@@ -73,9 +103,37 @@ class ScoreboardDataService {
       dateActuallyChanged = true;
     }
     return {
-        'newDate': currentWeekStartDate, // 변경되었거나, 경계에 걸려 변경되지 않은 현재 날짜
+        'newDate': currentWeekStartDate,
         'snackBarMessage': snackBarMessage,
-        'dateChanged': dateActuallyChanged, // 실제로 날짜가 유효하게 변경되었는지
+        'dateChanged': dateActuallyChanged,
+    };
+  }
+
+  // New method to change month
+  Map<String, dynamic> changeMonth(int monthsToAdd) {
+    DateTime newMonth = DateTime(currentSelectedMonth.year, currentSelectedMonth.month + monthsToAdd, 1);
+    // Define boundaries for months if needed, similar to weeks
+    // For simplicity, let's allow navigation for a few years back and forth
+    DateTime oldestMonth = DateTime(DateTime.now().year - 2, 1, 1); // 2 years back
+    DateTime newestMonth = DateTime(DateTime.now().year + 1, 12, 1); // 1 year forward
+
+    String? snackBarMessage;
+    bool monthActuallyChanged = false;
+
+    if (newMonth.isBefore(oldestMonth)) {
+      newMonth = oldestMonth;
+      snackBarMessage = '더 이상 이전 데이터가 없습니다.';
+    } else if (newMonth.isAfter(newestMonth)) {
+      newMonth = newestMonth; // Corrected: should be newestMonth
+      snackBarMessage = '더 이상 다음 데이터가 없습니다.';
+    } else {
+      monthActuallyChanged = true;
+    }
+    currentSelectedMonth = newMonth;
+    return {
+      'newDate': currentSelectedMonth,
+      'snackBarMessage': snackBarMessage,
+      'dateChanged': monthActuallyChanged,
     };
   }
 }
