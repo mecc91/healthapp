@@ -4,7 +4,7 @@ import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 class IntakeLevel extends StatefulWidget {
   final IntakeData _intake;
 
-  IntakeLevel(this._intake, {super.key});
+  const IntakeLevel(this._intake, {super.key});
 
   @override
   State<IntakeLevel> createState() => _IntakeLevelState();
@@ -17,14 +17,32 @@ class _IntakeLevelState extends State<IntakeLevel>
 
   late AnimationController _controller;
   late Animation<double> _fillAnimation;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation; //-> 잠시 지워둠 (정신사나움)
+  late Animation<Offset> _slideAnimation; //-> 잠시 지워둠 (정신사나움)
+
+  Color barColor = Colors.black;
+  void barColorSelector(double ratio)
+  {
+    setState(() {
+      if (ratio <= 0.4) {
+        barColor = const Color(0xFFFFA726); // 강한 빨강 (매우 부족)
+      } else if (ratio <= 0.8) {
+        barColor = const Color(0xFF43A047); // 진한 주황 (부족)
+      } else if (ratio <= 1.2) {
+        barColor = const Color(0xFF1E88E5); // 진한 초록 (적정)
+      } else if (ratio <= 1.6) {
+        barColor = const Color(0xFFFB8C00); // 오렌지 (초과)
+      } else {
+        barColor = const Color(0xFFD32F2F); // 다크레드 (많이 초과)
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-
     double ratio = widget._intake.intakeamount / widget._intake.requiredintake;
+    barColorSelector(ratio);
 
     _controller = AnimationController(
       vsync: this,
@@ -51,6 +69,23 @@ class _IntakeLevelState extends State<IntakeLevel>
     });
   }
 
+  // _intake 값 변경시마다 애니메이션 재실행
+  @override
+  void didUpdateWidget(covariant IntakeLevel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // intake 데이터가 바뀌었을 때만 재애니메이션
+    if (widget._intake != oldWidget._intake) {
+      // update 애니메이션 end 값
+      double ratio = widget._intake.intakeamount / widget._intake.requiredintake;
+      _fillAnimation = Tween<double>(begin: 0, end: ratio).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+      );
+      barColorSelector(ratio);
+      _controller.forward(from: 0); // 애니메이션 재시작
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -62,17 +97,18 @@ class _IntakeLevelState extends State<IntakeLevel>
     final double center = _totalWidth / 2;
     final double maxRatio = 2.0; // 최대 200%까지 표현
 
-    return SlideTransition(
+    return /*SlideTransition(
       position: _slideAnimation,
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Card(
+      /*child: FadeTransition(
+        opacity: _fadeAnimation,*/
+        child: */Card(
           elevation: 1,
           child: Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // 상단 영양소 / 섭취량 텍스트
                 Row(
                   children: [
                     const SizedBox(width: 25),
@@ -83,7 +119,13 @@ class _IntakeLevelState extends State<IntakeLevel>
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      '${widget._intake.intakeamount.round()}${widget._intake.intakeunit} 섭취',
+                      '${widget._intake.intakeamount.round()}${widget._intake.intakeunit}',
+                      style: TextStyle(
+                        color: barColor,
+                          fontSize: 14, fontWeight: FontWeight.w800),
+                    ),
+                    Text(
+                      ' 섭취',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w800),
                     ),
@@ -91,7 +133,7 @@ class _IntakeLevelState extends State<IntakeLevel>
                 ),
                 SizedBox(
                   width: _totalWidth,
-                  height: _blockHeight + 24 + 8,
+                  height: _blockHeight + 24 + 4,
                   child: Stack(
                     children: [
                       // 기준선
@@ -128,20 +170,6 @@ class _IntakeLevelState extends State<IntakeLevel>
                           final double ratio = _fillAnimation.value;
                           final double barWidth =
                               (ratio.clamp(0.0, maxRatio)) * center;
-
-                          Color barColor;
-                          if (ratio <= 0.4) {
-                            barColor = const Color(0xFFFFA726); // 강한 빨강 (매우 부족)
-                          } else if (ratio <= 0.8) {
-                            barColor = const Color(0xFF43A047); // 진한 주황 (부족)
-                          } else if (ratio <= 1.2) {
-                            barColor = const Color(0xFF1E88E5); // 진한 초록 (적정)
-                          } else if (ratio <= 1.6) {
-                            barColor = const Color(0xFFFB8C00); // 오렌지 (초과)
-                          } else {
-                            barColor = const Color(0xFFD32F2F); // 다크레드 (많이 초과)
-                          }
-
                           return Positioned(
                             left: 0,
                             top: 12,
@@ -193,8 +221,8 @@ class _IntakeLevelState extends State<IntakeLevel>
               ],
             ),
           ),
-        ),
-      ),
-    );
+        );
+//    );
+    //)
   }
 }

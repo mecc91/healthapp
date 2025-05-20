@@ -7,9 +7,11 @@ class DailyStatusService
   DailyStatusService({required this.baseUrl});
 
   final String baseUrl;
+  //final String userId;
+  //final String mealInfoId;
 
   Future<List<MealInfo>> fetchMeals() async {
-    final url = Uri.parse('$baseUrl/foods');  // 실제 엔드포인트에 맞게 수정
+    final url = Uri.parse('$baseUrl/users/userId/meal-info/mealInfoId');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

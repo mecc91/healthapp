@@ -216,8 +216,11 @@ class _DashboardState extends State<Dashboard>
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
+      // Stack : non-positioned widget을 배치할 수 있음 (왼쪽 상단이 start)
+      //         Positioned(left:, right:, top:, bottom:) 위젯으로 원하는 위젯을 배치 가능 
       body: Stack(
         children: [
+          // 배경 컨테이너
           Container(
             height: 250,
             decoration: const BoxDecoration(
@@ -239,8 +242,10 @@ class _DashboardState extends State<Dashboard>
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
+                  // Dashboard 위젯 배치
                   child: Column(
                     children: [
+                      // Dashboard 헤더 (알림아이콘 & 프로필아이콘)
                       DashboardHeader(
                         avatarScale: _avatarScale,
                         onAvatarTapDown: (_) => setState(() => _avatarScale = 0.85),
@@ -254,6 +259,7 @@ class _DashboardState extends State<Dashboard>
                           _navigateWithFade(context, const Underconstruction());
                         },
                       ),
+                      // DailyStatus Widget
                       DailyStatusSummaryCard(
                         key: ValueKey('dailyCard_$_dailyCardKey'), // Key 사용 예시
                         scale: _dailyCardScale,
@@ -264,6 +270,7 @@ class _DashboardState extends State<Dashboard>
                         },
                         onTapCancel: () => setState(() => _dailyCardScale = 1.0),
                       ),
+                      // Scoreboard Widget
                       WeeklyScoreSummaryCard(
                         key: ValueKey('scoreCard_$_scoreCardKey'), // Key 사용 예시
                         scale: _scoreCardScale,
@@ -303,6 +310,7 @@ class _DashboardState extends State<Dashboard>
           ),
         ],
       ),
+      // BottomNavBar (Dashboard 전용)
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onBottomNavigationTap,

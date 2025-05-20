@@ -14,7 +14,8 @@ class MealInfo
     required this.mealtype,
     required this.intakeamount,
     required this.meals,
-    });
+    required this.imagepath,
+  });
 
   factory MealInfo.fromJson(Map<String, dynamic> json) {
     return MealInfo(
@@ -29,6 +30,7 @@ class MealInfo
       mealtype: json['mealtype'] as String,
       intakeamount: json['intakeamount'] as int,
       meals: List<String>.from(json['meals']),
+      imagepath: json['imagepath'] as String,
     );
   }
 
@@ -36,6 +38,7 @@ class MealInfo
   final DateTime intaketime;
   final String mealtype;
   final int intakeamount;
+  final String imagepath;
 
   final double protein_g;
   final double fat_g;
