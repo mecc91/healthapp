@@ -44,11 +44,11 @@ class CommonBottomNavigationBar extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart, size: 40), label: 'Scoreboard'),
+            icon: Icon(Icons.bar_chart, size: 35), label: 'Scoreboard'),
         BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard, size: 40), label: 'Dashboard'), // ✅ 변경
+            icon: Icon(Icons.dashboard, size: 35), label: 'Dashboard'), // ✅ 변경
         BottomNavigationBarItem(
-            icon: Icon(Icons.star_border, size: 40), label: 'Recommendation'),
+            icon: Icon(Icons.star_border, size: 35), label: 'Recommendation'),
       ],
       onTap: (index) {
         if (index == currentIndex) return;
