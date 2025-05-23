@@ -195,7 +195,7 @@ class _MenuRecommendScreenState extends State<MenuRecommendScreen> {
         borderRadius: BorderRadius.circular(20.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withAlpha(77), // 0.3 * 255 ≈ 77
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -220,7 +220,7 @@ class _MenuRecommendScreenState extends State<MenuRecommendScreen> {
       style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: Colors.black.withOpacity(0.8),
+        color: Colors.black.withAlpha(204), // 0.8 * 255 ≈ 204
       ),
     );
   }
@@ -307,7 +307,7 @@ class _MenuRecommendScreenState extends State<MenuRecommendScreen> {
   Widget _buildCaptureButton() {
     return ElevatedButton(
       onPressed: () {
-        // TODO: Implement capture action
+        
         print('Capture Menu List tapped!');
       },
       style: ElevatedButton.styleFrom(

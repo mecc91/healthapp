@@ -1,9 +1,9 @@
 // lib/nutrientintakePage/widgets/nutrient_monthly_calendar_view.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For DateUtils if needed, and potential date formatting
+
 import '../services/nutrient_intake_data_service.dart';
-import '../../scoreboardPage/scoreboard_constants.dart'; // For dayNamesKorean (Sunday start)
-import '../nutrient_intake_constants.dart'; // For nutrient-specific constants if any
+
+
 
 class NutrientMonthlyCalendarView extends StatefulWidget {
   final DateTime selectedMonth; // The first day of the month to display
@@ -136,7 +136,7 @@ class _NutrientMonthlyCalendarViewState extends State<NutrientMonthlyCalendarVie
 
               if (nutrientValue > 0) {
                 double opacity = (nutrientValue / maxNutrientValueForOpacity).clamp(0.15, 1.0);
-                cellColor = _nutrientBaseColor.withOpacity(opacity);
+                cellColor = _nutrientBaseColor.withAlpha((opacity * 255).round());
                 if (opacity > 0.55) {
                   textColor = Colors.white;
                 }
@@ -153,7 +153,7 @@ class _NutrientMonthlyCalendarViewState extends State<NutrientMonthlyCalendarVie
                     boxShadow: [
                       if (nutrientValue > 0)
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: Colors.grey.withAlpha(51),
                           spreadRadius: 1,
                           blurRadius: 2,
                           offset: const Offset(0, 1),
@@ -179,7 +179,7 @@ class _NutrientMonthlyCalendarViewState extends State<NutrientMonthlyCalendarVie
                               '$nutrientValue',
                               style: TextStyle(
                                 fontSize: 9.5,
-                                color: textColor.withOpacity(0.85),
+                                color: textColor.withAlpha(217),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

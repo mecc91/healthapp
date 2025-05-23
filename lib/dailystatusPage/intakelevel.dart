@@ -17,8 +17,8 @@ class _IntakeLevelState extends State<IntakeLevel>
 
   late AnimationController _controller;
   late Animation<double> _fillAnimation;
-  late Animation<double> _fadeAnimation; //-> 잠시 지워둠 (정신사나움)
-  late Animation<Offset> _slideAnimation; //-> 잠시 지워둠 (정신사나움)
+  late Animation<double> _fadeAnimation;  // -> 잠시 지워둠 (정신사나움)
+  late Animation<Offset> _slideAnimation; // -> 잠시 지워둠 (정신사나움)
 
   Color barColor = Colors.black;
   void barColorSelector(double ratio)
