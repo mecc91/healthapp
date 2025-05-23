@@ -138,7 +138,7 @@ class _WeeklyScoreChartState extends State<WeeklyScoreChart>
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: widget.weekData.asMap().entries.map((entry) {
-                        final index = entry.key;
+                        
                         final dayData = entry.value;
                         final barHeight = _calculateBarHeight(
                             dayData['value'], heightFor100, 100);
