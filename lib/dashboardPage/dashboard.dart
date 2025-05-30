@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
+import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
 import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
@@ -48,6 +49,9 @@ class _DashboardState extends State<Dashboard>
   double _dailyCardScale = 1.0;
   double _scoreCardScale = 1.0;
   double _mealDiaryCardScale = 1.0; // MealDiaryCard 탭 애니메이션을 위한 변수
+
+  // GPT Service
+  final MealGptService _mealGptService = MealGptService();
 
   // 애니메이션 컨트롤러 (이전 코드에서 참조)
   late AnimationController _animationController;
@@ -199,6 +203,7 @@ class _DashboardState extends State<Dashboard>
        _navigateWithFade(context, MealDiaryScreen(displayDate: dateForDiary));
       */
       _takePicture(); // 사진 촬영 로직
+      //_mealGptService.sendPing();
     } else if (index == 2) {
       _navigateWithFade(context, const MenuRecommendScreen());
     }

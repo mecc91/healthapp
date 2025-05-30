@@ -1,6 +1,7 @@
 // lib/mealrecordPage/mealrecord.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
 import 'dart:io'; // File 클래스 사용
 import 'dart:math';
 import 'package:image_picker/image_picker.dart';
@@ -52,8 +53,10 @@ class MealRecord extends StatefulWidget {
 }
 
 class _MealRecordState extends State<MealRecord> {
+  // Imgae 관련 멤버변수
   final ImagePicker _picker = ImagePicker();
   XFile? _pickedImageFile;
+  File? _storedImage;
 
   String? _selectedServing = '1';
   String? _selectedTime = 'Breakfast';
@@ -68,6 +71,7 @@ class _MealRecordState extends State<MealRecord> {
   // Services
   final MenuAnalysisService _menuAnalysisService = MenuAnalysisService();
   final MealDataService _mealDataService = MealDataService();
+  final MealGptService _mealGptService = MealGptService();
 
   @override
   void initState() {
@@ -147,7 +151,11 @@ class _MealRecordState extends State<MealRecord> {
     }
 
     try {
-      final String analyzedMenuName = await _menuAnalysisService.analyzeImage(imagePath);
+      final File imageFile = File(imagePath);
+      late String analyzedMenuName;
+      _mealGptService.sendMealImage(imageFile).then((value) {
+        analyzedMenuName = value;
+      },);
       if (!mounted) return;
       setState(() {
         _menuName = analyzedMenuName;
