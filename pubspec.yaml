@@ -25,7 +25,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/files/
+    #현재 미사용 - assets/files/
     - assets/image/
   fonts:
     - family: korfont1

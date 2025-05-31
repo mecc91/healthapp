@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/intakelevel.dart';
 import 'package:healthymeal/dailystatusPage/model/mealinfo.dart';
-import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart';
+
 
 class DailyStatus extends StatefulWidget {
   const DailyStatus({super.key});
@@ -91,7 +91,7 @@ class _DailyStatusState extends State<DailyStatus> {
     ),
   ];
   // API Request Service
-  final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://152.67.196.3:4912/foods");
+  // final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://152.67.196.3:4912/foods");
   
   final List<IntakeData> _intakes = []; 
   final IntakeCriterion criterion = IntakeCriterion(130, 65, 70, 1500, 30, 65, 300);

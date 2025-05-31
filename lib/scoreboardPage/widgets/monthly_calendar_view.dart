@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
 import '../services/scoreboard_data_service.dart';
-import '../scoreboard_constants.dart';
+
 
 class MonthlyCalendarView extends StatefulWidget {
   final DateTime selectedMonth;
@@ -127,7 +127,7 @@ class _MonthlyCalendarViewState extends State<MonthlyCalendarView>
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(4.0),
-                          color: score > 0 ? Colors.teal.withOpacity(score / 100.0) : Colors.white,
+                          color: score > 0 ? Colors.teal.withAlpha((score * 2.55).round()) : Colors.white,
                         ),
                         child: Center(
                           child: Column(

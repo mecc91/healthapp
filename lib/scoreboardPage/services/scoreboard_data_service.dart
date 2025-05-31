@@ -20,7 +20,7 @@ class ScoreboardDataService {
 
   void _initializeDateBoundaries() {
     // For weekly view
-    final now = DateTime.now();
+    
     oldestWeekStartDate = _getInitialWeekStartDate().subtract(Duration(days: weeksOfDataBeforeToday * 7));
     newestWeekStartDate = _getInitialWeekStartDate().add(Duration(days: weeksOfDataAfterToday * 7));
 

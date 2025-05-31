@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
 import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
+import 'package:healthymeal/profilePage/profile.dart';
 import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
@@ -35,7 +36,8 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard>
-    with RouteAware, SingleTickerProviderStateMixin { // RouteAware, SingleTickerProviderStateMixin 추가
+    with RouteAware, SingleTickerProviderStateMixin {
+  // RouteAware, SingleTickerProviderStateMixin 추가
   final ImagePicker _picker = ImagePicker();
 
   // _scoreCardKey 및 _dailyCardKey는 이전 코드에서 사용되었으나,
@@ -79,7 +81,7 @@ class _DashboardState extends State<Dashboard>
 
     // 페이지가 빌드된 후 애니메이션 시작
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if(mounted) {
+      if (mounted) {
         _animationController.forward(from: 0);
       }
     });
@@ -99,7 +101,7 @@ class _DashboardState extends State<Dashboard>
   @override
   void didPopNext() {
     // 다른 화면에서 이 화면으로 돌아올 때 애니메이션 재시작
-    if(mounted) {
+    if (mounted) {
       _animationController.forward(from: 0);
       final now = DateTime.now().microsecondsSinceEpoch;
       setState(() {
@@ -222,7 +224,7 @@ class _DashboardState extends State<Dashboard>
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       // Stack : non-positioned widget을 배치할 수 있음 (왼쪽 상단이 start)
-      //         Positioned(left:, right:, top:, bottom:) 위젯으로 원하는 위젯을 배치 가능 
+      //         Positioned(left:, right:, top:, bottom:) 위젯으로 원하는 위젯을 배치 가능
       body: Stack(
         children: [
           // 배경 컨테이너
@@ -243,7 +245,8 @@ class _DashboardState extends State<Dashboard>
           ),
           SafeArea(
             child: SingleChildScrollView(
-              child: SlideTransition( // 전체 컬럼에 슬라이드/페이드 애니메이션 적용
+              child: SlideTransition(
+                // 전체 컬럼에 슬라이드/페이드 애니메이션 적용
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -253,10 +256,11 @@ class _DashboardState extends State<Dashboard>
                       // Dashboard 헤더 (알림아이콘 & 프로필아이콘)
                       DashboardHeader(
                         avatarScale: _avatarScale,
-                        onAvatarTapDown: (_) => setState(() => _avatarScale = 0.85),
+                        onAvatarTapDown: (_) =>
+                            setState(() => _avatarScale = 0.85),
                         onAvatarTapUp: (_) {
                           setState(() => _avatarScale = 1.0);
-                          _navigateWithFade(context, const Underconstruction());
+                          _navigateWithFade(context, const Profile());
                         },
                         onAvatarTapCancel: () =>
                             setState(() => _avatarScale = 1.0),
@@ -268,33 +272,42 @@ class _DashboardState extends State<Dashboard>
                       DailyStatusSummaryCard(
                         key: ValueKey('dailyCard_$_dailyCardKey'), // Key 사용 예시
                         scale: _dailyCardScale,
-                        onTapDown: (_) => setState(() => _dailyCardScale = 0.98),
+                        onTapDown: (_) =>
+                            setState(() => _dailyCardScale = 0.98),
                         onTapUp: (_) {
                           setState(() => _dailyCardScale = 1.0);
                           _navigateWithFade(context, const DailyStatus());
                         },
-                        onTapCancel: () => setState(() => _dailyCardScale = 1.0),
+                        onTapCancel: () =>
+                            setState(() => _dailyCardScale = 1.0),
                       ),
                       // Scoreboard Widget
                       WeeklyScoreSummaryCard(
                         key: ValueKey('scoreCard_$_scoreCardKey'), // Key 사용 예시
                         scale: _scoreCardScale,
-                        onTapDown: (_) => setState(() => _scoreCardScale = 0.98),
+                        onTapDown: (_) =>
+                            setState(() => _scoreCardScale = 0.98),
                         onTapUp: (_) {
                           setState(() => _scoreCardScale = 1.0);
                           _navigateWithFade(context, const ScoreboardScreen());
                         },
-                        onTapCancel: () => setState(() => _scoreCardScale = 1.0),
+                        onTapCancel: () =>
+                            setState(() => _scoreCardScale = 1.0),
                       ),
                       // MealDiaryCard 섹션 (사용자가 제공한 코드 스타일 적용)
                       GestureDetector(
-                        onTapDown: (_) => setState(() => _mealDiaryCardScale = 0.98),
+                        onTapDown: (_) =>
+                            setState(() => _mealDiaryCardScale = 0.98),
                         onTapUp: (_) {
                           setState(() => _mealDiaryCardScale = 1.0);
                           // MealDiaryScreen으로 네비게이션, displayDate에 currentDateAsDateTime 전달
-                          _navigateWithFade(context, MealDiaryScreen(displayDate: currentDateAsDateTime));
+                          _navigateWithFade(
+                              context,
+                              MealDiaryScreen(
+                                  displayDate: currentDateAsDateTime));
                         },
-                        onTapCancel: () => setState(() => _mealDiaryCardScale = 1.0),
+                        onTapCancel: () =>
+                            setState(() => _mealDiaryCardScale = 1.0),
                         child: AnimatedScale(
                           scale: _mealDiaryCardScale,
                           duration: const Duration(milliseconds: 150),
@@ -326,11 +339,14 @@ class _DashboardState extends State<Dashboard>
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart, size: 35), label: ''), // 스코어보드 (인덱스 0)
+              icon: Icon(Icons.bar_chart, size: 35),
+              label: ''), // 스코어보드 (인덱스 0)
           BottomNavigationBarItem(
-              icon: Icon(Icons.camera_alt, size: 35), label: ''), // 식단 기록 (인덱스 1)
+              icon: Icon(Icons.camera_alt, size: 35),
+              label: ''), // 식단 기록 (인덱스 1)
           BottomNavigationBarItem(
-              icon: Icon(Icons.star_border, size: 35), label: ''), // 메뉴 추천 (인덱스 2)
+              icon: Icon(Icons.star_border, size: 35),
+              label: ''), // 메뉴 추천 (인덱스 2)
         ],
       ),
     );

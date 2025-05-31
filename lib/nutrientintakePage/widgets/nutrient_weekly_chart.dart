@@ -138,7 +138,7 @@ class _NutrientWeeklyChartState extends State<NutrientWeeklyChart>
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: widget.weekData.asMap().entries.map((entry) {
-                          final index = entry.key;
+                          
                           final data = entry.value;
                           final barHeight =
                               NutrientIntakeDataService.calculateBarHeight(

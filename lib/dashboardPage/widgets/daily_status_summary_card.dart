@@ -1,6 +1,6 @@
 // lib/dashboardPage/widgets/daily_status_summary_card.dart
 import 'package:flutter/material.dart';
-import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart';
+
 
 class DailyStatusSummaryCard extends StatefulWidget {
   final double scale;
@@ -23,10 +23,10 @@ class DailyStatusSummaryCard extends StatefulWidget {
 class _DailyStatusSummaryCardState extends State<DailyStatusSummaryCard> {
 
   // 추후 API Request를 위한 Service
-  final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://...");
+  // final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://...");
   @override
   void initState() {
-    // TODO: implement initState
+    
     super.initState();
   }
 
