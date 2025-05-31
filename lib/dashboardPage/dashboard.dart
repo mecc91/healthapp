@@ -217,8 +217,8 @@ class _DashboardState extends State<Dashboard>
       // MealDiaryScreen으로 현재 날짜를 전달하며 이동 (카메라 아이콘 탭 시)
       // 현재는 _takePicture()를 호출하도록 되어 있습니다.
       // 만약 식단 기록 화면으로 바로 이동시키려면 아래 주석을 해제하고 _takePicture()를 주석 처리합니다.
-      _navigateWithFade(context, MealRecord(initialImageFile: _dummyMealImage));     // 사진촬영없이 바로분기
-      //_takePicture(); // 사진 촬영 로직
+      //_navigateWithFade(context, MealRecord(initialImageFile: _dummyMealImage));     // 사진촬영없이 바로분기
+      _takePicture(); // 사진 촬영 로직
       //_mealGptService.sendPing();
 
       // MenuRecommend Page로 분기
