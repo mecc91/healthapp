@@ -9,11 +9,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations: # ✅ DatePicker 로케일 지원용
+    sdk: flutter
   camera: ^0.11.1
   path_provider: ^2.1.5
   path: ^1.9.0
   image_picker: ^1.0.4
-  intl: ^0.20.2
+  intl: 0.19.0
+  http: ^1.1.0
+  shared_preferences: ^2.2.2
+
 
 dev_dependencies:
   flutter_test:
@@ -22,8 +27,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
-    - assets/images/
-    - assets/icons/
-
+    - assets/image/
+    - assets/image/chicken.jpg
+  fonts:
+    - family: korfont1
+      fonts:
+        - asset: assets/fonts/Jua-Regular.ttf

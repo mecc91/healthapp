@@ -1,23 +1,52 @@
 import 'package:flutter/material.dart';
-// import 'package:healthymeal/gptPages/scoreboard.dart'; // 필요하다면 주석 해제
-import 'package:healthymeal/Pages/dashboard.dart'; // Dashboard 위젯 import
-// 안녕!
+import 'package:flutter_localizations/flutter_localizations.dart'; // ✅ 추가
+import 'package:healthymeal/dashboardPage/dashboard.dart';
+import 'package:healthymeal/loginPage/login.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('ko_KR', null);
+
+  final prefs = await SharedPreferences.getInstance();
+  final String? userId = prefs.getString('userId');
+
+  runApp(MyApp(initialRoute: userId == null ? '/' : '/dashboard'));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
-    // MaterialApp 위젯으로 Dashboard를 감쌉니다.
     return MaterialApp(
-      title: 'Healthy Meal App', // 앱 제목 설정
-      // theme 관련 설정 제거됨
-      home: const Dashboard(), // Dashboard 위젯을 home으로 지정
-      debugShowCheckedModeBanner: false, // 디버그 배너 제거
+      title: 'Healthy Meal',
+      theme: ThemeData(
+        fontFamily: 'korfont1',
+        useMaterial3: true,
+      ),
+      initialRoute: initialRoute,
+      routes: {
+        '/': (context) => const LoginPage(),
+        '/dashboard': (context) => const Dashboard(),
+      },
+      debugShowCheckedModeBanner: false,
+      navigatorObservers: [routeObserver],
+      localizationsDelegates: [
+        // ✅ DatePicker 오류 해결
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ko', 'KR'),
+        Locale('en', 'US'),
+      ],
     );
   }
 }
