@@ -2,7 +2,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
-import 'dart:io'; // File 클래스 사용
+import 'dart:io';       // File 클래스 사용
 import 'dart:math';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/mealrecordPage/services/menu_analysis_service.dart'; // Refactored
@@ -56,14 +56,15 @@ class _MealRecordState extends State<MealRecord> {
   // Imgae 관련 멤버변수
   final ImagePicker _picker = ImagePicker();
   XFile? _pickedImageFile;
-  File? _storedImage;
 
   String? _selectedServing = '1';
   String? _selectedTime = 'Breakfast';
   final List<String> _servingOptions = ['1', '2', '3', '4', '5'];
   final List<String> _timeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
+  // Meal-info data!
   String _menuName = '';
+  late int _mealId;
   bool _isAnalyzingMenu = false;
   bool _isEditingMenu = false;
   final TextEditingController _menuNameController = TextEditingController();
@@ -101,6 +102,7 @@ class _MealRecordState extends State<MealRecord> {
     super.dispose();
   }
 
+  // 식단사진 재촬영시 호출
   Future<void> _pickImageAndAnalyze(ImageSource source) async {
     if (_isAnalyzingMenu) return;
 
@@ -137,28 +139,26 @@ class _MealRecordState extends State<MealRecord> {
     }
   }
 
+  // 촬영된 이미지 GPT 분석
   Future<void> _analyzeImage(String? imagePath) async {
     if (imagePath == null || imagePath.isEmpty) {
       _resetMenuAnalysisStateOnError(errorMessage: MealRecordStrings.statusImagePathError);
       return;
     }
-
     if (mounted) {
       setState(() {
         _isAnalyzingMenu = true;
         _isEditingMenu = false; // Ensure edit mode is off during analysis
       });
     }
-
     try {
       final File imageFile = File(imagePath);
-      late String analyzedMenuName;
-      _mealGptService.sendMealImage(imageFile).then((value) {
-        analyzedMenuName = value;
-      },);
+      final String analyzedMenuName = await _mealGptService.sendMealImage(imageFile);
       if (!mounted) return;
+      final String menuName = analyzedMenuName.split(',').first;
       setState(() {
-        _menuName = analyzedMenuName;
+        _mealId = int.parse(analyzedMenuName.split(',').last);
+        _menuName = menuName;
         _menuNameController.text = _menuName;
         _isAnalyzingMenu = false;
       });
@@ -182,7 +182,7 @@ class _MealRecordState extends State<MealRecord> {
     }
   }
 
-
+  // 식단 최종기록
   Future<void> _saveData() async {
     if (_isAnalyzingMenu) return;
     if (_pickedImageFile == null) {
@@ -192,52 +192,11 @@ class _MealRecordState extends State<MealRecord> {
       );
       return;
     }
-
-    // Validate menu name
-    final currentMenuName = _isEditingMenu ? _menuNameController.text.trim() : _menuName.trim();
-    if (currentMenuName.isEmpty ||
-        currentMenuName == MealRecordStrings.statusAnalyzing ||
-        currentMenuName == MealRecordStrings.statusAnalysisFailed ||
-        currentMenuName == MealRecordStrings.statusImagePathError ||
-        currentMenuName == MealRecordStrings.statusNoMenuName ||
-        currentMenuName == MealRecordStrings.statusSelectPhotoFirst) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(MealRecordStrings.snackBarInvalidMenuNameToSave)),
-      );
-      return;
-    }
-    
-    // If in editing mode, finalize the menu name from controller
-    if (_isEditingMenu) {
-        _menuName = _menuNameController.text.trim();
-        if (_menuName.isEmpty) _menuName = MealRecordStrings.statusNoMenuName; // Should be caught by above check
-        if(mounted) setState(() => _isEditingMenu = false); // Exit editing mode
-    }
-
-
-    final mealRecord = MealRecordData(
-      imagePath: _pickedImageFile?.path,
-      menuName: _menuName, // Use the finalized _menuName
-      serving: _selectedServing,
-      mealTime: _selectedTime,
-      timestamp: DateTime.now().toIso8601String(),
-    );
-
+    String result = await _mealGptService.recordMeal(_mealId, int.parse(_selectedServing!));
+    print(result);
     try {
-      final String savedFilePath = await _mealDataService.saveMealRecord(mealRecord);
-      print('--- Data to be sent (conceptually) ---');
-      print('Image Path: ${mealRecord.imagePath}');
-      print('Menu: ${mealRecord.menuName}');
-      print('Serving: ${mealRecord.serving}');
-      print('Time: ${mealRecord.mealTime}');
-      print('Timestamp: ${mealRecord.timestamp}');
-      print('Object Data (JSON): ${jsonEncode(mealRecord.toJson())}');
-      print('----------------------');
-
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${MealRecordStrings.snackBarSaveSuccess}$savedFilePath')),
+        SnackBar(content: Text(result)),
       );
       if (mounted) {
         Navigator.of(context).pop(); // Go back to previous screen
@@ -278,7 +237,13 @@ class _MealRecordState extends State<MealRecord> {
     }
   }
 
-  void _deleteRecordAndExit() {
+  // 뒤로가기 button
+  void _deleteRecordAndExit() async {
+    String result = await _mealGptService.deleteMeal(_mealId);
+    if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result)),
+      );
     if (mounted) {
       Navigator.of(context).pop();
     }
@@ -468,6 +433,7 @@ class _MealRecordState extends State<MealRecord> {
     );
   }
 
+  // 섭취량 & 식사종류
   Widget _buildDropdownContainer({
     required String label,
     required String? value,
@@ -502,11 +468,13 @@ class _MealRecordState extends State<MealRecord> {
     );
   }
 
+  // 재촬영 & 식단기록 & 휴지통
   Widget _buildActionButtons(double horizontalPadding, Size screenSize) {
      return Row(
         children: [
           Tooltip(
             message: MealRecordStrings.retakeTooltip,
+            // 재촬영 버튼
             child: OutlinedButton(
               onPressed: _isAnalyzingMenu ? null : () => _pickImageAndAnalyze(ImageSource.camera),
               style: OutlinedButton.styleFrom(
@@ -525,6 +493,7 @@ class _MealRecordState extends State<MealRecord> {
           ),
           const SizedBox(width: 16.0),
           Expanded(
+            // 식단기록 버튼
             child: ElevatedButton(
               onPressed: _canEnableSaveButton ? _saveData : null,
               style: ElevatedButton.styleFrom(
@@ -544,6 +513,7 @@ class _MealRecordState extends State<MealRecord> {
           const SizedBox(width: 16.0),
           Tooltip(
             message: MealRecordStrings.cancelTooltip,
+            // 휴지통 버튼
             child: OutlinedButton(
               onPressed: _isAnalyzingMenu ? null : _deleteRecordAndExit, // Allow cancelling even during analysis if needed, or disable
               style: OutlinedButton.styleFrom(
@@ -589,6 +559,7 @@ class _MealRecordState extends State<MealRecord> {
       body: Column(
         children: [
           Expanded(
+            // 식단사진 & 메뉴이름 파트
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
@@ -604,7 +575,7 @@ class _MealRecordState extends State<MealRecord> {
               ),
             ),
           ),
-          // Bottom fixed part
+          // 섭취량 & 식사시간 & 식단기록버튼 파트
           Padding(
             padding: EdgeInsets.only(
               left: horizontalPadding,

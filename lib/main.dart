@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // ✅ 추가
 import 'package:healthymeal/dashboardPage/dashboard.dart';
-import 'package:healthymeal/loginPage/login.dart'; // 로그인 페이지 import
+import 'package:healthymeal/loginPage/login.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,7 +11,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ko_KR', null);
 
-  // ✅ SharedPreferences로 로그인 상태 확인
   final prefs = await SharedPreferences.getInstance();
   final String? userId = prefs.getString('userId');
 
@@ -30,13 +30,23 @@ class MyApp extends StatelessWidget {
         fontFamily: 'korfont1',
         useMaterial3: true,
       ),
-      initialRoute: initialRoute, // ✅ 자동 로그인 처리
+      initialRoute: initialRoute,
       routes: {
-        '/': (context) => const LoginPage(), // 로그인 페이지
-        '/dashboard': (context) => const Dashboard(), // 대시보드
+        '/': (context) => const LoginPage(),
+        '/dashboard': (context) => const Dashboard(),
       },
       debugShowCheckedModeBanner: false,
       navigatorObservers: [routeObserver],
+      localizationsDelegates: [
+        // ✅ DatePicker 오류 해결
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ko', 'KR'),
+        Locale('en', 'US'),
+      ],
     );
   }
 }
