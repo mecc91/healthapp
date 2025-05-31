@@ -94,7 +94,11 @@ class _ProfileState extends State<Profile>
   }
 
   void _confirmPasswordAndNavigateToQuit() async {
+<<<<<<< HEAD
     final TextEditingController _pwController = TextEditingController();
+=======
+    final TextEditingController pwController = TextEditingController();
+>>>>>>> week14_kimjiwoo
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getString('userId');
 
@@ -103,7 +107,11 @@ class _ProfileState extends State<Profile>
       builder: (ctx) => AlertDialog(
         title: const Text("비밀번호 확인"),
         content: TextField(
+<<<<<<< HEAD
           controller: _pwController,
+=======
+          controller: pwController,
+>>>>>>> week14_kimjiwoo
           obscureText: true,
           decoration: const InputDecoration(
             labelText: '비밀번호',
@@ -122,7 +130,11 @@ class _ProfileState extends State<Profile>
               if (response.statusCode == 200) {
                 final user = jsonDecode(response.body);
                 final serverPw = user['hashedPassword'].toString().trim();
+<<<<<<< HEAD
                 final inputPw = _pwController.text.trim();
+=======
+                final inputPw = pwController.text.trim();
+>>>>>>> week14_kimjiwoo
 
                 if (serverPw == inputPw) {
                   if (!mounted) return;

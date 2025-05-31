@@ -36,7 +36,29 @@ class _UserQuitPageState extends State<UserQuitPage> {
       if (response.statusCode == 200 || response.statusCode == 204) {
         await prefs.remove('userId');
         if (!mounted) return;
+<<<<<<< HEAD
         Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
+=======
+
+        // ✅ 탈퇴 완료 다이얼로그 → 확인 누르면 로그인으로 이동
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            title: const Text("탈퇴 완료"),
+            content: const Text("회원 탈퇴가 정상적으로 처리되었습니다."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // 다이얼로그 닫기
+                  Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
+                },
+                child: const Text("확인"),
+              ),
+            ],
+          ),
+        );
+>>>>>>> week14_kimjiwoo
       } else {
         _showDialog("탈퇴 실패", "서버 오류 (코드 ${response.statusCode})");
       }
