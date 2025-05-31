@@ -6,8 +6,9 @@ import '../meal_diary_entry.dart';
 
 class MealDiaryCard extends StatefulWidget {
   final MealDiaryEntry entry;
+  final VoidCallback? onDelete;
 
-  const MealDiaryCard({super.key, required this.entry});
+  const MealDiaryCard({super.key, required this.entry, this.onDelete});
 
   @override
   State<MealDiaryCard> createState() => _MealDiaryCardState();
@@ -47,23 +48,41 @@ class _MealDiaryCardState extends State<MealDiaryCard>
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('userId');
 
-    if (userId == null) {
-      throw Exception('❗ 로그인 정보가 없습니다.');
-    }
+    if (userId == null) throw Exception('❗ 로그인 정보 없음');
 
     final url = Uri.parse(
       'http://152.67.196.3:4912/users/$userId/meal-info/$mealInfoId'
       '?amount=$amount&diary=${Uri.encodeComponent(newDiary)}',
     );
 
-    final response = await http.patch(
-      url,
-      headers: {'Accept': '*/*'},
-    );
-
+    final response = await http.patch(url, headers: {'Accept': '*/*'});
     if (response.statusCode != 200) {
       throw Exception('다이어리 수정 실패: ${response.statusCode}');
     }
+  }
+
+  Future<void> deleteDiary(int mealInfoId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+
+    if (userId == null) throw Exception('❗ 로그인 정보 없음');
+
+    final url = Uri.parse(
+      'http://152.67.196.3:4912/users/$userId/meal-info/$mealInfoId',
+    );
+
+    final response = await http.delete(url);
+
+    if (response.statusCode == 204 || response.statusCode == 200) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('✅ 삭제가 완료되었습니다')),
+        );
+      }
+      return;
+    }
+
+    throw Exception('삭제 실패: ${response.statusCode}');
   }
 
   @override
@@ -121,70 +140,114 @@ class _MealDiaryCardState extends State<MealDiaryCard>
                         ),
                         GestureDetector(
                           behavior: HitTestBehavior.translucent,
-                          onTapDown: (_) {
-                            setState(() => _isSettingTapped = true);
-                          },
+                          onTapDown: (_) => setState(() => _isSettingTapped = true),
                           onTapUp: (_) async {
                             setState(() => _isSettingTapped = false);
 
-                            final TextEditingController controller =
-                                TextEditingController(text: widget.entry.notes);
-
-                            final result = await showDialog<String>(
+                            final action = await showModalBottomSheet<String>(
                               context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('식단 메모 수정'),
-                                content: TextField(
-                                  controller: controller,
-                                  maxLines: 4,
-                                  decoration: const InputDecoration(
-                                    hintText: '메모를 입력하세요',
-                                    border: OutlineInputBorder(),
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16))),
+                              builder: (context) => Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ListTile(
+                                    leading: const Icon(Icons.edit),
+                                    title: const Text('메모 수정'),
+                                    onTap: () => Navigator.pop(context, 'edit'),
                                   ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context),
-                                    child: const Text('취소'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, controller.text),
-                                    child: const Text('저장'),
+                                  ListTile(
+                                    leading: const Icon(Icons.delete, color: Colors.red),
+                                    title: const Text('삭제',
+                                        style: TextStyle(color: Colors.red)),
+                                    onTap: () => Navigator.pop(context, 'delete'),
                                   ),
                                 ],
                               ),
                             );
 
-                            if (result != null &&
-                                result != widget.entry.notes) {
-                              try {
-                                final mealInfoId = int.parse(widget.entry.menuName
-                                    .replaceAll('메뉴 ID: ', '')
-                                    .trim());
+                            final mealInfoId = int.parse(widget.entry.menuName
+                                .replaceAll('메뉴 ID: ', '')
+                                .trim());
 
-                                await updateDiary(
-                                  mealInfoId: mealInfoId,
-                                  amount: widget.entry.intakeAmount,
-                                  newDiary: result,
-                                );
-
-                                setState(() {
-                                  widget.entry.notes = result;
-                                });
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('⚠️ 수정 실패: $e'),
+                            if (action == 'edit') {
+                              final controller =
+                                  TextEditingController(text: widget.entry.notes);
+                              final result = await showDialog<String>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('식단 메모 수정'),
+                                  content: TextField(
+                                    controller: controller,
+                                    maxLines: 4,
+                                    decoration: const InputDecoration(
+                                      hintText: '메모를 입력하세요',
+                                      border: OutlineInputBorder(),
+                                    ),
                                   ),
-                                );
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context),
+                                        child: const Text('취소')),
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, controller.text),
+                                        child: const Text('저장')),
+                                  ],
+                                ),
+                              );
+
+                              if (result != null && result != widget.entry.notes) {
+                                try {
+                                  await updateDiary(
+                                    mealInfoId: mealInfoId,
+                                    amount: widget.entry.intakeAmount,
+                                    newDiary: result,
+                                  );
+                                  setState(() {
+                                    widget.entry.notes = result;
+                                  });
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('⚠️ 수정 실패: $e')),
+                                  );
+                                }
+                              }
+                            } else if (action == 'delete') {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('삭제 확인'),
+                                  content: const Text('이 식단 기록을 삭제하시겠어요?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text('취소')),
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: const Text('삭제')),
+                                  ],
+                                ),
+                              );
+
+                              if (confirmed == true) {
+                                try {
+                                  await deleteDiary(mealInfoId);
+                                  widget.onDelete?.call();
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('⚠️ 삭제 실패: $e')),
+                                  );
+                                }
                               }
                             }
                           },
-                          onTapCancel: () {
-                            setState(() => _isSettingTapped = false);
-                          },
+                          onTapCancel: () =>
+                              setState(() => _isSettingTapped = false),
                           child: Padding(
                             padding: const EdgeInsets.only(left: 8.0),
                             child: AnimatedScale(
