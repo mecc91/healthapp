@@ -5,6 +5,7 @@ class MealDiaryEntry {
   final String time;
   final String menuName;
   final int intakeAmount;
+  final DateTime createdAt; // ✅ 추가됨
   var notes;
 
   MealDiaryEntry({
@@ -13,6 +14,7 @@ class MealDiaryEntry {
     required this.menuName,
     required this.intakeAmount,
     required this.notes,
+    required this.createdAt,
   });
 
   factory MealDiaryEntry.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class MealDiaryEntry {
       menuName: '메뉴 ID: ${json['id']}',
       intakeAmount: json['intakeAmount'] ?? 0,
       notes: json['diary'] ?? '',
+      createdAt: createdAt,
     );
   }
 }

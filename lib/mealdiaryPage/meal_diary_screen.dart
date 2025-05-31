@@ -1,4 +1,3 @@
-// lib/mealDiaryPage/meal_diary_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,58 +51,81 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
     }
   }
 
- Future<void> _fetchDiaryEntries(String userId) async {
-  setState(() => _isLoading = true);
+  Future<void> _fetchDiaryEntries(String userId) async {
+    setState(() => _isLoading = true);
 
-  final now = widget.displayDate;
-  final oneWeekAgo = now.subtract(const Duration(days: 6)); // 총 7일치 포함
+    final now = widget.displayDate;
+    final oneWeekAgo = now.subtract(const Duration(days: 6));
 
-  final url = 'http://152.67.196.3:4912/users/$userId/meal-info';
+    final url = 'http://152.67.196.3:4912/users/$userId/meal-info';
 
-  try {
-    final response = await http.get(Uri.parse(url));
+    try {
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final List data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
 
-      final filteredData = data.where((e) {
-        final entryDate = DateTime.parse(e['createdAt']);
-        return entryDate.isAfter(oneWeekAgo.subtract(const Duration(seconds: 1))) &&
-               entryDate.isBefore(now.add(const Duration(days: 1)));
-      }).toList();
+        final filteredData = data.where((e) {
+          final entryDate = DateTime.parse(e['createdAt']);
+          return entryDate.isAfter(oneWeekAgo.subtract(const Duration(seconds: 1))) &&
+              entryDate.isBefore(now.add(const Duration(days: 1)));
+        }).toList();
 
-      setState(() {
-        _diaryEntries = filteredData.map((e) => MealDiaryEntry.fromJson(e)).toList();
-        _isLoading = false;
-      });
-    } else {
+        setState(() {
+          _diaryEntries = filteredData
+              .map((e) => MealDiaryEntry.fromJson(e))
+              .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // 최신순 정렬
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
       setState(() => _isLoading = false);
+      print('❌ [에러 발생]: $e');
     }
-  } catch (e) {
-    setState(() => _isLoading = false);
-    print('❌ [에러 발생]: $e');
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('식단 일기')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _diaryEntries.isEmpty
-              ? const Center(child: Text('식단 기록이 없습니다!.'))
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  itemCount: _diaryEntries.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 0),
-                  itemBuilder: (context, index) {
-                    final entry = _diaryEntries[index];
-                    return MealDiaryCard(entry: entry);
-                  },
-                ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+                              Color(0xFFFDE68A),
+                  Color(0xFFC8E6C9),
+                  Colors.white,
+          ],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // ✅ 배경 투명 처리
+        appBar: AppBar(title: const Text('식단 일기')),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _diaryEntries.isEmpty
+                ? const Center(child: Text('식단 기록이 없습니다!'))
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    itemCount: _diaryEntries.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 0),
+                    itemBuilder: (context, index) {
+                      final entry = _diaryEntries[index];
+                      return MealDiaryCard(
+                        entry: entry,
+                        onDelete: () {
+                          setState(() {
+                            _diaryEntries.remove(entry); // 삭제 후 즉시 반영
+                          });
+                        },
+                      );
+                    },
+                  ),
+      ),
     );
   }
 }
