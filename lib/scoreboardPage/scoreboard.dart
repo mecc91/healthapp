@@ -1,14 +1,14 @@
 // scoreboard.dart
 import 'package:flutter/material.dart';
 // import 'package:image_picker/image_picker.dart'; // 필요시 사용
-// import '../nutrientintakePage/nutrientintake.dart'; // 필요시 사용
+import '../nutrientintakePage/nutrientintake.dart'; // 필요시 사용
 
 import 'widgets/scoreboard_period_toggle.dart';
 import 'widgets/average_score_display.dart';
 import 'widgets/weekly_score_chart.dart';
 import 'widgets/score_comment_display.dart';
 import 'services/scoreboard_data_service.dart';
-// import '../../widgets/common_bottom_navigation_bar.dart'; // 필요시 사용
+import '../../widgets/common_bottom_navigation_bar.dart'; // 필요시 사용
 import 'widgets/monthly_calendar_view.dart';
 import 'scoreboard_constants.dart';
 // import 'models/daily_intake_model.dart'; // 모델 import는 서비스 파일에서 처리
@@ -298,11 +298,11 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               averageScore: _currentAverageScore,
               dateRangeFormatted: _currentDateRangeFormatted,
               onDetailPressed: () {
-                print("Detail button pressed. User ID: $_userId");
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => NutrientIntakeScreen(userId: _userId)), // userId 전달
-                // );
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NutrientIntakeScreen(userId: _userId)), // userId 전달
+                );
               },
             ),
             const SizedBox(height: 12),
@@ -380,10 +380,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           ],
         ),
       ),
-      // bottomNavigationBar: CommonBottomNavigationBar( // 필요시 사용
-      //   currentPage: AppPage.scoreboard,
-      //   imagePickerInstance: _picker,
-      // ),
+      bottomNavigationBar: CommonBottomNavigationBar( // 필요시 사용
+        currentPage: AppPage.scoreboard,
+        
+      ),
     );
   }
 }
