@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:healthymeal/userquitPage/userquit.dart'; // ✅ 추가
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -38,11 +39,9 @@ class _ProfileState extends State<Profile>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
-
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
@@ -70,10 +69,7 @@ class _ProfileState extends State<Profile>
     try {
       final prefs = await SharedPreferences.getInstance();
       final id = prefs.getString('userId');
-
-      if (id == null) {
-        throw Exception("로그인된 사용자 정보가 없습니다.");
-      }
+      if (id == null) throw Exception("로그인된 사용자 정보가 없습니다.");
 
       final response =
           await http.get(Uri.parse('http://152.67.196.3:4912/users/$id'));
@@ -95,6 +91,62 @@ class _ProfileState extends State<Profile>
     await prefs.remove('userId');
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+  }
+
+  void _confirmPasswordAndNavigateToQuit() async {
+    final TextEditingController pwController = TextEditingController();
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getString('userId');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("비밀번호 확인"),
+        content: TextField(
+          controller: pwController,
+          obscureText: true,
+          decoration: const InputDecoration(
+            labelText: '비밀번호',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("취소"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final response = await http
+                  .get(Uri.parse('http://152.67.196.3:4912/users/$id'));
+              if (response.statusCode == 200) {
+                final user = jsonDecode(response.body);
+                final serverPw = user['hashedPassword'].toString().trim();
+                final inputPw = pwController.text.trim();
+
+                if (serverPw == inputPw) {
+                  if (!mounted) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserQuitPage()),
+                  );
+                } else {
+                  if (!mounted) return;
+                  showDialog(
+                    context: context,
+                    builder: (_) => const AlertDialog(
+                      title: Text("비밀번호 불일치"),
+                      content: Text("비밀번호가 올바르지 않습니다."),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text("확인"),
+          ),
+        ],
+      ),
+    );
   }
 
   String getGenderLabel(String gender) {
@@ -268,7 +320,7 @@ class _ProfileState extends State<Profile>
                             ],
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
 
                         // Nutrition Toggle
                         SizedBox(
@@ -310,7 +362,6 @@ class _ProfileState extends State<Profile>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const SizedBox(height: 4),
                                       const Text("1 Portion Info: average"),
                                       const SizedBox(height: 12),
                                       ..._nutritionPreferences.entries.map(
@@ -329,30 +380,37 @@ class _ProfileState extends State<Profile>
                                 )
                               : const SizedBox.shrink(),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 32),
 
-                        // ✅ 로그아웃 버튼 추가
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(top: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.deepOrange.shade400,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: GestureDetector(
-                            onTap: logout,
-                            child: const Center(
-                              child: Text(
-                                '로그아웃',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                        // Logout Button
+                        ElevatedButton(
+                          onPressed: logout,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepOrange,
+                            minimumSize: const Size.fromHeight(50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
+                          child: const Text("로그아웃",
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white)),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Delete Account Button
+                        ElevatedButton(
+                          onPressed: _confirmPasswordAndNavigateToQuit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade400,
+                            minimumSize: const Size.fromHeight(50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text("회원 탈퇴",
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white)),
                         ),
                       ],
                     ),

@@ -13,55 +13,38 @@ class MealDiaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageSize = screenWidth * 0.3; // Adjust image size ratio as needed
+    final imageSize = screenWidth * 0.3;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start, // Align items to the top
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image on the left
           ClipRRect(
             borderRadius: BorderRadius.circular(12.0),
-            child: Image.asset( // MODIFIED: Was Image.network
-              entry.imagePath,  // MODIFIED: Was entry.imageUrl
+            child: Image.network(
+              entry.imagePath,
               width: imageSize,
               height: imageSize,
               fit: BoxFit.cover,
-              // MODIFIED: loadingBuilder is not directly applicable to Image.asset in the same way.
-              // Image.asset loads quickly from local assets. If you need a frameBuilder for custom effects:
-              // frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-              //   if (wasSynchronouslyLoaded) {
-              //     return child;
-              //   }
-              //   return AnimatedOpacity(
-              //     opacity: frame == null ? 0 : 1,
-              //     duration: const Duration(seconds: 1),
-              //     curve: Curves.easeOut,
-              //     child: child,
-              //   );
-              // },
               errorBuilder: (context, error, stackTrace) {
-                // This will be called if the asset is not found or is corrupted
-                print('Error loading asset: ${entry.imagePath}, Error: $error');
+                print(
+                    'Error loading network image: ${entry.imagePath}, Error: $error');
                 return Container(
                   width: imageSize,
                   height: imageSize,
                   color: Colors.grey[300],
-                  child: Icon(Icons.broken_image, color: Colors.grey[600], size: imageSize * 0.5),
+                  child: Icon(Icons.broken_image,
+                      color: Colors.grey[600], size: imageSize * 0.5),
                 );
               },
             ),
           ),
-
-          const SizedBox(width: 16.0), // Spacing between image and text
-
-          // Details on the right
+          const SizedBox(width: 16.0),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Time
                 Text(
                   entry.time,
                   style: const TextStyle(
@@ -71,21 +54,17 @@ class MealDiaryCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8.0),
-
-                // Menu
                 Text(
                   'Menu: ${entry.menuName}',
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600, // Semi-bold
+                    fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 4.0),
-
-                // Intake Amount
                 Text(
-                  '섭취량: ${entry.intakeAmount}', // "Intake Amount"
+                  '섭취량: ${entry.intakeAmount}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[700],
@@ -93,14 +72,12 @@ class MealDiaryCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12.0),
-
-                // Notes
                 Text(
                   entry.notes,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[800],
-                    height: 1.4, // Line spacing
+                    height: 1.4,
                   ),
                 ),
               ],
