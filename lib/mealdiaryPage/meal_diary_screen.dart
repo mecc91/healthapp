@@ -52,43 +52,39 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
     }
   }
 
-  Future<void> _fetchDiaryEntries(String userId) async {
-    setState(() => _isLoading = true);
-    final dateString = DateFormat('yyyy-MM-dd').format(widget.displayDate);
-    final url =
-        'http://152.67.196.3:4912/users/$userId/meal-info?date=$dateString';
+ Future<void> _fetchDiaryEntries(String userId) async {
+  setState(() => _isLoading = true);
 
-    print('🟡 [요청 날짜]: $dateString');
-    print('🟡 [요청 userId]: $userId');
-    print('🌐 [요청 URL]: $url');
+  final now = widget.displayDate;
+  final oneWeekAgo = now.subtract(const Duration(days: 6)); // 총 7일치 포함
 
-    try {
-      final response = await http.get(Uri.parse(url));
+  final url = 'http://152.67.196.3:4912/users/$userId/meal-info';
 
-      print('📦 [응답 상태코드]: ${response.statusCode}');
-      print('📦 [응답 본문]: ${response.body}');
+  try {
+    final response = await http.get(Uri.parse(url));
 
-      if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
 
-        print('✅ [파싱된 리스트 길이]: ${data.length}');
-        if (data.isNotEmpty) {
-          print('✅ [첫 항목 샘플]: ${data.first}');
-        }
+      final filteredData = data.where((e) {
+        final entryDate = DateTime.parse(e['createdAt']);
+        return entryDate.isAfter(oneWeekAgo.subtract(const Duration(seconds: 1))) &&
+               entryDate.isBefore(now.add(const Duration(days: 1)));
+      }).toList();
 
-        setState(() {
-          _diaryEntries = data.map((e) => MealDiaryEntry.fromJson(e)).toList();
-          _isLoading = false;
-        });
-      } else {
-        print('❌ [요청 실패] 상태코드: ${response.statusCode}');
-        setState(() => _isLoading = false);
-      }
-    } catch (e) {
+      setState(() {
+        _diaryEntries = filteredData.map((e) => MealDiaryEntry.fromJson(e)).toList();
+        _isLoading = false;
+      });
+    } else {
       setState(() => _isLoading = false);
-      print('❌ [에러 발생]: $e');
     }
+  } catch (e) {
+    setState(() => _isLoading = false);
+    print('❌ [에러 발생]: $e');
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

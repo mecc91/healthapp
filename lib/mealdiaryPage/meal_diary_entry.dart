@@ -1,4 +1,3 @@
-// lib/mealDiaryPage/meal_diary_entry.dart
 import 'package:intl/intl.dart';
 
 class MealDiaryEntry {
@@ -6,7 +5,7 @@ class MealDiaryEntry {
   final String time;
   final String menuName;
   final int intakeAmount;
-  final String notes;
+  var notes; // ✅ 수정 가능하도록 var
 
   MealDiaryEntry({
     required this.imagePath,
@@ -22,7 +21,7 @@ class MealDiaryEntry {
 
     return MealDiaryEntry(
       imagePath: 'http://152.67.196.3:4912/uploads/${json['imgPath']}',
-      time: timeFormatted, // ✅ createdAt → 오전 10:05 형식
+      time: timeFormatted,
       menuName: '메뉴 ID: ${json['id']}',
       intakeAmount: json['intakeAmount'] ?? 0,
       notes: json['diary'] ?? '',
