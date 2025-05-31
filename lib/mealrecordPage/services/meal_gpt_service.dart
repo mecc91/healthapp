@@ -4,7 +4,7 @@ import 'package:http_parser/http_parser.dart';
 
 class MealGptService {
     Future<String> sendMealImage(File imageFile) async {
-        final uri = Uri.parse("http://localhost:4912/gptmeal");
+        final uri = Uri.parse("http://152.67.196.3:4912/gptmeal");
 
         // Multipart request 생성
         final request = http.MultipartRequest("POST", uri)
