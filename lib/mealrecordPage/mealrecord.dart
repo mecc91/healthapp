@@ -2,7 +2,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
-import 'dart:io'; // File 클래스 사용
+import 'dart:io';       // File 클래스 사용
 import 'dart:math';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/mealrecordPage/services/menu_analysis_service.dart'; // Refactored
@@ -58,6 +58,7 @@ class _MealRecordState extends State<MealRecord> {
   XFile? _pickedImageFile;
   File? _storedImage;
 
+  // 
   String? _selectedServing = '1';
   String? _selectedTime = 'Breakfast';
   final List<String> _servingOptions = ['1', '2', '3', '4', '5'];
@@ -278,6 +279,7 @@ class _MealRecordState extends State<MealRecord> {
     }
   }
 
+  // 뒤로가기 button
   void _deleteRecordAndExit() {
     if (mounted) {
       Navigator.of(context).pop();
@@ -589,6 +591,7 @@ class _MealRecordState extends State<MealRecord> {
       body: Column(
         children: [
           Expanded(
+            // 식단사진 & 메뉴이름 파트
             child: SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
@@ -604,7 +607,7 @@ class _MealRecordState extends State<MealRecord> {
               ),
             ),
           ),
-          // Bottom fixed part
+          // 섭취량 & 식사시간 & 식단기록버튼 파트
           Padding(
             padding: EdgeInsets.only(
               left: horizontalPadding,
