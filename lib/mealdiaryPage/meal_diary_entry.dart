@@ -1,4 +1,6 @@
 // lib/mealDiaryPage/meal_diary_entry.dart
+import 'package:intl/intl.dart';
+
 class MealDiaryEntry {
   final String imagePath;
   final String time;
@@ -15,10 +17,13 @@ class MealDiaryEntry {
   });
 
   factory MealDiaryEntry.fromJson(Map<String, dynamic> json) {
+    final createdAt = DateTime.parse(json['createdAt']);
+    final timeFormatted = DateFormat('a h:mm', 'ko_KR').format(createdAt);
+
     return MealDiaryEntry(
-      imagePath: json['imgPath'],
-      time: json['time'] ?? '시간 정보 없음',
-      menuName: json['menuName'] ?? '메뉴 없음',
+      imagePath: 'http://152.67.196.3:4912/uploads/${json['imgPath']}',
+      time: timeFormatted, // ✅ createdAt → 오전 10:05 형식
+      menuName: '메뉴 ID: ${json['id']}',
       intakeAmount: json['intakeAmount'] ?? 0,
       notes: json['diary'] ?? '',
     );

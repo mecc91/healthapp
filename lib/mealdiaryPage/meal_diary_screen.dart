@@ -55,25 +55,38 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
   Future<void> _fetchDiaryEntries(String userId) async {
     setState(() => _isLoading = true);
     final dateString = DateFormat('yyyy-MM-dd').format(widget.displayDate);
+    final url =
+        'http://152.67.196.3:4912/users/$userId/meal-info?date=$dateString';
+
+    print('🟡 [요청 날짜]: $dateString');
+    print('🟡 [요청 userId]: $userId');
+    print('🌐 [요청 URL]: $url');
 
     try {
-      final response = await http.get(
-        Uri.parse(
-            'http://152.67.196.3:4912/meals/user/$userId/date/$dateString'),
-      );
+      final response = await http.get(Uri.parse(url));
+
+      print('📦 [응답 상태코드]: ${response.statusCode}');
+      print('📦 [응답 본문]: ${response.body}');
 
       if (response.statusCode == 200) {
         final List data = json.decode(response.body);
+
+        print('✅ [파싱된 리스트 길이]: ${data.length}');
+        if (data.isNotEmpty) {
+          print('✅ [첫 항목 샘플]: ${data.first}');
+        }
+
         setState(() {
           _diaryEntries = data.map((e) => MealDiaryEntry.fromJson(e)).toList();
           _isLoading = false;
         });
       } else {
+        print('❌ [요청 실패] 상태코드: ${response.statusCode}');
         setState(() => _isLoading = false);
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      print('Error fetching diary: $e');
+      print('❌ [에러 발생]: $e');
     }
   }
 
@@ -85,10 +98,14 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _diaryEntries.isEmpty
               ? const Center(child: Text('식단 기록이 없습니다!.'))
-              : ListView.builder(
+              : ListView.separated(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   itemCount: _diaryEntries.length,
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 0),
                   itemBuilder: (context, index) {
-                    return MealDiaryCard(entry: _diaryEntries[index]);
+                    final entry = _diaryEntries[index];
+                    return MealDiaryCard(entry: entry);
                   },
                 ),
     );

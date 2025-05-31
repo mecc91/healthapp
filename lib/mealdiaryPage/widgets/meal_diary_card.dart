@@ -16,7 +16,7 @@ class MealDiaryCard extends StatelessWidget {
     final imageSize = screenWidth * 0.3;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -28,8 +28,7 @@ class MealDiaryCard extends StatelessWidget {
               height: imageSize,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                print(
-                    'Error loading network image: ${entry.imagePath}, Error: $error');
+                print('🛑 이미지 로딩 오류: ${entry.imagePath}');
                 return Container(
                   width: imageSize,
                   height: imageSize,
@@ -48,7 +47,7 @@ class MealDiaryCard extends StatelessWidget {
                 Text(
                   entry.time,
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
@@ -64,7 +63,7 @@ class MealDiaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  '섭취량: ${entry.intakeAmount}',
+                  '섭취량: ${entry.intakeAmount}g',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[700],
@@ -79,6 +78,8 @@ class MealDiaryCard extends StatelessWidget {
                     color: Colors.grey[800],
                     height: 1.4,
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
