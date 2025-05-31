@@ -102,6 +102,7 @@ class _MealRecordState extends State<MealRecord> {
     super.dispose();
   }
 
+  // 식단사진 재촬영시 호출
   Future<void> _pickImageAndAnalyze(ImageSource source) async {
     if (_isAnalyzingMenu) return;
 
@@ -138,19 +139,18 @@ class _MealRecordState extends State<MealRecord> {
     }
   }
 
+  // 촬영된 이미지 GPT 분석
   Future<void> _analyzeImage(String? imagePath) async {
     if (imagePath == null || imagePath.isEmpty) {
       _resetMenuAnalysisStateOnError(errorMessage: MealRecordStrings.statusImagePathError);
       return;
     }
-
     if (mounted) {
       setState(() {
         _isAnalyzingMenu = true;
         _isEditingMenu = false; // Ensure edit mode is off during analysis
       });
     }
-
     try {
       final File imageFile = File(imagePath);
       late String analyzedMenuName;
