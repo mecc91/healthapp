@@ -260,7 +260,7 @@ class _DashboardState extends State<Dashboard>
                         onAvatarTapCancel: () =>
                             setState(() => _avatarScale = 1.0),
                         onNotificationsPressed: () {
-                          _navigateWithFade(context, const Profile());
+                          _navigateWithFade(context, const Underconstruction());
                         },
                       ),
                       // DailyStatus Widget

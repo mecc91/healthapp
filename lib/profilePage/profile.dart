@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -17,6 +19,8 @@ class _ProfileState extends State<Profile>
     '당분': 0.0,
     '나트륨': 0.0,
   };
+
+  Map<String, dynamic>? _userInfo;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -56,8 +60,29 @@ class _ProfileState extends State<Profile>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _animationController.forward(from: 0);
+        fetchUserInfo(); // ← API 호출
       }
     });
+  }
+
+  Future<void> fetchUserInfo() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://152.67.196.3:4912/users/kim'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _userInfo = json.decode(response.body);
+        });
+      } else {
+        throw Exception('서버 응답 오류');
+      }
+    } catch (e) {
+      print("유저 정보 가져오기 실패: $e");
+    }
+  }
+
+  String getGenderLabel(String gender) {
+    return gender == 'm' ? '남성' : '여성';
   }
 
   @override
@@ -85,9 +110,8 @@ class _ProfileState extends State<Profile>
       child: Row(
         children: [
           SizedBox(
-            width: 80,
-            child: Text(label, style: const TextStyle(fontSize: 14)),
-          ),
+              width: 80,
+              child: Text(label, style: const TextStyle(fontSize: 14))),
           Expanded(
             child: Slider(
               value: value,
@@ -134,11 +158,7 @@ class _ProfileState extends State<Profile>
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFFDE68A),
-                  Color(0xFFC8E6C9),
-                  Colors.white,
-                ],
+                colors: [Color(0xFFFDE68A), Color(0xFFC8E6C9), Colors.white],
                 stops: [0.0, 0.7, 1.0],
               ),
             ),
@@ -153,7 +173,7 @@ class _ProfileState extends State<Profile>
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        // Header: back button + centered title
+                        // Header
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -176,25 +196,19 @@ class _ProfileState extends State<Profile>
                                 alignment: Alignment.centerLeft,
                                 child: IconButton(
                                   icon: const Icon(Icons.arrow_back),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
+                                  onPressed: () => Navigator.of(context).pop(),
                                 ),
                               ),
-                              const Text(
-                                "Profile",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
+                              const Text("Profile",
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
                         const SizedBox(height: 16),
 
-                        // Profile Info Card
+                        // Profile Info
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
@@ -217,28 +231,30 @@ class _ProfileState extends State<Profile>
                                     AssetImage('assets/image/default_man.png'),
                               ),
                               const SizedBox(width: 16),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Name: Kim Jiwoo",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16)),
-                                    Text("Nick Name: Jikim2012"),
-                                    Text("ID: lolol@gmail.com"),
-                                    Text("Age: 25"),
-                                    Text("Gender: Male"),
-                                    Text("Height: 178"),
-                                  ],
-                                ),
+                              Expanded(
+                                child: _userInfo == null
+                                    ? const CircularProgressIndicator()
+                                    : Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text("아이디: ${_userInfo!['id']}",
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16)),
+                                          Text(
+                                              "생년월일: ${_userInfo!['birthday']}"),
+                                          Text(
+                                              "성별: ${getGenderLabel(_userInfo!['gender'])}"),
+                                        ],
+                                      ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 16),
 
-                        // Toggle Nutrition Section Button
+                        // Nutrition Toggle
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -256,7 +272,7 @@ class _ProfileState extends State<Profile>
                         ),
                         const SizedBox(height: 24),
 
-                        // Expandable Nutrition Section
+                        // Nutrition Sliders
                         SizeTransition(
                           sizeFactor: _fadeSectionAnimation,
                           axisAlignment: -1.0,
@@ -281,10 +297,9 @@ class _ProfileState extends State<Profile>
                                       const SizedBox(height: 4),
                                       const Text("1 Portion Info: average"),
                                       const SizedBox(height: 12),
-                                      ..._nutritionPreferences.entries
-                                          .map((entry) => _buildSlider(
-                                              entry.key, entry.value))
-                                          .toList(),
+                                      ..._nutritionPreferences.entries.map(
+                                          (entry) => _buildSlider(
+                                              entry.key, entry.value)),
                                       const SizedBox(height: 12),
                                       Align(
                                         alignment: Alignment.centerRight,
