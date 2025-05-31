@@ -30,6 +30,9 @@ flutter:
   assets:
     - assets/image/
     - assets/image/chicken.jpg
+    - assets/images/
+    - assets/icons/
+
   fonts:
     - family: korfont1
       fonts:
