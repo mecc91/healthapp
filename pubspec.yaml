@@ -27,6 +27,7 @@ flutter:
   assets:
     #현재 미사용 - assets/files/
     - assets/image/
+    - assets/image/chicken.jpg
   fonts:
     - family: korfont1
       fonts:
