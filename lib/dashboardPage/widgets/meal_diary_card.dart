@@ -22,7 +22,7 @@ class MealEntry {
   factory MealEntry.fromJson(Map<String, dynamic> json) {
     return MealEntry(
       id: json['id'].toString(),
-      imgPath: json['imgPath'],
+      imgPath: json['imgPath'], // ✅ 서버 키 그대로
       intakeAmount: json['intakeAmount'],
       diary: json['diary'],
       createdAt: DateTime.parse(json['createdAt']),
@@ -57,23 +57,26 @@ class _MealDiaryCardState extends State<MealDiaryCard> {
   }
 
   Future<void> fetchTodayMeals() async {
-    final today = widget.diaryDate; // ✅ 고정된 날짜 사용
+    final today = widget.diaryDate;
     final url = Uri.parse(
-        'http://152.67.196.3:4912/users/${widget.userId}/meal-info?date=$today');
+      'http://152.67.196.3:4912/users/${widget.userId}/meal-info?date=$today',
+    );
 
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      final filtered = data.map((e) => MealEntry.fromJson(e)).toList();
-
-      setState(() {
-        todayMeals = filtered.take(5).toList();
-        isLoading = false;
-      });
-    } else {
-      setState(() {
-        isLoading = false;
-      });
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final filtered = data.map((e) => MealEntry.fromJson(e)).toList();
+        setState(() {
+          todayMeals = filtered.take(5).toList();
+          isLoading = false;
+        });
+      } else {
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print('식단 불러오기 실패: $e');
+      setState(() => isLoading = false);
     }
   }
 

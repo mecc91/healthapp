@@ -84,7 +84,7 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _diaryEntries.isEmpty
-              ? const Center(child: Text('식단 기록이 없습니다.'))
+              ? const Center(child: Text('식단 기록이 없습니다!.'))
               : ListView.builder(
                   itemCount: _diaryEntries.length,
                   itemBuilder: (context, index) {
