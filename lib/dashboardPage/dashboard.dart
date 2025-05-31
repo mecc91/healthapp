@@ -14,6 +14,7 @@ import 'package:healthymeal/underconstructionPage/underconstruction.dart';
 import 'package:intl/intl.dart';
 import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // RouteObserver를 사용하기 위해 main.dart 또는 해당 Observer가 정의된 파일을 import
 // 예시 경로이며, 실제 프로젝트 구조에 맞게 수정해야 합니다.
