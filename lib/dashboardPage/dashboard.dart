@@ -1,5 +1,8 @@
 // lib/dashboardPage/dashboard.dart
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
 import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
@@ -10,6 +13,7 @@ import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 import 'package:healthymeal/underconstructionPage/underconstruction.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷을 위해 추가
 import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
+import 'package:path_provider/path_provider.dart';
 
 // RouteObserver를 사용하기 위해 main.dart 또는 해당 Observer가 정의된 파일을 import
 // 예시 경로이며, 실제 프로젝트 구조에 맞게 수정해야 합니다.
@@ -54,6 +58,16 @@ class _DashboardState extends State<Dashboard>
 
   // GPT Service
   final MealGptService _mealGptService = MealGptService();
+  late XFile _dummyMealImage;
+    // dummyMealImage 초기화를 위한 함수 (디버그용)
+  void setDummy() async {
+    final fileName = "chicken.jpg";
+    final byteData = await rootBundle.load("assets/image/chicken.jpg");
+    final tempDir = await getTemporaryDirectory();
+    final file = File("${tempDir.path}/$fileName");
+    await file.writeAsBytes(byteData.buffer.asUint8List());
+    _dummyMealImage =  XFile(file.path);
+  }
 
   // 애니메이션 컨트롤러 (이전 코드에서 참조)
   late AnimationController _animationController;
@@ -85,6 +99,9 @@ class _DashboardState extends State<Dashboard>
         _animationController.forward(from: 0);
       }
     });
+
+    // dummyMealImage 초기화
+    setDummy();
   }
 
   @override
@@ -150,7 +167,8 @@ class _DashboardState extends State<Dashboard>
     final formatter = DateFormat('yyyy-MM-dd');
     return formatter.format(now);
   }
-
+  
+  // 카메라 버튼 클릭시 사진촬영 & MealRecord Page로 분기
   Future<void> _takePicture() async {
     final XFile? pickedFile =
         await _picker.pickImage(source: ImageSource.camera);
@@ -170,6 +188,7 @@ class _DashboardState extends State<Dashboard>
     }
   }
 
+  // Fade animation과 함께 Page 분기
   void _navigateWithFade(BuildContext context, Widget page) {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -185,27 +204,24 @@ class _DashboardState extends State<Dashboard>
     );
   }
 
+  // Bottom NavBar 파트
   void _onBottomNavigationTap(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    // Scoreboard Page로 분기
     if (index == 0) {
       _navigateWithFade(context, const ScoreboardScreen());
+      // MealRecord Page로 분기
     } else if (index == 1) {
       // MealDiaryScreen으로 현재 날짜를 전달하며 이동 (카메라 아이콘 탭 시)
       // 현재는 _takePicture()를 호출하도록 되어 있습니다.
       // 만약 식단 기록 화면으로 바로 이동시키려면 아래 주석을 해제하고 _takePicture()를 주석 처리합니다.
-      /*
-      DateTime dateForDiary = DateTime.now();
-      try {
-        dateForDiary = DateFormat('yyyy-MM-dd').parse(getCurrentDateFormatted());
-      } catch (e) {
-        // 파싱 실패 시 현재 시간 사용 (Fallback)
-      }
-       _navigateWithFade(context, MealDiaryScreen(displayDate: dateForDiary));
-      */
-      _takePicture(); // 사진 촬영 로직
+      _navigateWithFade(context, MealRecord(initialImageFile: _dummyMealImage));     // 사진촬영없이 바로분기
+      //_takePicture(); // 사진 촬영 로직
       //_mealGptService.sendPing();
+
+      // MenuRecommend Page로 분기
     } else if (index == 2) {
       _navigateWithFade(context, const MenuRecommendScreen());
     }
