@@ -15,7 +15,8 @@ dependencies:
   image_picker: ^1.0.4
   intl: ^0.20.2
   http: ^1.1.0
-  http_parser: ^4.0.2
+  
+  shared_preferences: ^2.2.2  
 
 dev_dependencies:
   flutter_test:
@@ -25,12 +26,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    #현재 미사용 - assets/files/
     - assets/image/
   fonts:
     - family: korfont1
       fonts:
         - asset: assets/fonts/Jua-Regular.ttf
-
-
-

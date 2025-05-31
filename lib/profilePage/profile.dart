@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -60,15 +61,23 @@ class _ProfileState extends State<Profile>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _animationController.forward(from: 0);
-        fetchUserInfo(); // ← API 호출
+        fetchUserInfo();
       }
     });
   }
 
   Future<void> fetchUserInfo() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getString('userId');
+
+      if (id == null) {
+        throw Exception("로그인된 사용자 정보가 없습니다.");
+      }
+
       final response =
-          await http.get(Uri.parse('http://152.67.196.3:4912/users/kim'));
+          await http.get(Uri.parse('http://152.67.196.3:4912/users/$id'));
+
       if (response.statusCode == 200) {
         setState(() {
           _userInfo = json.decode(response.body);
@@ -79,6 +88,13 @@ class _ProfileState extends State<Profile>
     } catch (e) {
       print("유저 정보 가져오기 실패: $e");
     }
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
   }
 
   String getGenderLabel(String gender) {
@@ -314,6 +330,30 @@ class _ProfileState extends State<Profile>
                               : const SizedBox.shrink(),
                         ),
                         const SizedBox(height: 20),
+
+                        // ✅ 로그아웃 버튼 추가
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.deepOrange.shade400,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: GestureDetector(
+                            onTap: logout,
+                            child: const Center(
+                              child: Text(
+                                '로그아웃',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
