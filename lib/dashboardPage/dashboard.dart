@@ -104,7 +104,7 @@ class _DashboardState extends State<Dashboard>
       setState(() {
         _scoreCardKey = now;
         _dailyCardKey = now + 1;
-        _mealDiaryCardKey = now + 2;
+        _mealDiaryCardKey = now + 5;
         _avatarScale = 0.9;
         _dailyCardScale = 0.95;
         _scoreCardScale = 0.95;
@@ -262,8 +262,12 @@ class _DashboardState extends State<Dashboard>
                         onTapUp: (_) {
                           setState(() => _mealDiaryCardScale = 1.0);
                           _navigateWithFade(
+                            
                             context,
-                            MealDiaryScreen(displayDate: currentDateAsDateTime),
+                            MealDiaryScreen(
+                              key: ValueKey(DateTime.now().millisecondsSinceEpoch), // ✅ 고유 키 부여
+                              displayDate: currentDateAsDateTime,
+                            ),
                           );
                         },
                         onTapCancel: () =>
@@ -274,6 +278,7 @@ class _DashboardState extends State<Dashboard>
                           child: _userId == null
                               ? const SizedBox.shrink()
                               : MealDiaryCard(
+                                  key: ValueKey('mealDiaryCard_$_mealDiaryCardKey'), // ✅ 유니크 키 사용
                                   diaryDate: currentDateString,
                                   userId: _userId!,
                                 ),
