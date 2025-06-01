@@ -50,20 +50,28 @@ class _NutrientWeeklyChartState extends State<NutrientWeeklyChart>
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
 
-    // 위젯이 빌드된 후 애니메이션 시작
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _controller.forward(from: 0.0);
-    });
+    // 위젯이 빌드된 후 애니메이션 시작 (데이터가 있을 때만)
+    if (widget.weekData.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _controller.forward(from: 0.0);
+      });
+    }
   }
 
   @override
   void didUpdateWidget(covariant NutrientWeeklyChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // weekData가 변경되면 애니메이션을 다시 시작하여 새로운 데이터를 부드럽게 표시
+    // weekData가 변경되면 (특히, 비어있다가 데이터가 생기거나, 데이터 내용이 변경될 때)
+    // 애니메이션을 다시 시작하여 새로운 데이터를 부드럽게 표시합니다.
     // List<Map>의 경우 참조 비교만으로는 내부 값 변경을 감지하기 어려우므로,
-    // 상위 위젯에서 새로운 List 객체를 전달해야 애니메이션이 트리거됩니다.
+    // 상위 위젯에서 새로운 List 객체를 전달해야 애니메이션이 효과적으로 트리거됩니다.
     if (oldWidget.weekData != widget.weekData) {
-      if (mounted) _controller.forward(from: 0.0);
+      if (mounted) {
+        _controller.reset(); // 애니메이션 상태 초기화
+        if (widget.weekData.isNotEmpty) { // 새로운 데이터가 있을 경우에만 애니메이션 실행
+          _controller.forward();
+        }
+      }
     }
   }
 
@@ -80,7 +88,7 @@ class _NutrientWeeklyChartState extends State<NutrientWeeklyChart>
     final int maxValueInPeriod = widget.weekData.isEmpty
         ? 100 // 데이터가 없으면 기본 최대 점수 100으로 가정
         : widget.weekData
-            .map((d) => d['value'] as int) // 'value'는 DailyIntake.score
+            .map((d) => d['value'] as int? ?? 0) // 'value'는 DailyIntake.score, null이면 0
             .reduce((a, b) => a > b ? a : b); // 최대값 찾기
     
     // maxValueInPeriod가 0 이하인 경우 나눗셈 오류 방지를 위해 100으로 보정
@@ -124,7 +132,8 @@ class _NutrientWeeklyChartState extends State<NutrientWeeklyChart>
               // 비율을 조정하여 바 사이의 간격 조절 가능
               final double barWidth = widget.weekData.isEmpty
                   ? 0
-                  : constraints.maxWidth / (widget.weekData.length * 3.0);
+                  : (constraints.maxWidth - (36 * 2) - 16) / (widget.weekData.length * 1.5); // 버튼 너비와 내부 패딩 고려, 바 간격 조절
+
 
               return Container(
                 decoration: BoxDecoration(
@@ -132,14 +141,14 @@ class _NutrientWeeklyChartState extends State<NutrientWeeklyChart>
                   borderRadius: BorderRadius.circular(16),
                 ),
                 padding: const EdgeInsets.symmetric(
-                    vertical: kGraphContainerVerticalPadding / 2), // 컨테이너 내부 상하 패딩
+                    vertical: kGraphContainerVerticalPadding / 2, horizontal: 8.0), // 컨테이너 내부 패딩 (좌우 추가)
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center, // 수직 중앙 정렬
                   children: [
                     // 이전 주 이동 버튼
                     IconButton(
                       icon: const Icon(Icons.chevron_left),
-                      iconSize: 36.0,
+                      iconSize: 32.0, // 아이콘 크기 조절
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(), // 버튼 크기 최소화
                       onPressed: widget.isWeekPeriodSelected && widget.canGoBack
@@ -151,73 +160,75 @@ class _NutrientWeeklyChartState extends State<NutrientWeeklyChart>
                     ),
                     // 주간 바 차트 영역
                     Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround, // 바들을 균등 간격으로 배치
-                        crossAxisAlignment: CrossAxisAlignment.end, // 바들을 아래쪽 기준으로 정렬
-                        children: widget.weekData.isEmpty
-                          ? [const Expanded(child: Center(child: Text("표시할 데이터가 없습니다.")))] // 데이터 없을 시 메시지
-                          : widget.weekData.asMap().entries.map((entry) {
-                          // final int index = entry.key; // 인덱스 (필요시 사용)
-                          final Map<String, dynamic> data = entry.value; // {'day': String, 'value': int score, 'date': DateTime}
-                          final int scoreValue = data['value'] as int;
-                          final String dayName = data['day'] as String; // "Mon", "Tue", ...
+                      child: widget.weekData.isEmpty
+                          ? const Center(child: Text("표시할 데이터가 없습니다.", style: TextStyle(color: Colors.grey))) // 데이터 없을 시 메시지
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround, // 바들을 균등 간격으로 배치
+                              crossAxisAlignment: CrossAxisAlignment.end, // 바들을 아래쪽 기준으로 정렬
+                              children: widget.weekData.asMap().entries.map((entry) {
+                                // final int index = entry.key; // 인덱스 (필요시 사용)
+                                final Map<String, dynamic> data = entry.value; // {'day': String, 'value': int score, 'date': DateTime}
+                                final int scoreValue = data['value'] as int? ?? 0; // null이면 0
+                                final String dayName = data['day'] as String? ?? ''; // null이면 빈 문자열
 
-                          // 실제 바 높이 계산
-                          final barHeight =
-                              NutrientIntakeDataService.calculateBarHeight(
-                            scoreValue,
-                            maxBarHeight > 0 ? maxBarHeight : 1, // maxBarHeight가 0 이하가 되지 않도록 보정
-                            effectiveMaxValue, // 해당 주의 유효 최대 점수
-                          );
+                                // 실제 바 높이 계산
+                                final barHeight =
+                                    NutrientIntakeDataService.calculateBarHeight(
+                                  scoreValue,
+                                  maxBarHeight > 0 ? maxBarHeight : 1, // maxBarHeight가 0 이하가 되지 않도록 보정
+                                  effectiveMaxValue, // 해당 주의 유효 최대 점수
+                                );
 
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.end, // 아래쪽 기준으로 정렬
-                            children: [
-                              // 점수 텍스트
-                              Text(
-                                "$scoreValue",
-                                style: const TextStyle(
-                                  fontSize: kGraphValueTextFontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: kGraphTopSizedBoxHeight), // 바 위쪽 여백
-                              // 애니메이션 적용된 바
-                              TweenAnimationBuilder<double>(
-                                tween: Tween(begin: 0.0, end: barHeight < 0 ? 0 : barHeight), // 높이가 음수가 되지 않도록
-                                duration: const Duration(milliseconds: 500), // 바 높이 변경 애니메이션
-                                curve: Curves.easeOutCubic, // 부드러운 애니메이션 곡선
-                                builder: (context, animatedHeight, child) {
-                                  return Container(
-                                    height: animatedHeight,
-                                    width: barWidth,
-                                    decoration: BoxDecoration(
-                                      color: kNutrientIntakeGraphAccentColor, // 바 색상
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(6), // 바 상단 모서리 둥글게
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.end, // 아래쪽 기준으로 정렬
+                                  children: [
+                                    // 점수 텍스트
+                                    Text(
+                                      "$scoreValue",
+                                      style: const TextStyle(
+                                        fontSize: kGraphValueTextFontSize,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black54, // 점수 텍스트 색상
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: kGraphBottomSizedBoxHeight), // 바 아래쪽 여백
-                              // 요일 텍스트
-                              Text(
-                                dayName,
-                                style: const TextStyle(
-                                  fontSize: kGraphDayTextFontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                      ),
+                                    const SizedBox(height: kGraphTopSizedBoxHeight), // 바 위쪽 여백
+                                    // 애니메이션 적용된 바
+                                    TweenAnimationBuilder<double>(
+                                      tween: Tween(begin: 0.0, end: barHeight < 0 ? 0 : barHeight), // 높이가 음수가 되지 않도록
+                                      duration: const Duration(milliseconds: 500), // 바 높이 변경 애니메이션
+                                      curve: Curves.easeOutCubic, // 부드러운 애니메이션 곡선
+                                      builder: (context, animatedHeight, child) {
+                                        return Container(
+                                          height: animatedHeight,
+                                          width: barWidth > 0 ? barWidth : 10, // 최소 너비 보장
+                                          decoration: BoxDecoration(
+                                            color: kNutrientIntakeGraphAccentColor, // 바 색상
+                                            borderRadius: const BorderRadius.vertical(
+                                              top: Radius.circular(6), // 바 상단 모서리 둥글게
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(height: kGraphBottomSizedBoxHeight), // 바 아래쪽 여백
+                                    // 요일 텍스트
+                                    Text(
+                                      dayName,
+                                      style: const TextStyle(
+                                        fontSize: kGraphDayTextFontSize,
+                                        fontWeight: FontWeight.w500, // 요일 텍스트 두께 조절
+                                        color: Colors.black87, // 요일 텍스트 색상
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
                     ),
                     // 다음 주 이동 버튼
                     IconButton(
                       icon: const Icon(Icons.chevron_right),
-                      iconSize: 36.0,
+                      iconSize: 32.0, // 아이콘 크기 조절
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       onPressed:
