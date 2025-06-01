@@ -156,6 +156,7 @@ class ScoreboardDataService {
     final weekStartDate = startDate.subtract(Duration(days: startDate.weekday - 1));
     final endDate = weekStartDate.add(const Duration(days: 6));
     // 날짜 포맷은 기존 로직 유지
+    /*
     String formatWithSuffix(DateTime date) {
       String day = DateFormat('d').format(date);
       String suffix = 'th';
@@ -164,6 +165,7 @@ class ScoreboardDataService {
       else if (day.endsWith('3') && !day.endsWith('13')) suffix = 'rd';
       return "${DateFormat('MMMM', 'ko_KR').format(date)} $day$suffix"; // 한국어 월 표시
     }
+    */
      // 시작일과 종료일의 월이 다르면 각 월을 표시, 같으면 한 번만 표시
     if (weekStartDate.month == endDate.month) {
       return "${DateFormat('MMMM d', 'ko_KR').format(weekStartDate)} ~ ${DateFormat('d', 'ko_KR').format(endDate)}, ${weekStartDate.year}";

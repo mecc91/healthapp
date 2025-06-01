@@ -7,7 +7,7 @@ const Color kNutrientIntakeGraphAccentColor = Colors.redAccent; // 그래프 바
 final Color kNutrientIntakeGraphBackgroundColor = Colors.grey.shade200; // 그래프 배경색
 
 // API Configuration
-const String kApiBaseUrl = "http://152.67.196.3:4912/v3"; // TODO: 실제 API 기본 URL로 변경하세요.
+const String kApiBaseUrl = "http://152.67.196.3:4912/v3"; 
 const String kDefaultUserId = "TestUser"; // TODO: 실제 userId는 동적으로 가져와야 합니다.
 
 // Nutrient Keys - 코멘트 표시 등에 계속 사용될 수 있음

@@ -17,9 +17,10 @@ class _IntakeLevelState extends State<IntakeLevel>
 
   late AnimationController _controller;
   late Animation<double> _fillAnimation;
-  late Animation<double> _fadeAnimation;  // -> 잠시 지워둠 (정신사나움)
-  late Animation<Offset> _slideAnimation; // -> 잠시 지워둠 (정신사나움)
-
+  /*
+  late Animation<double> _fadeAnimation;  
+  late Animation<Offset> _slideAnimation; 
+  */
   Color barColor = Colors.black;
   void barColorSelector(double ratio)
   {
@@ -52,7 +53,7 @@ class _IntakeLevelState extends State<IntakeLevel>
     _fillAnimation = Tween<double>(begin: 0, end: ratio).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-
+    /*
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
@@ -63,7 +64,7 @@ class _IntakeLevelState extends State<IntakeLevel>
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-
+    */
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _controller.forward(from: 0);
     });

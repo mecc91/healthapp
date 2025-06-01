@@ -1,12 +1,12 @@
 // lib/mealrecordPage/mealrecord.dart
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
 import 'dart:io';       // File 클래스 사용
 import 'dart:math';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/mealrecordPage/services/menu_analysis_service.dart'; // Refactored
-import 'package:healthymeal/mealrecordPage/services/meal_data_service.dart'; // Refactored
+
 
 // String constants for UI text and states
 class MealRecordStrings {
@@ -70,8 +70,8 @@ class _MealRecordState extends State<MealRecord> {
   final TextEditingController _menuNameController = TextEditingController();
 
   // Services
-  final MenuAnalysisService _menuAnalysisService = MenuAnalysisService();
-  final MealDataService _mealDataService = MealDataService();
+  // final MenuAnalysisService _menuAnalysisService = MenuAnalysisService(); 미사용?
+  // final MealDataService _mealDataService = MealDataService(); 미사용?
   final MealGptService _mealGptService = MealGptService();
 
   @override

@@ -1,11 +1,11 @@
 // lib/dashboardPage/dashboard.dart
-import 'dart:io';
+
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
-import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart';
+// import 'package:healthymeal/mealrecordPage/services/meal_gpt_service.dart'; 현재 미사용
 import 'package:healthymeal/profilePage/profile.dart';
 import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,7 +14,7 @@ import 'package:healthymeal/underconstructionPage/underconstruction.dart';
 import 'package:intl/intl.dart';
 import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path_provider/path_provider.dart';
+
 import '../main.dart';
 import 'widgets/dashboard_header.dart';
 import 'widgets/daily_status_summary_card.dart';
@@ -39,7 +39,7 @@ class _DashboardState extends State<Dashboard>
   double _dailyCardScale = 1.0;
   double _scoreCardScale = 1.0;
   double _mealDiaryCardScale = 1.0;
-  final MealGptService _mealGptService = MealGptService();
+  // final MealGptService _mealGptService = MealGptService(); 현재 미사용
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
