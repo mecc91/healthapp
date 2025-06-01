@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:healthymeal/dailystatusPage/intakelevel.dart';
-import 'package:healthymeal/dailystatusPage/model/mealinfo.dart';
+import 'package:healthymeal/dailystatusPage/intakelevel.dart'; // 각 영양소 섭취 수준을 표시하는 위젯
+import 'package:healthymeal/dailystatusPage/model/mealinfo.dart'; // 식사 정보 모델
+// import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart'; // 데이터 서비스 (현재 주석 처리)
 
-
+// 일일 영양 상태 화면을 구성하는 StatefulWidget
 class DailyStatus extends StatefulWidget {
   const DailyStatus({super.key});
 
@@ -10,28 +11,41 @@ class DailyStatus extends StatefulWidget {
   State<DailyStatus> createState() => _DailyStatusState();
 }
 
+// 일일 권장 섭취량 기준을 정의하는 클래스
 class IntakeCriterion {
-  const IntakeCriterion(this.carbonhydrateCriterion, this.proteinCriterion, this.fatCriterion, this.sodiumCriterion, this.celluloseCriterion, this.sugarCriterion, this.cholesterolCriterion);
-  final double carbonhydrateCriterion;
-  final double proteinCriterion;
-  final double fatCriterion;
-  final double sodiumCriterion;
-  final double celluloseCriterion;
-  final double sugarCriterion;
-  final double cholesterolCriterion;
+  final double carbonhydrateCriterion; // 탄수화물 기준 (g)
+  final double proteinCriterion;     // 단백질 기준 (g)
+  final double fatCriterion;         // 지방 기준 (g)
+  final double sodiumCriterion;      // 나트륨 기준 (mg)
+  final double celluloseCriterion;   // 식이섬유 기준 (g)
+  final double sugarCriterion;       // 당류 기준 (g)
+  final double cholesterolCriterion; // 콜레스테롤 기준 (mg)
+
+  const IntakeCriterion(
+    this.carbonhydrateCriterion,
+    this.proteinCriterion,
+    this.fatCriterion,
+    this.sodiumCriterion,
+    this.celluloseCriterion,
+    this.sugarCriterion,
+    this.cholesterolCriterion,
+  );
 }
 
+// 각 영양소의 섭취 데이터를 나타내는 클래스
 class IntakeData {
-  final String nutrientname;
-  final String intakeunit;
-  final double requiredintake;
-  final double intakeamount;
-  IntakeData(this.nutrientname, this.requiredintake, this.intakeamount, this.intakeunit);
+  final String nutrientname; // 영양소 이름
+  final String intakeunit;   // 섭취 단위 (g, mg 등)
+  final double requiredintake; // 권장 섭취량
+  final double intakeamount;   // 실제 섭취량
+
+  IntakeData(
+      this.nutrientname, this.requiredintake, this.intakeamount, this.intakeunit);
 }
 
 class _DailyStatusState extends State<DailyStatus> {
-
-  // Sample meal list
+  // TODO: 이 _meals 리스트는 실제 API 호출을 통해 동적으로 가져와야 합니다.
+  // 현재는 예시용 하드코딩된 데이터입니다.
   final List<MealInfo> _meals = [
     MealInfo(
       carbonhydrate_g: 10.93,
@@ -43,14 +57,14 @@ class _DailyStatusState extends State<DailyStatus> {
       cholesterol_mg: 0,
       intaketime: DateTime(2025, 05, 12, 07, 30),
       mealtype: "Breakfast",
-      intakeamount: 1, 
-      meals: ["콩나물 국밥"], 
-      imagepath: 'assets/image/konggukbap.jpeg',
+      intakeamount: 1,
+      meals: ["콩나물 국밥"],
+      imagepath: 'assets/image/konggukbap.jpeg', // TODO: 실제 이미지 경로 확인
     ),
     MealInfo(
-      carbonhydrate_g: 20.26, 
-      protein_g: 7, 
-      fat_g: 7.22, 
+      carbonhydrate_g: 20.26,
+      protein_g: 7,
+      fat_g: 7.22,
       sodium_mg: 335,
       cellulose_g: 1.8,
       sugar_g: 0.71,
@@ -59,7 +73,7 @@ class _DailyStatusState extends State<DailyStatus> {
       mealtype: "Lunch",
       intakeamount: 1,
       meals: ["참치 김밥"],
-      imagepath: 'assets/image/chamchigimbap.jpeg',
+      imagepath: 'assets/image/chamchigimbap.jpeg', // TODO: 실제 이미지 경로 확인
     ),
     MealInfo(
       carbonhydrate_g: 25.94,
@@ -73,7 +87,7 @@ class _DailyStatusState extends State<DailyStatus> {
       mealtype: "Dinner",
       intakeamount: 1,
       meals: ["맥치킨 모짜버거"],
-      imagepath: 'assets/image/mcchickenmozza.jpg',
+      imagepath: 'assets/image/mcchickenmozza.jpg', // TODO: 실제 이미지 경로 확인
     ),
     MealInfo(
       carbonhydrate_g: 50,
@@ -87,71 +101,106 @@ class _DailyStatusState extends State<DailyStatus> {
       mealtype: "Snack",
       intakeamount: 1,
       meals: ["블루베리 마카롱"],
-      imagepath: 'assets/image/blueberrymacaron.jpg',
+      imagepath: 'assets/image/blueberrymacaron.jpg', // TODO: 실제 이미지 경로 확인
     ),
   ];
-  // API Request Service
-  // final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "http://152.67.196.3:4912/foods");
-  
-  final List<IntakeData> _intakes = []; 
-  final IntakeCriterion criterion = IntakeCriterion(130, 65, 70, 1500, 30, 65, 300);
 
-  int currentMeal = -1;
-  void setIntakeLevel(List<MealInfo> meals)
-  {
-    double totalcarbon=0; double totalprotein=0; double totalfat=0; double totalsodium=0; double totalcellulose=0; double totalsugar=0; double totalcholesterol=0;
-    for (MealInfo meal in meals)
-    {
-      totalcarbon += meal.carbonhydrate_g;
-      totalprotein += meal.protein_g;
-      totalfat += meal.fat_g;
-      totalsodium += meal.sodium_mg;
-      totalcellulose += meal.cellulose_g;
-      totalsugar += meal.sugar_g;
-      totalcholesterol += meal.cholesterol_mg;
-    }
-    setState(() {
-      _intakes.clear();
-      _intakes.add(IntakeData("탄수화물", criterion.carbonhydrateCriterion, totalcarbon, "g"));
-      _intakes.add(IntakeData("단백질", criterion.proteinCriterion, totalprotein, "g"));
-      _intakes.add(IntakeData("지방", criterion.fatCriterion, totalfat, "g"));
-      _intakes.add(IntakeData("나트륨", criterion.sodiumCriterion, totalsodium, "mg"));
-      _intakes.add(IntakeData("식이섬유", criterion.celluloseCriterion, totalcellulose, "g"));
-      _intakes.add(IntakeData("당류", criterion.sugarCriterion, totalsugar, "g"));
-      _intakes.add(IntakeData("콜레스테롤", criterion.cholesterolCriterion, totalcholesterol, "mg"));
-    });
-  }
+  // API 요청을 위한 서비스 인스턴스 (현재는 주석 처리)
+  // final DailyStatusService _dailyStatusService = DailyStatusService(baseUrl: "YOUR_API_BASE_URL");
 
-  // 선택된 식단기록 정보만 그래프로 시각화
-  void setMealList(int index)
-  {
-    print("mealsetting to $index");
-    if (index == -1)
-    {
-      setIntakeLevel(_meals);
-      currentMeal = -1;
-      return;
-    }
-    else
-    {
-      setIntakeLevel([_meals[index]]);
-      currentMeal = index;
-      return;
-    }
-  }
+  // 화면에 표시될 영양소 섭취 데이터 리스트
+  final List<IntakeData> _intakes = [];
+  // 일일 권장 섭취량 기준 (성별, 나이 등에 따라 동적으로 설정될 수 있음)
+  // TODO: 이 기준값들은 사용자 프로필 정보 등을 바탕으로 동적으로 설정해야 합니다.
+  final IntakeCriterion _criterion =
+      const IntakeCriterion(130, 65, 70, 1500, 30, 65, 300);
+
+  int _currentSelectedMealIndex = -1; // 현재 선택된 식단 인덱스 (-1은 전체 식단)
+  bool _isLoading = false; // 데이터 로딩 상태 (API 연동 시 사용)
 
   @override
   void initState() {
     super.initState();
-    // API Request 로 _meals 초기화
-    /*_dailyStatusService.fetchMeals().then((meals) {
-      // _meals 정보 가져오기
-      setState(() {
-        _meals = meals;
-      });
-    });*/
-    // _intakes 멤버 초기화
-    setIntakeLevel(_meals);
+    // TODO: API를 통해 _meals 데이터를 가져오는 로직 구현
+    // 예: _fetchMealsData();
+    // 현재는 하드코딩된 _meals 데이터를 사용하여 _intakes 초기화
+    _updateIntakeLevels(_meals);
+  }
+
+  // Future<void> _fetchMealsData() async {
+  //   if (mounted) setState(() => _isLoading = true);
+  //   try {
+  //     // final fetchedMeals = await _dailyStatusService.fetchMeals(userId: "someUserId", date: "yyyy-MM-dd");
+  //     // if (mounted) {
+  //     //   setState(() {
+  //     //     _meals.clear();
+  //     //     _meals.addAll(fetchedMeals);
+  //     //     _updateIntakeLevels(_meals);
+  //     //     _isLoading = false;
+  //     //   });
+  //     // }
+  //   } catch (e) {
+  //     if (mounted) setState(() => _isLoading = false);
+  //     // 에러 처리 (예: 스낵바 표시)
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("식단 정보를 불러오는데 실패했습니다: $e")),
+  //     );
+  //   }
+  // }
+
+  // 주어진 식단 목록을 바탕으로 각 영양소의 총 섭취량을 계산하고 _intakes 리스트를 업데이트하는 함수
+  void _updateIntakeLevels(List<MealInfo> mealsToProcess) {
+    if (!mounted) return;
+
+    double totalCarbon = 0;
+    double totalProtein = 0;
+    double totalFat = 0;
+    double totalSodium = 0;
+    double totalCellulose = 0;
+    double totalSugar = 0;
+    double totalCholesterol = 0;
+
+    for (MealInfo meal in mealsToProcess) {
+      totalCarbon += meal.carbonhydrate_g;
+      totalProtein += meal.protein_g;
+      totalFat += meal.fat_g;
+      totalSodium += meal.sodium_mg;
+      totalCellulose += meal.cellulose_g;
+      totalSugar += meal.sugar_g;
+      totalCholesterol += meal.cholesterol_mg;
+    }
+
+    setState(() {
+      _intakes.clear(); // 기존 데이터 초기화
+      _intakes.add(IntakeData(
+          "탄수화물", _criterion.carbonhydrateCriterion, totalCarbon, "g"));
+      _intakes.add(
+          IntakeData("단백질", _criterion.proteinCriterion, totalProtein, "g"));
+      _intakes.add(IntakeData("지방", _criterion.fatCriterion, totalFat, "g"));
+      _intakes.add(
+          IntakeData("나트륨", _criterion.sodiumCriterion, totalSodium, "mg"));
+      _intakes.add(IntakeData(
+          "식이섬유", _criterion.celluloseCriterion, totalCellulose, "g"));
+      _intakes.add(IntakeData("당류", _criterion.sugarCriterion, totalSugar, "g"));
+      _intakes.add(IntakeData("콜레스테롤", _criterion.cholesterolCriterion,
+          totalCholesterol, "mg"));
+    });
+  }
+
+  // 특정 식단 또는 전체 식단을 선택했을 때 호출되는 함수
+  void _setSelectedMealAndUpdateLevels(int index) {
+    if (!mounted) return;
+    print("선택된 식단 인덱스: $index");
+    setState(() {
+      _currentSelectedMealIndex = index; // 현재 선택된 식단 인덱스 업데이트
+      if (index == -1) {
+        // 전체 식단 선택 시
+        _updateIntakeLevels(_meals);
+      } else {
+        // 특정 식단 선택 시
+        _updateIntakeLevels([_meals[index]]);
+      }
+    });
   }
 
   @override
@@ -159,141 +208,183 @@ class _DailyStatusState extends State<DailyStatus> {
     return Scaffold(
       // 상단 AppBar
       appBar: AppBar(
-        title: const Text('Daily Status',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: const Text('일일 영양 상태',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)), // 폰트 크기 조정
         centerTitle: true,
-        leading: const BackButton(),
+        leading: IconButton( // 뒤로가기 버튼
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        foregroundColor: Colors.black87, // 아이콘 및 텍스트 색상
+        elevation: 1, // 약간의 그림자 효과
       ),
       // 본문 Container
       body: Container(
-        // Container 배경
+        // 배경 그라데이션
         decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFFDE68A), // 밝은 Amber (보통)
-                  Color(0xFFC8E6C9), // 연한 Green (양호)
-                  Colors.white,
-                ],
-                stops: [0.0, 0.7, 1.0],
-              ),
-            ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          child: Column(
-            children: [
-              // IntakeLevelBar Card 위젯 -> _intakes의 7가지 영양소 섭취현황 표시
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: _intakes
-                    .map((intake) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: IntakeLevel(intake),
-                        ))
-                    .toList(),
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    // 전체 식단기록정보 활성화
-                    GestureDetector(
-                      onTap: () => {setMealList(-1)},
-                      child: Container(
-                        width: 80,
-                        height: 56,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: -1 == currentMeal ? Colors.deepOrangeAccent : Colors.black12,
-                            width: 3.0,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            "전체 식단",
-                            style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 15),
-                    Row(
-                      // 기록된 식단정보 위젯들 표시 -> Clickable & 해당 식단에 대해서의 섭취량 표시
-                      children: 
-                        _meals.asMap().entries.map((meal) => 
-                      Row(
-                        children: [
-                          // 기록된 식단정보 Clickable 위젯
-                          GestureDetector(
-                            onTap: () => {setMealList(meal.key)},
-                            child: Container(
-                              width: 160,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: meal.key == currentMeal ? Colors.deepOrangeAccent : Colors.black12,
-                                  width: 3.0,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  // 원형 이미지
-                                  ClipOval(
-                                    child: Image.asset(
-                                      meal.value.imagepath,// 이미지 경로
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  // 텍스트 정보
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        meal.value.meals[0],
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      Text(
-                                        meal.value.mealtype,
-                                        style: TextStyle(fontSize: 12, color: Colors.black54),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 15),
-                        ],
-                      )).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 50),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFDE68A), // 밝은 노란색 (상단)
+              Color(0xFFC8E6C9), // 연한 녹색 (중간)
+              Colors.white,      // 흰색 (하단)
             ],
+            stops: [0.0, 0.6, 1.0], // 색상 전환 지점
           ),
         ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator( // 아래로 당겨서 새로고침 기능 (API 연동 시 유용)
+                onRefresh: () async {
+                  // TODO: 실제 데이터 새로고침 로직 구현 (예: _fetchMealsData())
+                  await Future.delayed(const Duration(seconds: 1)); // 임시 지연
+                  if (mounted) {
+                     _setSelectedMealAndUpdateLevels(_currentSelectedMealIndex); // 현재 선택 기준으로 다시 계산
+                  }
+                },
+                child: SingleChildScrollView( // 내용이 길 경우 스크롤 가능하도록
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // 내부 패딩
+                  child: Column(
+                    children: [
+                      // 각 영양소별 섭취 수준을 표시하는 IntakeLevel 위젯 목록
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: _intakes
+                            .map((intake) => Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 3.0), // 위젯 간 간격
+                                  child: IntakeLevel(intake, key: ValueKey(intake.nutrientname + intake.intakeamount.toString())), // key 추가로 상태 변경 시 올바르게 업데이트
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20), // 영양소 바와 식단 선택 영역 사이 간격
+                      // 기록된 식단 목록을 가로로 스크롤하며 선택할 수 있는 영역
+                      SizedBox(
+                        height: 70, // 가로 스크롤 영역 높이 고정
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal, // 가로 스크롤 설정
+                          itemCount: _meals.length + 1, // "전체" 버튼 포함
+                          itemBuilder: (context, index) {
+                            bool isSelected;
+                            Widget displayItem;
+
+                            if (index == 0) { // "전체" 버튼
+                              isSelected = _currentSelectedMealIndex == -1;
+                              displayItem = Container(
+                                width: 90, // 버튼 너비
+                                margin: const EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.orange.shade100 : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.deepOrangeAccent
+                                        : Colors.grey.shade300,
+                                    width: isSelected ? 2.5 : 1.5, // 선택 시 테두리 두껍게
+                                  ),
+                                  boxShadow: isSelected ? [
+                                    BoxShadow(color: Colors.deepOrangeAccent.withOpacity(0.3), blurRadius: 5, spreadRadius: 1)
+                                  ] : [
+                                    BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 3, spreadRadius: 1)
+                                  ],
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    "전체 식단",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13.5, // 폰트 크기 조정
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else { // 개별 식단 아이템
+                              final mealIndex = index - 1;
+                              final meal = _meals[mealIndex];
+                              isSelected = _currentSelectedMealIndex == mealIndex;
+                              displayItem = Container(
+                                width: 170, // 각 식단 아이템 너비
+                                margin: const EdgeInsets.only(right: 10), // 아이템 간 간격
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.orange.shade100 : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Colors.deepOrangeAccent
+                                        : Colors.grey.shade300,
+                                    width: isSelected ? 2.5 : 1.5,
+                                  ),
+                                   boxShadow: isSelected ? [
+                                    BoxShadow(color: Colors.deepOrangeAccent.withOpacity(0.3), blurRadius: 5, spreadRadius: 1)
+                                  ] : [
+                                    BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 3, spreadRadius: 1)
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    // 식단 이미지 (원형)
+                                    ClipOval(
+                                      child: Image.asset(
+                                        meal.imagepath, // 이미지 경로
+                                        width: 45, // 이미지 크기
+                                        height: 45,
+                                        fit: BoxFit.cover, // 이미지를 원에 맞게 채움
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Container( // 이미지 로드 실패 시 기본 아이콘 표시
+                                            width: 45, height: 45,
+                                            color: Colors.grey.shade200,
+                                            child: Icon(Icons.restaurant, color: Colors.grey.shade400),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    // 식단 텍스트 정보 (메뉴 이름, 식사 유형)
+                                    Expanded( // 텍스트가 길 경우 자동 줄바꿈
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            meal.meals.isNotEmpty ? meal.meals[0] : "알 수 없는 메뉴", // 메뉴 이름 (첫 번째 항목)
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13, // 폰트 크기 조정
+                                              overflow: TextOverflow.ellipsis, // 길면 말줄임표
+                                            ),
+                                            maxLines: 1,
+                                          ),
+                                          Text(
+                                            meal.mealtype, // 식사 유형
+                                            style: TextStyle(
+                                                fontSize: 11.5, color: Colors.black54), // 폰트 크기 및 색상 조정
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            // 각 아이템을 탭 가능하도록 GestureDetector로 감쌈
+                            return GestureDetector(
+                              onTap: () => _setSelectedMealAndUpdateLevels(index == 0 ? -1 : index -1),
+                              child: displayItem,
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 50), // 화면 하단 여백
+                    ],
+                  ),
+                ),
+              ),
       ),
-      //backgroundColor: Colors.white70,
     );
   }
 }
-
