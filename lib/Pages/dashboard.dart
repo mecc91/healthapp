@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart';
 import 'package:healthymeal/profilePage/profile.dart';
-import 'package:healthymeal/recommendationPage/recommendation.dart';
-import 'package:image_picker/image_picker.dart';
+
+
 // scoreboard.dart import 추가
 import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 
@@ -21,7 +21,9 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   // ignore: unused_field
   File? _imageFile;
+  /*
   final ImagePicker _picker = ImagePicker();
+  
   Future<void> _takePicture() async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
@@ -32,7 +34,7 @@ class _DashboardState extends State<Dashboard> {
       print('사진이 선택되지 않았습니다');
     }
   }
-
+  */
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

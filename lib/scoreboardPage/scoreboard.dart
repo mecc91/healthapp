@@ -25,7 +25,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   late ScoreboardDataService _dataService;
   List<Map<String, dynamic>> _currentWeekChartData = [];
-  Map<int, int> _currentMonthScores = {}; // 일자(int) : 점수(int)
+  // Map<int, int> _currentMonthScores = {}; // 일자(int) : 점수(int)
 
   double _currentAverageScore = 0;
   String _currentDateRangeFormatted = "";
@@ -35,7 +35,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
 
   bool _isLoading = true;
   String? _errorMessage;
-  String _userId = "TestUser"; // TODO: 실제 사용자 ID로 교체 필요
+  final String _userId = "TestUser"; 
 
   @override
   void initState() {
@@ -88,7 +88,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         if (mounted) {
           setState(() {
             _currentWeekChartData = [];
-            _currentMonthScores = {};
+            // _currentMonthScores = {};
             _currentAverageScore = 0;
             _currentDateRangeFormatted = _isSelectedToggle[2] ? "분기별 (미구현)" : "연간 (미구현)";
             _isLoading = false;
@@ -139,7 +139,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     if (mounted) {
       setState(() {
         _displayedDate = firstDayOfMonth; // 화면 기준 날짜 업데이트
-        _currentMonthScores = monthlyScores;
+        // _currentMonthScores = monthlyScores;
         _currentAverageScore = averageScore;
         _currentDateRangeFormatted = monthFormatted;
         _dataService.currentSelectedMonth = firstDayOfMonth; // 서비스의 현재 월도 업데이트

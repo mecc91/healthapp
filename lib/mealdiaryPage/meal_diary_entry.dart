@@ -6,7 +6,7 @@ class MealDiaryEntry {
   final String menuName;
   final int intakeAmount;
   final DateTime createdAt; // ✅ 추가됨
-  var notes; // ✅ 수정 가능하도록 var
+  String notes; 
 
   MealDiaryEntry({
     required this.imagePath,

@@ -1,6 +1,6 @@
 // lib/nutrientintakePage/widgets/nutrient_monthly_calendar_view.dart
 import 'package:flutter/material.dart';
-import '../nutrient_intake_constants.dart'; // 상수 (색상, UI 텍스트 등)
+
 import '../services/nutrient_intake_data_service.dart'; // NutrientIntakeDataService (직접 사용은 없으나, 타입 명시용)
 
 class NutrientMonthlyCalendarView extends StatefulWidget {
