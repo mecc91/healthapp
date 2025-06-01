@@ -13,18 +13,9 @@ import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 import 'package:healthymeal/underconstructionPage/underconstruction.dart';
 import 'package:intl/intl.dart';
 import 'package:healthymeal/mealdiaryPage/meal_diary_screen.dart';
-<<<<<<< HEAD
-import 'package:path_provider/path_provider.dart';
-
-// RouteObserver를 사용하기 위해 main.dart 또는 해당 Observer가 정의된 파일을 import
-// 예시 경로이며, 실제 프로젝트 구조에 맞게 수정해야 합니다.
-import '../main.dart'; // ✅ 수정: main.dart의 routeObserver를 사용하기 위해 import
-
-// 분리된 위젯 import
-=======
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 import '../main.dart';
->>>>>>> week14_kimjiwoo
 import 'widgets/dashboard_header.dart';
 import 'widgets/daily_status_summary_card.dart';
 import 'widgets/weekly_score_summary_card.dart';
@@ -49,21 +40,6 @@ class _DashboardState extends State<Dashboard>
   double _scoreCardScale = 1.0;
   double _mealDiaryCardScale = 1.0;
   final MealGptService _mealGptService = MealGptService();
-<<<<<<< HEAD
-  late XFile _dummyMealImage;
-    // dummyMealImage 초기화를 위한 함수 (디버그용)
-  void setDummy() async {
-    final fileName = "chicken.jpg";
-    final byteData = await rootBundle.load("assets/image/chicken.jpg");
-    final tempDir = await getTemporaryDirectory();
-    final file = File("${tempDir.path}/$fileName");
-    await file.writeAsBytes(byteData.buffer.asUint8List());
-    _dummyMealImage =  XFile(file.path);
-  }
-
-  // 애니메이션 컨트롤러 (이전 코드에서 참조)
-=======
->>>>>>> week14_kimjiwoo
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -98,11 +74,6 @@ class _DashboardState extends State<Dashboard>
         _animationController.forward(from: 0);
       }
     });
-<<<<<<< HEAD
-
-    // dummyMealImage 초기화
-    setDummy();
-=======
     _loadUserId();
   }
 
@@ -114,7 +85,6 @@ class _DashboardState extends State<Dashboard>
         _userId = id;
       });
     }
->>>>>>> week14_kimjiwoo
   }
 
   @override
@@ -160,7 +130,6 @@ class _DashboardState extends State<Dashboard>
     super.dispose();
   }
 
-<<<<<<< HEAD
   // 현재 날짜를 가져와 포맷팅하는 함수
   String getCurrentDateFormatted() {
     final now = DateTime.now();
@@ -169,8 +138,6 @@ class _DashboardState extends State<Dashboard>
   }
   
   // 카메라 버튼 클릭시 사진촬영 & MealRecord Page로 분기
-=======
->>>>>>> week14_kimjiwoo
   Future<void> _takePicture() async {
     final XFile? pickedFile =
         await _picker.pickImage(source: ImageSource.camera);
@@ -216,18 +183,7 @@ class _DashboardState extends State<Dashboard>
       _navigateWithFade(context, const ScoreboardScreen());
       // MealRecord Page로 분기
     } else if (index == 1) {
-<<<<<<< HEAD
-      // MealDiaryScreen으로 현재 날짜를 전달하며 이동 (카메라 아이콘 탭 시)
-      // 현재는 _takePicture()를 호출하도록 되어 있습니다.
-      // 만약 식단 기록 화면으로 바로 이동시키려면 아래 주석을 해제하고 _takePicture()를 주석 처리합니다.
-      //_navigateWithFade(context, MealRecord(initialImageFile: _dummyMealImage));     // 사진촬영없이 바로분기
-      _takePicture(); // 사진 촬영 로직
-      //_mealGptService.sendPing();
-
-      // MenuRecommend Page로 분기
-=======
       _takePicture();
->>>>>>> week14_kimjiwoo
     } else if (index == 2) {
       _navigateWithFade(context, const MenuRecommendScreen());
     }
