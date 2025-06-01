@@ -3,12 +3,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:healthymeal/Pages/dailystatus.dart';
-import 'package:healthymeal/Pages/mealrecord.dart';
-import 'package:healthymeal/Pages/recommendation.dart';
+import 'package:healthymeal/dailystatusPage/dailystatus.dart';
+import 'package:healthymeal/mealrecordPage/mealrecord.dart';
+import 'package:healthymeal/profilePage/profile.dart';
+import 'package:healthymeal/recommendationPage/recommendation.dart';
 import 'package:image_picker/image_picker.dart';
 // scoreboard.dart import 추가
-import 'package:healthymeal/Pages/scoreboard.dart';
+import 'package:healthymeal/scoreboardPage/scoreboard.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -95,9 +96,9 @@ class _DashboardState extends State<Dashboard> {
                 MaterialPageRoute(builder: (context) => const ScoreboardScreen()), // ScoreboardScreen 호출
               );
             } else if (index == 1) { // 카메라 아이콘 (인덱스 1)을 탭했을 때
-              Navigator.push( // FoodRecordScreen으로 이동
+              Navigator.push( // MealRecordScreen으로 이동
                 context,
-                MaterialPageRoute(builder: (context) => const FoodRecordScreen()),
+                MaterialPageRoute(builder: (context) => const MealRecord()),
               );
             }
             // 다른 아이템(index 2 등) 탭 시 추가 로직 구현 가능
@@ -131,7 +132,7 @@ class _DashboardState extends State<Dashboard> {
                   // 프로필 아이콘 클릭 시 동작
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Recommendation()), //porfile 화면으로 이동으로 나중에 변경경
+                    MaterialPageRoute(builder: (context) => const Profile()), 
                   );
                 },
                 child: CircleAvatar(

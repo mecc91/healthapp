@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:healthymeal/registrationPage/registration.dart';
-=======
 import 'package:healthymeal/registerationPage/registeration.dart';
 
->>>>>>> week14_kimjiwoo
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,14 +93,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-<<<<<<< HEAD
-              colors: [
-                Color(0xFFFDE68A),
-                Color(0xFFC8E6C9),
-              ],
-=======
               colors: [Color(0xFFFCE38A), Color(0xFFF38181)],
->>>>>>> week14_kimjiwoo
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
