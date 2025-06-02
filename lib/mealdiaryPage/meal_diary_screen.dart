@@ -72,13 +72,15 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
     // API 엔드포인트 (특정 날짜의 데이터를 가져오도록 쿼리 파라미터 추가)
     // TODO: API 기본 URL은 상수로 관리하는 것이 좋습니다.
     final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-    final url = 'http://152.67.196.3:4912/users/$userId/meal-info?date=$formattedDate';
+    final url =
+        'http://152.67.196.3:4912/users/$userId/meal-info?date=$formattedDate';
 
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes)); // UTF-8 디코딩
+        final List<dynamic> data =
+            json.decode(utf8.decode(response.bodyBytes)); // UTF-8 디코딩
 
         if (mounted) {
           setState(() {
@@ -93,7 +95,8 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            _errorMessage = '식단 기록을 불러오는데 실패했습니다 (서버 오류: ${response.statusCode}).';
+            _errorMessage =
+                '식단 기록을 불러오는데 실패했습니다 (서버 오류: ${response.statusCode}).';
           });
         }
       }
@@ -128,12 +131,15 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Scaffold 배경을 투명하게 하여 Container 그라데이션이 보이도록 함
+        backgroundColor:
+            Colors.transparent, // Scaffold 배경을 투명하게 하여 Container 그라데이션이 보이도록 함
         appBar: AppBar(
-          title: Text(appBarDateFormat.format(widget.displayDate)), // 앱바 제목에 날짜 표시
+          title:
+              Text(appBarDateFormat.format(widget.displayDate)), // 앱바 제목에 날짜 표시
           backgroundColor: Colors.transparent, // 앱바 배경 투명
           elevation: 0, // 앱바 그림자 제거
-          leading: IconButton( // 뒤로가기 버튼
+          leading: IconButton(
+            // 뒤로가기 버튼
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -141,22 +147,32 @@ class _MealDiaryScreenState extends State<MealDiaryScreen> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator()) // 로딩 중일 때
             : _errorMessage.isNotEmpty
-                ? Center( // 오류 발생 시
+                ? Center(
+                    // 오류 발생 시
                     child: Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: Text(_errorMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red, fontSize: 16)),
+                    child: Text(_errorMessage,
+                        textAlign: TextAlign.center,
+                        style:
+                            const TextStyle(color: Colors.red, fontSize: 16)),
                   ))
                 : _diaryEntries.isEmpty
-                    ? const Center(child: Text('해당 날짜의 식단 기록이 없습니다!')) // 기록이 없을 때
-                    : ListView.builder( // 기록이 있을 때 목록 표시
-                        padding: const EdgeInsets.symmetric(vertical: 8.0), // 목록 상하 패딩
+                    ? const Center(
+                        child: Text('해당 날짜의 식단 기록이 없습니다!')) // 기록이 없을 때
+                    : ListView.builder(
+                        // 기록이 있을 때 목록 표시
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0), // 목록 상하 패딩
                         itemCount: _diaryEntries.length,
                         itemBuilder: (context, index) {
                           final entry = _diaryEntries[index];
                           return MealDiaryCard(
-                            key: ValueKey(entry.menuName + entry.createdAt.toIso8601String()), // 고유 키 부여 (삭제 시 애니메이션 등)
+                            key: ValueKey(entry.foodName +
+                                entry.createdAt
+                                    .toIso8601String()), // 고유 키 부여 (삭제 시 애니메이션 등)
                             entry: entry,
-                            onDelete: () { // 삭제 콜백 처리
+                            onDelete: () {
+                              // 삭제 콜백 처리
                               if (mounted) {
                                 setState(() {
                                   _diaryEntries.removeAt(index); // UI에서 즉시 제거

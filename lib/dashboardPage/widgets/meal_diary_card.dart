@@ -3,29 +3,50 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-// ✅ API 응답을 위한 식사 항목 데이터 모델
+class FoodInfo {
+  final String name;
+  final double energyKcal;
+
+  FoodInfo({
+    required this.name,
+    required this.energyKcal,
+  });
+
+  factory FoodInfo.fromJson(Map<String, dynamic> json) {
+    return FoodInfo(
+      name: json['name'] ?? '이름 없음',
+      energyKcal: (json['energyKcal'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
 class MealEntry {
-  final String id;
+  final int id;
   final String imgPath;
-  final double intakeAmount; // ✅ int → double
-  final String? diary;
+  final double intakeAmount;
   final DateTime createdAt;
+  final FoodInfo food;
 
   MealEntry({
     required this.id,
     required this.imgPath,
     required this.intakeAmount,
-    this.diary,
     required this.createdAt,
+    required this.food,
   });
 
   factory MealEntry.fromJson(Map<String, dynamic> json) {
+    final foodList = json['mealInfoFoodLinks'] as List<dynamic>? ?? [];
+    final food = foodList.isNotEmpty
+        ? FoodInfo.fromJson(foodList[0]['food'] ?? {})
+        : FoodInfo(name: '알 수 없음', energyKcal: 0.0);
+
     return MealEntry(
-      id: json['id']?.toString() ?? 'N/A',
-      imgPath: json['imgPath'] as String? ?? '',
-      intakeAmount: (json['intakeAmount'] as num?)?.toDouble() ?? 0.0, // ✅ 수정됨
-      diary: json['diary'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      id: json['id'] as int? ?? -1,
+      imgPath: json['imgPath'] ?? '',
+      intakeAmount: (json['intakeAmount'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.parse(json['createdAt']),
+      food: food,
     );
   }
 }
@@ -58,7 +79,6 @@ class _MealDiaryCardState extends State<MealDiaryCard> {
   List<MealEntry> _todayMeals = [];
   bool _isLoading = true;
   String _errorMessage = '';
-
   final String _imageBaseUrl = 'http://152.67.196.3:4912/uploads/';
 
   @override
@@ -249,7 +269,7 @@ class _MealDiaryCardState extends State<MealDiaryCard> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "메뉴: ${entry.id}",
+                                      entry.food.name,
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -275,19 +295,13 @@ class _MealDiaryCardState extends State<MealDiaryCard> {
                                         color: Colors.black54,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 2),
                                     Text(
-                                      entry.diary ?? "작성된 메모가 없습니다.",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: entry.diary == null ||
-                                                entry.diary!.isEmpty
-                                            ? Colors.grey.shade500
-                                            : Colors.black54,
-                                        height: 1.3,
+                                      "칼로리: ${entry.food.energyKcal.toStringAsFixed(0)} kcal",
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.black54,
                                       ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),

@@ -18,7 +18,7 @@ class _MealDiaryCardState extends State<MealDiaryCard>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   bool _isSettingTapped = false;
-  late double _intakeAmount; // ✅ int → double
+  late double _intakeAmount;
   late String _notes;
 
   @override
@@ -45,7 +45,7 @@ class _MealDiaryCardState extends State<MealDiaryCard>
 
   Future<void> updateDiary({
     required int mealInfoId,
-    required double amount, // ✅ int → double
+    required double amount,
     required String newDiary,
   }) async {
     final prefs = await SharedPreferences.getInstance();
@@ -62,7 +62,6 @@ class _MealDiaryCardState extends State<MealDiaryCard>
     if (response.statusCode != 200) {
       throw Exception('다이어리 수정 실패: ${response.statusCode}, ${response.body}');
     }
-    print('✅ 다이어리 업데이트 성공');
   }
 
   Future<void> deleteDiary(int mealInfoId) async {
@@ -83,10 +82,10 @@ class _MealDiaryCardState extends State<MealDiaryCard>
           const SnackBar(content: Text('✅ 삭제가 완료되었습니다')),
         );
       }
-      print('✅ 식단 기록 삭제 성공');
-      return;
+      widget.onDelete?.call();
+    } else {
+      throw Exception('삭제 실패: ${response.statusCode}, ${response.body}');
     }
-    throw Exception('삭제 실패: ${response.statusCode}, ${response.body}');
   }
 
   void _showEditDeleteOptions(BuildContext context, int mealInfoId) async {
@@ -121,7 +120,7 @@ class _MealDiaryCardState extends State<MealDiaryCard>
   }
 
   void _editDiaryNote(BuildContext context, int mealInfoId) async {
-    double _currentAmount = _intakeAmount; // ✅ 그대로 사용 (인분 단위)
+    double _currentAmount = _intakeAmount;
     final controller = TextEditingController(text: _notes);
 
     final result = await showDialog<Map<String, dynamic>>(
@@ -166,7 +165,7 @@ class _MealDiaryCardState extends State<MealDiaryCard>
               TextButton(
                 onPressed: () => Navigator.pop(context, {
                   'notes': controller.text,
-                  'amount': (_currentAmount),
+                  'amount': _currentAmount,
                 }),
                 child: const Text('저장'),
               ),
@@ -225,7 +224,6 @@ class _MealDiaryCardState extends State<MealDiaryCard>
     if (confirmed == true) {
       try {
         await deleteDiary(mealInfoId);
-        widget.onDelete?.call();
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -240,14 +238,7 @@ class _MealDiaryCardState extends State<MealDiaryCard>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final imageSize = screenWidth * 0.28;
-
-    int? mealInfoId;
-    try {
-      mealInfoId =
-          int.tryParse(widget.entry.menuName.replaceAll(RegExp(r'[^0-9]'), ''));
-    } catch (e) {
-      print("mealInfoId 파싱 오류: ${widget.entry.menuName}, 오류: $e");
-    }
+    final int mealInfoId = widget.entry.id;
 
     return FadeTransition(
       opacity: _fadeAnimation,
@@ -313,39 +304,36 @@ class _MealDiaryCardState extends State<MealDiaryCard>
                             ),
                           ),
                         ),
-                        if (mealInfoId != null)
-                          GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTapDown: (_) =>
-                                setState(() => _isSettingTapped = true),
-                            onTapUp: (_) {
-                              setState(() => _isSettingTapped = false);
-                              _showEditDeleteOptions(context, mealInfoId!);
-                            },
-                            onTapCancel: () =>
-                                setState(() => _isSettingTapped = false),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 8.0, bottom: 8),
-                              child: AnimatedScale(
-                                scale: _isSettingTapped ? 0.85 : 1.0,
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTapDown: (_) =>
+                              setState(() => _isSettingTapped = true),
+                          onTapUp: (_) {
+                            setState(() => _isSettingTapped = false);
+                            _showEditDeleteOptions(context, mealInfoId);
+                          },
+                          onTapCancel: () =>
+                              setState(() => _isSettingTapped = false),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, bottom: 8),
+                            child: AnimatedScale(
+                              scale: _isSettingTapped ? 0.85 : 1.0,
+                              duration: const Duration(milliseconds: 150),
+                              child: AnimatedOpacity(
+                                opacity: _isSettingTapped ? 0.6 : 1.0,
                                 duration: const Duration(milliseconds: 150),
-                                child: AnimatedOpacity(
-                                  opacity: _isSettingTapped ? 0.6 : 1.0,
-                                  duration: const Duration(milliseconds: 150),
-                                  child: Icon(Icons.more_vert,
-                                      color: Colors.grey.shade600),
-                                ),
+                                child: Icon(Icons.more_vert,
+                                    color: Colors.grey.shade600),
                               ),
                             ),
                           ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6.0),
                     Text(
-                      widget.entry.menuName.startsWith("메뉴 ID: ")
-                          ? "메뉴: ${widget.entry.menuName.substring(6).trim()}"
-                          : "메뉴: ${widget.entry.menuName}",
+                      widget.entry.foodName,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
