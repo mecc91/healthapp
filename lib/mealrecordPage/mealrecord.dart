@@ -68,8 +68,6 @@ class _MealRecordState extends State<MealRecord> {
   final List<String> _servingOptions = [
     '1',
     '0.5',
-    '0.7',
-    '1.2',
     '1.5',
     '2'
   ]; // 섭취량 옵션 (0.5 추가)
