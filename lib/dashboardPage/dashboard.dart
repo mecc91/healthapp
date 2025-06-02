@@ -16,7 +16,8 @@ import '../main.dart'; // routeObserver 사용 (main.dart에 정의되어 있어
 import 'widgets/dashboard_header.dart'; // 대시보드 헤더 위젯
 import 'widgets/daily_status_summary_card.dart'; // 일일 상태 요약 카드 위젯
 import 'widgets/weekly_score_summary_card.dart'; // 주간 점수 요약 카드 위젯
-import 'widgets/meal_diary_card.dart' as DashboardMealDiaryCard; // 이름 충돌 방지를 위한 alias
+import 'widgets/meal_diary_card.dart'
+    as DashboardMealDiaryCard; // 이름 충돌 방지를 위한 alias
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -49,8 +50,8 @@ class _DashboardState extends State<Dashboard>
 
   String? _userId; // 현재 사용자 ID
   late String _currentDateStringForMealDiary; // 오늘 날짜 문자열 (식단 일기 카드용)
-  late DateTime _currentDateAsDateTimeForMealDiary; // 오늘 날짜 DateTime 객체 (식단 일기 상세 화면 전달용)
-
+  late DateTime
+      _currentDateAsDateTimeForMealDiary; // 오늘 날짜 DateTime 객체 (식단 일기 상세 화면 전달용)
 
   @override
   void initState() {
@@ -107,7 +108,8 @@ class _DashboardState extends State<Dashboard>
   }
 
   @override
-  void didPopNext() { // 다른 화면에서 이 화면으로 돌아왔을 때 호출
+  void didPopNext() {
+    // 다른 화면에서 이 화면으로 돌아왔을 때 호출
     if (mounted) {
       _animationController.forward(from: 0.0); // 페이지 진입 애니메이션 다시 시작
       final nowMicroseconds = DateTime.now().microsecondsSinceEpoch;
@@ -134,7 +136,7 @@ class _DashboardState extends State<Dashboard>
           });
         }
       });
-       _loadUserId(); // 사용자 ID를 다시 로드하여 최신 상태 반영 (예: 로그아웃 후 재로그인)
+      _loadUserId(); // 사용자 ID를 다시 로드하여 최신 상태 반영 (예: 로그아웃 후 재로그인)
     }
   }
 
@@ -148,11 +150,12 @@ class _DashboardState extends State<Dashboard>
   // 카메라를 통해 사진을 촬영하고 식사 기록 화면으로 이동
   Future<void> _takePictureAndNavigateToMealRecord() async {
     try {
-      final XFile? pickedFile =
-          await _picker.pickImage(source: ImageSource.camera, imageQuality: 85, maxWidth: 1200);
+      final XFile? pickedFile = await _picker.pickImage(
+          source: ImageSource.camera, imageQuality: 85, maxWidth: 1200);
       if (pickedFile != null) {
         if (mounted) {
-          _navigateWithFadeTransition( // 페이드 전환 효과와 함께 페이지 이동
+          _navigateWithFadeTransition(
+            // 페이드 전환 효과와 함께 페이지 이동
             context,
             MealRecord(initialImageFile: pickedFile), // 촬영한 이미지를 전달
           );
@@ -165,7 +168,7 @@ class _DashboardState extends State<Dashboard>
         }
       }
     } catch (e) {
-       if (mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('카메라 접근 중 오류 발생: $e')),
         );
@@ -191,8 +194,9 @@ class _DashboardState extends State<Dashboard>
 
   // 하단 네비게이션 바 아이템 탭 시 호출되는 함수
   void _onBottomNavigationTap(int index) {
-    if (_selectedIndexInBottomNav == index && index != 1) return; // 이미 선택된 탭(카메라 제외)이면 무시
-    
+    if (_selectedIndexInBottomNav == index && index != 1)
+      return; // 이미 선택된 탭(카메라 제외)이면 무시
+
     setState(() {
       _selectedIndexInBottomNav = index;
     });
@@ -215,7 +219,8 @@ class _DashboardState extends State<Dashboard>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100, // 전체 배경색
-      body: Stack( // 배경 그라데이션과 내용을 겹치기 위해 Stack 사용
+      body: Stack(
+        // 배경 그라데이션과 내용을 겹치기 위해 Stack 사용
         children: [
           // 상단 배경 그라데이션
           Container(
@@ -227,7 +232,7 @@ class _DashboardState extends State<Dashboard>
                 colors: [
                   Color(0xFFFDE68A), // 밝은 노란색
                   Color(0xFFC8E6C9), // 연한 녹색
-                  Colors.white,      // 흰색으로 점차 사라짐
+                  Colors.white, // 흰색으로 점차 사라짐
                 ],
                 stops: [0.0, 0.6, 1.0], // 색상 전환 지점
               ),
@@ -235,9 +240,11 @@ class _DashboardState extends State<Dashboard>
           ),
           // 실제 내용 (스크롤 가능)
           SafeArea(
-            child: SlideTransition( // 페이지 슬라이드 애니메이션
+            child: SlideTransition(
+              // 페이지 슬라이드 애니메이션
               position: _slideAnimation,
-              child: FadeTransition( // 페이지 페이드 애니메이션
+              child: FadeTransition(
+                // 페이지 페이드 애니메이션
                 opacity: _fadeAnimation,
                 child: SingleChildScrollView(
                   child: Column(
@@ -245,68 +252,89 @@ class _DashboardState extends State<Dashboard>
                       // 대시보드 헤더
                       DashboardHeader(
                         avatarScale: _avatarScale,
-                        onAvatarTapDown: (_) => setState(() => _avatarScale = 0.9),
+                        onAvatarTapDown: (_) =>
+                            setState(() => _avatarScale = 0.9),
                         onAvatarTapUp: (_) {
                           setState(() => _avatarScale = 1.0);
                           _navigateWithFadeTransition(context, const Profile());
                         },
-                        onAvatarTapCancel: () => setState(() => _avatarScale = 1.0),
+                        onAvatarTapCancel: () =>
+                            setState(() => _avatarScale = 1.0),
                         onNotificationsPressed: () {
-                          _navigateWithFadeTransition(context, const Underconstruction());
+                          _navigateWithFadeTransition(
+                              context, const Underconstruction());
                         },
                       ),
                       // 일일 영양 상태 요약 카드
                       DailyStatusSummaryCard(
-                        key: ValueKey('dailyCard_$_dailyCardKey'), // 키를 통해 새로고침 유도
+                        key: ValueKey(
+                            'dailyCard_$_dailyCardKey'), // 키를 통해 새로고침 유도
                         scale: _dailyCardScale,
-                        onTapDown: (_) => setState(() => _dailyCardScale = 0.98),
+                        onTapDown: (_) =>
+                            setState(() => _dailyCardScale = 0.98),
                         onTapUp: (_) {
                           setState(() => _dailyCardScale = 1.0);
-                          _navigateWithFadeTransition(context, const DailyStatus());
+                          _navigateWithFadeTransition(
+                              context, const DailyStatus());
                         },
-                        onTapCancel: () => setState(() => _dailyCardScale = 1.0),
-                        onTap: () => _navigateWithFadeTransition(context, const DailyStatus()),
+                        onTapCancel: () =>
+                            setState(() => _dailyCardScale = 1.0),
+                        onTap: () => _navigateWithFadeTransition(
+                            context, const DailyStatus()),
                       ),
                       // 주간 점수 요약 카드
                       WeeklyScoreSummaryCard(
                         key: ValueKey('scoreCard_$_scoreCardKey'),
                         scale: _scoreCardScale,
-                        onTapDown: (_) => setState(() => _scoreCardScale = 0.98),
+                        onTapDown: (_) =>
+                            setState(() => _scoreCardScale = 0.98),
                         onTapUp: (_) {
                           setState(() => _scoreCardScale = 1.0);
-                          _navigateWithFadeTransition(context, const ScoreboardScreen());
+                          _navigateWithFadeTransition(
+                              context, const ScoreboardScreen());
                         },
-                        onTapCancel: () => setState(() => _scoreCardScale = 1.0),
-                        onTap: () => _navigateWithFadeTransition(context, const ScoreboardScreen()),
+                        onTapCancel: () =>
+                            setState(() => _scoreCardScale = 1.0),
+                        onTap: () => _navigateWithFadeTransition(
+                            context, const ScoreboardScreen()),
                       ),
                       // 식단 일기 요약 카드 (사용자 ID가 있을 때만 표시)
                       if (_userId != null)
-                        DashboardMealDiaryCard.MealDiaryCard( // alias 사용
-                          key: ValueKey('mealDiaryCard_$_mealDiaryCardKey-${_userId ?? ""}-${_currentDateStringForMealDiary}'),
+                        DashboardMealDiaryCard.MealDiaryCard(
+                          // alias 사용
+                          key: ValueKey(
+                              'mealDiaryCard_$_mealDiaryCardKey-${_userId ?? ""}-$_currentDateStringForMealDiary'),
                           diaryDate: _currentDateStringForMealDiary,
                           userId: _userId!,
                           scale: _mealDiaryCardScale,
-                          onTapDown: (_) => setState(() => _mealDiaryCardScale = 0.98),
+                          onTapDown: (_) =>
+                              setState(() => _mealDiaryCardScale = 0.98),
                           onTapUp: (_) {
                             setState(() => _mealDiaryCardScale = 1.0);
                             _navigateWithFadeTransition(
                               context,
                               MealDiaryScreen(
-                                displayDate: _currentDateAsDateTimeForMealDiary, // 오늘 날짜 전달
+                                displayDate:
+                                    _currentDateAsDateTimeForMealDiary, // 오늘 날짜 전달
                               ),
                             );
                           },
-                          onTapCancel: () => setState(() => _mealDiaryCardScale = 1.0),
+                          onTapCancel: () =>
+                              setState(() => _mealDiaryCardScale = 1.0),
                           onTap: () => _navigateWithFadeTransition(
                             context,
-                            MealDiaryScreen(displayDate: _currentDateAsDateTimeForMealDiary),
+                            MealDiaryScreen(
+                                displayDate:
+                                    _currentDateAsDateTimeForMealDiary),
                           ),
                         )
                       else // 사용자 ID 로딩 중이거나 없을 때 플레이스홀더
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 10.0),
                           child: Card(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18)),
                             elevation: 4,
                             child: const SizedBox(
                               height: 100, // 다른 카드들과 비슷한 높이

@@ -47,7 +47,8 @@ class _RegistrationPageState extends State<RegistrationPage>
 
     // 필수 입력 필드 검증
     if (id.isEmpty || password.isEmpty || birthday == null) {
-      if (mounted) { // 위젯이 여전히 마운트되어 있는지 확인
+      if (mounted) {
+        // 위젯이 여전히 마운트되어 있는지 확인
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
@@ -87,7 +88,8 @@ class _RegistrationPageState extends State<RegistrationPage>
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // 회원가입 성공
-        if (mounted) { // 위젯이 여전히 마운트되어 있는지 확인
+        if (mounted) {
+          // 위젯이 여전히 마운트되어 있는지 확인
           showDialog(
             context: context,
             builder: (_) => AlertDialog(
@@ -107,20 +109,25 @@ class _RegistrationPageState extends State<RegistrationPage>
         }
       } else {
         // 회원가입 실패 (서버 오류 등)
-        if (mounted) { // 위젯이 여전히 마운트되어 있는지 확인
-          throw Exception('회원가입 실패: ${response.statusCode}, 응답: ${response.body}');
+        if (mounted) {
+          // 위젯이 여전히 마운트되어 있는지 확인
+          throw Exception(
+              '회원가입 실패: ${response.statusCode}, 응답: ${response.body}');
         }
       }
     } catch (e) {
       // 네트워크 오류 또는 기타 예외 처리
       print("회원가입 오류: $e");
       setState(() => _isLoading = false);
-      if (mounted) { // 위젯이 여전히 마운트되어 있는지 확인
+      if (mounted) {
+        // 위젯이 여전히 마운트되어 있는지 확인
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
             title: const Text("에러"),
-            content: Text(e.toString().replaceFirst("Exception: ", "")), // "Exception: " 부분 제거
+            content: Text(e
+                .toString()
+                .replaceFirst("Exception: ", "")), // "Exception: " 부분 제거
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -143,14 +150,15 @@ class _RegistrationPageState extends State<RegistrationPage>
       lastDate: now, // 선택 가능한 가장 늦은 날짜 (오늘)
       helpText: '생년월일 선택',
       locale: const Locale('ko', 'KR'), // 한국어 로케일 설정
-      builder: (context, child) { // DatePicker 테마 커스터마이징 (선택 사항)
+      builder: (context, child) {
+        // DatePicker 테마 커스터마이징 (선택 사항)
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
               primary: Colors.deepOrange, // 선택된 날짜 및 헤더 배경색
               onPrimary: Colors.white, // 헤더 텍스트 색상
             ),
-            dialogBackgroundColor: Colors.white,
+            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child!,
         );
@@ -166,12 +174,15 @@ class _RegistrationPageState extends State<RegistrationPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar( // AppBar 추가
-        title: const Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold)),
+      appBar: AppBar(
+        // AppBar 추가
+        title:
+            const Text("회원가입", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.transparent, // 배경 그라데이션과 어울리도록 투명 처리
         elevation: 0, // 그림자 제거
-        leading: IconButton( // 뒤로가기 버튼
+        leading: IconButton(
+          // 뒤로가기 버튼
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -191,7 +202,8 @@ class _RegistrationPageState extends State<RegistrationPage>
             ),
           ),
           child: Center(
-            child: SingleChildScrollView( // 내용이 길어질 경우 스크롤 가능하도록
+            child: SingleChildScrollView(
+              // 내용이 길어질 경우 스크롤 가능하도록
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Container(
                 padding: const EdgeInsets.all(24),
@@ -233,13 +245,15 @@ class _RegistrationPageState extends State<RegistrationPage>
                     // 생년월일 선택 필드
                     GestureDetector(
                       onTap: _pickDate, // 탭하면 DatePicker 표시
-                      child: AbsorbPointer( // TextField 직접 입력 방지
+                      child: AbsorbPointer(
+                        // TextField 직접 입력 방지
                         child: TextField(
                           decoration: InputDecoration(
                             labelText: '생년월일',
                             hintText: '날짜를 선택해주세요', // 초기 힌트 텍스트
                             border: const OutlineInputBorder(),
-                            prefixIcon: const Icon(Icons.calendar_today_outlined),
+                            prefixIcon:
+                                const Icon(Icons.calendar_today_outlined),
                           ),
                           // 선택된 날짜를 'yyyy-MM-dd' 형식으로 표시
                           controller: TextEditingController(
@@ -283,12 +297,15 @@ class _RegistrationPageState extends State<RegistrationPage>
                             onPressed: registerUser,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.deepOrange,
-                              minimumSize: const Size.fromHeight(48), // 버튼 높이 조절
+                              minimumSize:
+                                  const Size.fromHeight(48), // 버튼 높이 조절
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text("회원가입", style: TextStyle(color: Colors.white, fontSize: 16)),
+                            child: const Text("회원가입",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16)),
                           ),
                   ],
                 ),
