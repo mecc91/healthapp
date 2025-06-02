@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:healthymeal/userquitPage/userquit.dart';
+import 'package:healthymeal/loginPage/login.dart'; // ✅ 로그인 페이지 import 추가
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -63,17 +64,27 @@ class _ProfileState extends State<Profile>
       if (mounted) {
         _animationController.forward(from: 0.0);
         _fetchUserInfo();
-        _loadSavedProfileImage(); // ✅ 추가
+        _loadSavedProfileImage(); // ✅ userId 기반 이미지 불러오기
       }
     });
   }
 
   Future<void> _loadSavedProfileImage() async {
     final prefs = await SharedPreferences.getInstance();
-    final path = prefs.getString('profileImagePath');
-    if (path != null && File(path).existsSync()) {
+    final userId = prefs.getString('userId');
+    if (userId == null) return;
+
+    final directory = await getApplicationDocumentsDirectory();
+    final profilePath = '${directory.path}/profile_$userId.png';
+    final profileFile = File(profilePath);
+
+    if (await profileFile.exists()) {
       setState(() {
-        _selectedImage = File(path);
+        _selectedImage = profileFile;
+      });
+    } else {
+      setState(() {
+        _selectedImage = null;
       });
     }
   }
@@ -82,13 +93,13 @@ class _ProfileState extends State<Profile>
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
 
-    final appDir = await getApplicationDocumentsDirectory();
-    final fileName = path.basename(pickedFile.path);
-    final savedImage =
-        await File(pickedFile.path).copy('${appDir.path}/$fileName');
-
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profileImagePath', savedImage.path);
+    final userId = prefs.getString('userId');
+    if (userId == null) return;
+
+    final directory = await getApplicationDocumentsDirectory();
+    final profilePath = '${directory.path}/profile_$userId.png';
+    final savedImage = await File(pickedFile.path).copy(profilePath);
 
     setState(() {
       _selectedImage = savedImage;
@@ -127,8 +138,12 @@ class _ProfileState extends State<Profile>
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('userId');
-    if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()), // ✅ LoginPage로 이동
+        (route) => false, // ✅ 모든 이전 페이지 제거
+      );
+    }
   }
 
   void _confirmPasswordAndNavigateToQuit() async {

@@ -49,17 +49,9 @@ class _RegistrationPageState extends State<RegistrationPage>
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
 
-    final appDir = await getApplicationDocumentsDirectory();
-    final fileName = p.basename(pickedFile.path);
-    final savedImage =
-        await File(pickedFile.path).copy('${appDir.path}/$fileName');
-
     setState(() {
-      _selectedImage = savedImage;
+      _selectedImage = File(pickedFile.path); // 경로만 저장, 저장은 회원가입 후에
     });
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profileImagePath', savedImage.path);
   }
 
   Future<void> registerUser() async {
@@ -102,6 +94,12 @@ class _RegistrationPageState extends State<RegistrationPage>
       setState(() => _isLoading = false);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        if (_selectedImage != null) {
+          final directory = await getApplicationDocumentsDirectory();
+          final profilePath = '${directory.path}/profile_$id.png';
+          await _selectedImage!.copy(profilePath); // ID 기반으로 이미지 저장
+        }
+
         if (mounted) {
           showDialog(
             context: context,

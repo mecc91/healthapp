@@ -1,13 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class DashboardHeader extends StatefulWidget {
+class DashboardHeader extends StatelessWidget {
   final double avatarScale;
   final VoidCallback? onNotificationsPressed;
   final Function(TapDownDetails) onAvatarTapDown;
   final Function(TapUpDetails) onAvatarTapUp;
   final VoidCallback onAvatarTapCancel;
+  final ImageProvider? avatarImage; // ✅ 외부에서 전달받는 이미지
 
   const DashboardHeader({
     super.key,
@@ -16,30 +15,8 @@ class DashboardHeader extends StatefulWidget {
     required this.onAvatarTapDown,
     required this.onAvatarTapUp,
     required this.onAvatarTapCancel,
+    this.avatarImage, // ✅ 생성자에 포함
   });
-
-  @override
-  State<DashboardHeader> createState() => _DashboardHeaderState();
-}
-
-class _DashboardHeaderState extends State<DashboardHeader> {
-  String? _profileImagePath;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfileImage();
-  }
-
-  Future<void> _loadProfileImage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final path = prefs.getString('profileImagePath');
-    if (mounted) {
-      setState(() {
-        _profileImagePath = path;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,25 +37,22 @@ class _DashboardHeaderState extends State<DashboardHeader> {
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications_none_outlined, size: 28),
-                onPressed: widget.onNotificationsPressed,
+                onPressed: onNotificationsPressed,
                 color: Colors.black54,
                 tooltip: '알림',
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTapDown: widget.onAvatarTapDown,
-                onTapUp: widget.onAvatarTapUp,
-                onTapCancel: widget.onAvatarTapCancel,
+                onTapDown: onAvatarTapDown,
+                onTapUp: onAvatarTapUp,
+                onTapCancel: onAvatarTapCancel,
                 child: AnimatedScale(
-                  scale: widget.avatarScale,
+                  scale: avatarScale,
                   duration: const Duration(milliseconds: 150),
                   child: CircleAvatar(
                     radius: 22,
-                    backgroundImage: _profileImagePath != null &&
-                            File(_profileImagePath!).existsSync()
-                        ? FileImage(File(_profileImagePath!))
-                        : const AssetImage('assets/image/default_man.png')
-                            as ImageProvider,
+                    backgroundImage: avatarImage ??
+                        const AssetImage('assets/image/default_man.png'),
                     backgroundColor: Colors.grey.shade300,
                   ),
                 ),
