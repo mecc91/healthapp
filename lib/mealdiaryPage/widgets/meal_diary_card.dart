@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart'; // ✅ 날짜 포맷 추가
 import '../meal_diary_entry.dart';
 
 class MealDiaryCard extends StatefulWidget {
@@ -349,6 +350,14 @@ class _MealDiaryCardState extends State<MealDiaryCard>
                         fontSize: 13,
                         color: Colors.grey[700],
                         fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4.0),
+                    Text(
+                      '${DateFormat('M월 d일').format(widget.entry.createdAt)} 기록',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
                       ),
                     ),
                     const SizedBox(height: 10.0),

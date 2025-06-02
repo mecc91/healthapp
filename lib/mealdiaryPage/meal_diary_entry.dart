@@ -24,7 +24,7 @@ class MealDiaryEntry {
   factory MealDiaryEntry.fromJson(Map<String, dynamic> json) {
     final DateTime createdAt = DateTime.parse(json['createdAt'] as String);
     final String timeFormatted =
-        DateFormat('a h:mm', 'ko_KR').format(createdAt);
+        DateFormat('M월 d일 a h:mm', 'ko_KR').format(createdAt);
 
     final String imageBaseUrl = 'http://152.67.196.3:4912/uploads/';
     final String fullImagePath =
