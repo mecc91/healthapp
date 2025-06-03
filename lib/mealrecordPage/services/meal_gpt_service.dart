@@ -30,7 +30,7 @@ class MealGptService {
     final request = http.MultipartRequest("POST", uri);
     // 기본 필드 추가 (섭취량, 다이어리 내용은 현재 하드코딩 또는 null)
     request.fields['intake_amount'] = '1'; // 기본 섭취량 (추후 UI에서 입력받도록 수정 가능)
-    request.fields['diary'] = 'null';      // 기본 다이어리 내용 (추후 UI에서 입력받도록 수정 가능)
+    request.fields['diary'] = 'null'; // 기본 다이어리 내용 (추후 UI에서 입력받도록 수정 가능)
 
     // 이미지 파일 추가
     request.files.add(
@@ -48,7 +48,8 @@ class MealGptService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // 이미지 업로드 성공 시, 응답 본문(JSON) 파싱
-        final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes)); // UTF-8 디코딩
+        final Map<String, dynamic> jsonData =
+            json.decode(utf8.decode(response.bodyBytes)); // UTF-8 디코딩
         final int mealId = jsonData['id'] as int; // 식별자 (mealId) 추출
 
         // 업로드된 식사에 대한 분석 요청
@@ -60,7 +61,9 @@ class MealGptService {
         return {'menuName': menuName, 'mealId': mealId}; // 메뉴 이름과 mealId 반환
       } else {
         // 이미지 업로드 실패
-        return {'error': "❌ 이미지 업로드 오류: ${response.statusCode}, 응답: ${response.body}"};
+        return {
+          'error': "❌ 이미지 업로드 오류: ${response.statusCode}, 응답: ${response.body}"
+        };
       }
     } catch (e) {
       // 요청 중 예외 발생
@@ -72,9 +75,11 @@ class MealGptService {
   Future<String> _analyzeMeal(String userId, int mealId) async {
     final url = Uri.parse("$_baseUrl/users/$userId/meal-info/$mealId/analyze");
     try {
-      final response = await http.post(url); // POST 요청으로 변경 (API 스펙에 따라 GET일 수도 있음)
+      final response =
+          await http.post(url); // POST 요청으로 변경 (API 스펙에 따라 GET일 수도 있음)
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes)); // UTF-8 디코딩
+        final List<dynamic> data =
+            json.decode(utf8.decode(response.bodyBytes)); // UTF-8 디코딩
         // API 응답이 리스트 형태이고, 첫 번째 요소가 메뉴 이름이라고 가정
         return data.isNotEmpty ? data[0].toString() : "분석 결과 없음";
       } else {
@@ -86,7 +91,7 @@ class MealGptService {
   }
 
   // 식단 기록 (섭취량, 다이어리 내용 업데이트)
-  Future<String> recordMeal(int mealId, int amount, {String? diary}) async {
+  Future<String> recordMeal(int mealId, double amount, {String? diary}) async {
     final userId = await _getUserId();
     if (userId == null) {
       return "사용자 ID를 찾을 수 없습니다. 로그인이 필요합니다.";
@@ -125,7 +130,8 @@ class MealGptService {
       final response = await http.delete(url);
       if (response.statusCode == 200 ||
           response.statusCode == 201 ||
-          response.statusCode == 204) { // 204 No Content도 성공으로 간주
+          response.statusCode == 204) {
+        // 204 No Content도 성공으로 간주
         return "✅ 식단 삭제 성공";
       } else {
         return "⚠️ 식단 삭제 중 오류 발생: ${response.statusCode}, ${response.body}";

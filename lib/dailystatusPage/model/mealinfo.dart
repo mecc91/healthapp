@@ -1,22 +1,21 @@
 // lib/dailystatusPage/model/mealinfo.dart
 
-// 이 모델 클래스는 특정 식사에 대한 상세 영양 정보 및 관련 메타데이터를 나타냅니다.
 class MealInfo {
-  // 영양 정보 (그램 또는 밀리그램 단위)
-  final double carbonhydrate_g; // 탄수화물 (g)
-  final double protein_g;       // 단백질 (g)
-  final double fat_g;           // 지방 (g)
-  final double sodium_mg;       // 나트륨 (mg)
-  final double cellulose_g;     // 식이섬유 (g)
-  final double sugar_g;         // 당류 (g)
-  final double cholesterol_mg;  // 콜레스테롤 (mg)
+  // 영양 정보
+  final double carbonhydrate_g;
+  final double protein_g;
+  final double fat_g;
+  final double sodium_mg;
+  final double cellulose_g;
+  final double sugar_g;
+  final double cholesterol_mg;
 
   // 식사 관련 메타데이터
-  final DateTime intaketime; // 섭취 시간
-  final String mealtype;     // 식사 유형 (예: "Breakfast", "Lunch", "Dinner", "Snack")
-  final int intakeamount;    // 섭취량 (단위는 API 스펙 또는 사용 방식에 따라 다를 수 있음, 예: 인분, 그램)
-  final List<String> meals;  // 식사 메뉴 이름 목록 (예: ["콩나물 국밥"])
-  final String imagepath;    // 음식 이미지 경로 (로컬 에셋 또는 네트워크 URL)
+  final DateTime intaketime;
+  final String mealtype;
+  final double intakeamount; // ✅ int → double 로 수정
+  final List<String> meals;
+  final String imagepath;
 
   MealInfo({
     required this.carbonhydrate_g,
@@ -28,12 +27,11 @@ class MealInfo {
     required this.cholesterol_mg,
     required this.intaketime,
     required this.mealtype,
-    required this.intakeamount,
+    required this.intakeamount, // ✅ double
     required this.meals,
     required this.imagepath,
   });
 
-  // JSON 데이터로부터 MealInfo 객체를 생성하는 factory 생성자
   factory MealInfo.fromJson(Map<String, dynamic> json) {
     // json 으로부터 전달받는 data 정리
     double totalCarbon=0, totalProtein=0, totalFat=0, totalSodium=0, totalCellulose=0, totalSugar=0, totalCholesterol=0;

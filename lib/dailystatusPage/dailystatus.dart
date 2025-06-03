@@ -15,11 +15,11 @@ class DailyStatus extends StatefulWidget {
 // 일일 권장 섭취량 기준을 정의하는 클래스
 class IntakeCriterion {
   final double carbonhydrateCriterion; // 탄수화물 기준 (g)
-  final double proteinCriterion;     // 단백질 기준 (g)
-  final double fatCriterion;         // 지방 기준 (g)
-  final double sodiumCriterion;      // 나트륨 기준 (mg)
-  final double celluloseCriterion;   // 식이섬유 기준 (g)
-  final double sugarCriterion;       // 당류 기준 (g)
+  final double proteinCriterion; // 단백질 기준 (g)
+  final double fatCriterion; // 지방 기준 (g)
+  final double sodiumCriterion; // 나트륨 기준 (mg)
+  final double celluloseCriterion; // 식이섬유 기준 (g)
+  final double sugarCriterion; // 당류 기준 (g)
   final double cholesterolCriterion; // 콜레스테롤 기준 (mg)
 
   const IntakeCriterion(
@@ -36,12 +36,12 @@ class IntakeCriterion {
 // 각 영양소의 섭취 데이터를 나타내는 클래스 -> intakelevel의 
 class IntakeData {
   final String nutrientname; // 영양소 이름
-  final String intakeunit;   // 섭취 단위 (g, mg 등)
+  final String intakeunit; // 섭취 단위 (g, mg 등)
   final double requiredintake; // 권장 섭취량
-  final double intakeamount;   // 실제 섭취량
+  final double intakeamount; // 실제 섭취량
 
-  IntakeData(
-      this.nutrientname, this.requiredintake, this.intakeamount, this.intakeunit);
+  IntakeData(this.nutrientname, this.requiredintake, this.intakeamount,
+      this.intakeunit);
 }
 
 class _DailyStatusState extends State<DailyStatus> {
@@ -126,6 +126,7 @@ class _DailyStatusState extends State<DailyStatus> {
     }
   }
 
+
   @override
   void initState() {
     super.initState();
@@ -181,9 +182,10 @@ class _DailyStatusState extends State<DailyStatus> {
           IntakeData("나트륨", _criterion.sodiumCriterion, totalSodium, "mg"));
       _intakes.add(IntakeData(
           "식이섬유", _criterion.celluloseCriterion, totalCellulose, "g"));
-      _intakes.add(IntakeData("당류", _criterion.sugarCriterion, totalSugar, "g"));
-      _intakes.add(IntakeData("콜레스테롤", _criterion.cholesterolCriterion,
-          totalCholesterol, "mg"));
+      _intakes
+          .add(IntakeData("당류", _criterion.sugarCriterion, totalSugar, "g"));
+      _intakes.add(IntakeData(
+          "콜레스테롤", _criterion.cholesterolCriterion, totalCholesterol, "mg"));
     });
   }
 
@@ -209,9 +211,11 @@ class _DailyStatusState extends State<DailyStatus> {
       // 상단 AppBar
       appBar: AppBar(
         title: const Text('일일 영양 상태',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)), // 폰트 크기 조정
+            style: TextStyle(
+                fontSize: 22, fontWeight: FontWeight.bold)), // 폰트 크기 조정
         centerTitle: true,
-        leading: IconButton( // 뒤로가기 버튼
+        leading: IconButton(
+          // 뒤로가기 버튼
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -229,7 +233,7 @@ class _DailyStatusState extends State<DailyStatus> {
             colors: [
               Color(0xFFFDE68A), // 밝은 노란색 (상단)
               Color(0xFFC8E6C9), // 연한 녹색 (중간)
-              Colors.white,      // 흰색 (하단)
+              Colors.white, // 흰색 (하단)
             ],
             stops: [0.0, 0.6, 1.0], // 색상 전환 지점
           ),
