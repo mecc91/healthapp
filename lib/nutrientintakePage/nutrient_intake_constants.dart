@@ -8,7 +8,7 @@ final Color kNutrientIntakeGraphBackgroundColor = Colors.grey.shade200; // 그�
 
 // API Configuration
 // TODO: 실제 운영 환경에서는 이 URL을 안전한 곳에 보관하거나 환경별로 관리해야 합니다.
-const String kApiBaseUrl = "http://152.67.196.3:4912/v3"; // API 기본 URL
+const String kApiBaseUrl = "http://152.67.196.3:4912"; // API 기본 URL
 // const String kDefaultUserId = "TestUser"; // 기본 사용자 ID (테스트용, 실제 앱에서는 동적으로 가져와야 함)
 
 // Nutrient Keys - UI 표시 및 데이터 매핑에 사용
