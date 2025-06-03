@@ -79,7 +79,7 @@ class MealInfo {
       // 날짜/시간 문자열을 DateTime 객체로 파싱
       intaketime: DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
       mealtype: "식사",
-      intakeamount: json['intakeAmount'] == null ? 1 : ((json['intakeAmount']) as num).toInt(), // 기본값 설정
+      intakeamount: json['intakeAmount'] == null ? 1 : ((json['intakeAmount']) as num).toDouble(), // 기본값 설정
       // 문자열 리스트로 변환 (API 응답이 List<dynamic>일 수 있으므로 캐스팅)
       meals: menuNames,
       imagepath: imageBaseUrl + imagePath,
