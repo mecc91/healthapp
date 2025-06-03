@@ -18,11 +18,12 @@ void main() async {
   await initializeDateFormatting('ko_KR', null);
 
   // SharedPreferences를 사용하여 저장된 사용자 ID 확인 (로그인 상태 유지)
-  final prefs = await SharedPreferences.getInstance();
-  final String? userId = prefs.getString('userId');
+  //final prefs = await SharedPreferences.getInstance();
+  //final String? userId = prefs.getString('userId');
 
   // 앱 실행: 로그인 상태에 따라 초기 라우트 결정
-  runApp(MyApp(initialRoute: userId == null ? '/' : '/dashboard'));
+  //runApp(MyApp(initialRoute: userId == null ? '/' : '/dashboard'));
+  runApp(MyApp(initialRoute: '/'));
 }
 
 class MyApp extends StatelessWidget {

@@ -70,8 +70,6 @@ class _MealRecordState extends State<MealRecord> {
   final TextEditingController _menuNameController = TextEditingController(); // 메뉴 이름 입력 컨트롤러
 
   // 서비스 인스턴스
-  // final MenuAnalysisService _menuAnalysisService = MenuAnalysisService(); // 현재 직접 사용되지 않음
-  // final MealDataService _mealDataService = MealDataService(); // 현재 직접 사용되지 않음
   final MealGptService _mealGptService = MealGptService(); // GPT 기반 분석 및 기록 서비스
 
   @override
@@ -103,7 +101,7 @@ class _MealRecordState extends State<MealRecord> {
     super.dispose();
   }
 
-  // 이미지 선택(카메라/갤러리) 및 분석 실행
+  // 이미지 선택(카메라only) 및 분석 실행
   Future<void> _pickImageAndAnalyze(ImageSource source) async {
     if (_isAnalyzingMenu) return; // 분석 중이면 중복 실행 방지
 
@@ -539,9 +537,9 @@ class _MealRecordState extends State<MealRecord> {
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ).copyWith( // 비활성화 시 스타일
-                foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey : Colors.teal),
-                backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey.shade200 : Colors.teal.shade50),
-                side: MaterialStateProperty.resolveWith<BorderSide?>((states) => states.contains(MaterialState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.teal.shade200)),
+                foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.teal),
+                backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.teal.shade50),
+                side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.teal.shade200)),
               ),
               child: const Icon(Icons.camera_alt, size: 24),
             ),
@@ -579,9 +577,9 @@ class _MealRecordState extends State<MealRecord> {
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ).copyWith( // 비활성화 시 스타일 (필요시 추가)
-                 foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey : Colors.redAccent.shade700),
-                 backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) => states.contains(MaterialState.disabled) ? Colors.grey.shade200 : Colors.red.shade50),
-                 side: MaterialStateProperty.resolveWith<BorderSide?>((states) => states.contains(MaterialState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.redAccent.shade200)),
+                 foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.redAccent.shade700),
+                 backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.red.shade50),
+                 side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.redAccent.shade200)),
               ),
               child: const Icon(Icons.delete_outline, size: 24),
             ),

@@ -3,7 +3,7 @@
 // import 'dart:io'; // 현재 이 파일에서 직접 사용되지 않음
 
 import 'package:flutter/material.dart';
-import 'package:healthymeal/dailystatusPage/dailystatus.dart'; // 일일 상태 페이지
+import 'package:healthymeal/dailystatusPage/dailystatus.dart';
 import 'package:healthymeal/mealrecordPage/mealrecord.dart'; // 식사 기록 페이지
 import 'package:healthymeal/profilePage/profile.dart'; // 프로필 페이지
 import 'package:healthymeal/scoreboardPage/scoreboard.dart'; // 스코어보드 페이지

@@ -35,41 +35,45 @@ class MealInfo {
 
   // JSON 데이터로부터 MealInfo 객체를 생성하는 factory 생성자
   factory MealInfo.fromJson(Map<String, dynamic> json) {
-    // 숫자 타입 필드는 안전하게 num으로 받고 toDouble() 또는 toInt()로 변환
-    // API 응답에 해당 필드가 없을 경우를 대비하여 null 체크 및 기본값 설정 고려
+    // json 으로부터 전달받는 data 정리
+    double totalCarbon=0, totalProtein=0, totalFat=0, totalSodium=0, totalCellulose=0, totalSugar=0, totalCholesterol=0;
+    final List<String> menuNames = [];
+    final menus = json['mealInfoFoodLinks'] as List<dynamic>;
+    final double menuLength = menus.length.toDouble();
+    for(var data in menus) {
+      final menu = data['food'];
+      menu['carbonhydrateG'] == null ? totalCarbon += 0 :
+      totalCarbon += ((menu['carbonhydrateG'] as num).toDouble() / menuLength);
+       menu['proteinG'] == null ? totalProtein += 0 :
+      totalProtein += ((menu['proteinG'] as num).toDouble() / menuLength);
+       menu['fatG'] == null ? totalFat += 0 :
+      totalFat += ((menu['fatG'] as num).toDouble() / menuLength);
+       menu['sodiumMg'] == null ? totalSodium += 0 :
+      totalSodium += ((menu['sodiumMg'] as num).toDouble() / menuLength);
+       menu['celluloseG'] == null ? totalCellulose += 0 :
+      totalCellulose += ((menu['celluloseG'] as num).toDouble() / menuLength);
+       menu['sugarsG'] == null ? totalSugar += 0 :
+      totalSugar += ((menu['sugarsG'] as num).toDouble() / menuLength);
+       menu['cholesterolMg'] == null ? totalCholesterol += 0 :
+      totalCholesterol += ((menu['cholesterolMg'] as num).toDouble() / menuLength);
+      menuNames.add(menu['name'] as String);
+    }
+    print(json['intakeAmount']);
     return MealInfo(
-      carbonhydrate_g: (json['carbonhydrate_g'] as num?)?.toDouble() ?? 0.0,
-      protein_g: (json['protein_g'] as num?)?.toDouble() ?? 0.0,
-      fat_g: (json['fat_g'] as num?)?.toDouble() ?? 0.0,
-      sodium_mg: (json['sodium_mg'] as num?)?.toDouble() ?? 0.0,
-      cellulose_g: (json['cellulose_g'] as num?)?.toDouble() ?? 0.0,
-      sugar_g: (json['sugar_g'] as num?)?.toDouble() ?? 0.0,
-      cholesterol_mg: (json['cholesterol_mg'] as num?)?.toDouble() ?? 0.0,
+      carbonhydrate_g: totalCarbon,
+      protein_g: totalProtein,
+      fat_g: totalFat,
+      sodium_mg: totalSodium,
+      cellulose_g: totalCellulose,
+      sugar_g: totalSugar,
+      cholesterol_mg: totalCholesterol,
       // 날짜/시간 문자열을 DateTime 객체로 파싱
-      intaketime: DateTime.parse(json['intaketime'] as String? ?? DateTime.now().toIso8601String()),
-      mealtype: json['mealtype'] as String? ?? 'Unknown', // 기본값 설정
-      intakeamount: json['intakeamount'] as int? ?? 1, // 기본값 설정
+      intaketime: DateTime.parse(json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+      mealtype: "식사",
+      intakeamount: json['intakeAmount'] == null ? 1 : ((json['intakeAmount']) as num).toInt(), // 기본값 설정
       // 문자열 리스트로 변환 (API 응답이 List<dynamic>일 수 있으므로 캐스팅)
-      meals: List<String>.from(json['meals'] as List<dynamic>? ?? []),
-      imagepath: json['imagepath'] as String? ?? '', // 기본값 설정
+      meals: menuNames,
+      imagepath: json['imgPath'] as String? ?? '', // 기본값 설정
     );
   }
-
-  // MealInfo 객체를 JSON으로 변환하는 메소드 (필요시 구현)
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'carbonhydrate_g': carbonhydrate_g,
-  //     'protein_g': protein_g,
-  //     'fat_g': fat_g,
-  //     'sodium_mg': sodium_mg,
-  //     'cellulose_g': cellulose_g,
-  //     'sugar_g': sugar_g,
-  //     'cholesterol_mg': cholesterol_mg,
-  //     'intaketime': intaketime.toIso8601String(),
-  //     'mealtype': mealtype,
-  //     'intakeamount': intakeamount,
-  //     'meals': meals,
-  //     'imagepath': imagepath,
-  //   };
-  // }
 }

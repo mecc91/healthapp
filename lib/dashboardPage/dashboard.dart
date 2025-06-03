@@ -265,7 +265,7 @@ class _DashboardState extends State<Dashboard>
                           _navigateWithFadeTransition(context, const DailyStatus());
                         },
                         onTapCancel: () => setState(() => _dailyCardScale = 1.0),
-                        onTap: () => _navigateWithFadeTransition(context, const DailyStatus()),
+                        //onTap: () => _navigateWithFadeTransition(context, const DailyStatus()), -> 하...이거때문에 init 두번 실행되잖아요;;
                       ),
                       // 주간 점수 요약 카드
                       WeeklyScoreSummaryCard(
@@ -282,7 +282,7 @@ class _DashboardState extends State<Dashboard>
                       // 식단 일기 요약 카드 (사용자 ID가 있을 때만 표시)
                       if (_userId != null)
                         DashboardMealDiaryCard.MealDiaryCard( // alias 사용
-                          key: ValueKey('mealDiaryCard_$_mealDiaryCardKey-${_userId ?? ""}-${_currentDateStringForMealDiary}'),
+                          key: ValueKey('mealDiaryCard_$_mealDiaryCardKey-${_userId ?? ""}-$_currentDateStringForMealDiary'),
                           diaryDate: _currentDateStringForMealDiary,
                           userId: _userId!,
                           scale: _mealDiaryCardScale,
