@@ -1,5 +1,6 @@
 // lib/dashboardPage/widgets/daily_status_summary_card.dart
 import 'package:flutter/material.dart';
+import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart';
 
 // TODO: 실제 앱에서는 DailyStatusService를 통해 데이터를 가져와야 합니다.
 // import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart';
@@ -40,26 +41,13 @@ class _DailyStatusSummaryCardState extends State<DailyStatusSummaryCard> {
     // {"label": "콜레스테롤", "value": 0.85, "color": Colors.deepOrange}, // 필요시 추가
   ];
 
+  // DailyStatus Widget을 위한 Service class
+  final DailyStatusService _dailyStatusService = DailyStatusService();
+
   @override
   void initState() {
     super.initState();
-    // TODO: initState에서 _dailyStatusService를 사용하여 실제 데이터 로딩 로직 구현
-    // 예: _fetchDailyNutrientStatus();
   }
-
-  // Future<void> _fetchDailyNutrientStatus() async {
-  //   try {
-  //     // final data = await _dailyStatusService.fetchTodaysNutrientSummary();
-  //     // if (mounted) {
-  //     //   setState(() {
-  //     //     // _nutrientsData = processed_data_from_api;
-  //     //   });
-  //     // }
-  //   } catch (e) {
-  //     // 에러 처리
-  //     print("일일 영양 상태 요약 로딩 실패: $e");
-  //   }
-  // }
 
   // 진행률 바의 색상을 결정하는 함수
   Color _getProgressColor(double animatedValue) {

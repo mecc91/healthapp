@@ -1,10 +1,8 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:healthymeal/dailystatusPage/intakelevel.dart'; // 각 영양소 섭취 수준을 표시하는 위젯
 import 'package:healthymeal/dailystatusPage/model/mealinfo.dart';
 import 'package:healthymeal/dailystatusPage/service/dailystatusservice.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // 식사 정보 모델
-import 'package:intl/intl.dart';
 
 // 일일 영양 상태 화면을 구성하는 StatefulWidget
 class DailyStatus extends StatefulWidget {
@@ -321,7 +319,7 @@ class _DailyStatusState extends State<DailyStatus> {
                               children: [
                                 // 식단 이미지 (원형)
                                 ClipOval(
-                                  child: Image.asset(
+                                  child: Image.network(
                                     meal.imagepath, // 이미지 경로
                                     width: 45, // 이미지 크기
                                     height: 45,

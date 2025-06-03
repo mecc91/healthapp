@@ -5,8 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DailyStatusService {
-  // final String userId; // 특정 사용자의 데이터를 가져오기 위한 ID (현재 미사용)
-  // final String date; // 특정 날짜의 데이터를 가져오기 위한 날짜 문자열 (현재 미사용, 예: 'yyyy-MM-dd')
 
   final String _baseUrl = "http://152.67.196.3:4912";
   // 현재시각을 가져오는 함수
@@ -53,8 +51,8 @@ class DailyStatusService {
       print("criterionapirequest");
       if (response.statusCode == 200) {
         final responsedata = json.decode(response.body) as Map<String, dynamic>;
-        responsedata['carbonhydrateG'] == null ? returnCriterion.add(0) :
-        returnCriterion.add(responsedata['carbonhydrateG'] as double);
+        responsedata['carbohydrateG'] == null ? returnCriterion.add(0) :
+        returnCriterion.add(responsedata['carbohydrateG'] as double);
         responsedata['proteinG'] == null ? returnCriterion.add(0) :
         returnCriterion.add(responsedata['proteinG'] as double);
         responsedata['fatG'] == null ? returnCriterion.add(0) :
@@ -92,19 +90,6 @@ class DailyStatusService {
         for (var data in responsebody) {
           if (data is Map<String, dynamic>) {
             returnMeals.add(MealInfo.fromJson(data));
-            /*final responsemeal = data['mealInfoFoodLinks'];
-            for (var meal in responsemeal) {
-              if (meal is Map<String, dynamic>) {
-                final mealinfo = meal['food'];
-                if (mealinfo.isEmpty) {
-                  print("메뉴없음");
-                  return [];
-                } else {
-                  print(mealinfo);
-                  returnMeals.add(MealInfo.fromJson(mealinfo));
-                }
-              }
-            }*/
           }
         }
         return returnMeals;
@@ -119,4 +104,7 @@ class DailyStatusService {
       throw Exception('식사 정보 로드 중 오류 발생: $e');
     }
   }
+
+  // 오늘의 daily-intake를 가져오는 함수 (이건 dashboard widget용)
+  //Future<
 }

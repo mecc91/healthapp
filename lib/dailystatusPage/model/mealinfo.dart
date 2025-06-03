@@ -38,27 +38,38 @@ class MealInfo {
     // json 으로부터 전달받는 data 정리
     double totalCarbon=0, totalProtein=0, totalFat=0, totalSodium=0, totalCellulose=0, totalSugar=0, totalCholesterol=0;
     final List<String> menuNames = [];
+    // 메뉴 이미지 불러오기
+    final String imageBaseUrl = 'http://152.67.196.3:4912/uploads/';
+    final String imagePath = (json['imgPath'] as String? ?? '');
     final menus = json['mealInfoFoodLinks'] as List<dynamic>;
     final double menuLength = menus.length.toDouble();
     for(var data in menus) {
       final menu = data['food'];
-      menu['carbonhydrateG'] == null ? totalCarbon += 0 :
-      totalCarbon += ((menu['carbonhydrateG'] as num).toDouble() / menuLength);
+      //print("menu : $menu & $menuLength");
+      menu['carbohydrateG'] == null ? totalCarbon += 0 :
+      totalCarbon += ((menu['carbohydrateG'] as num).toDouble() / menuLength);
+      //print(totalCarbon);
        menu['proteinG'] == null ? totalProtein += 0 :
       totalProtein += ((menu['proteinG'] as num).toDouble() / menuLength);
+      //print(totalProtein);
        menu['fatG'] == null ? totalFat += 0 :
       totalFat += ((menu['fatG'] as num).toDouble() / menuLength);
+      //print(totalFat);
        menu['sodiumMg'] == null ? totalSodium += 0 :
       totalSodium += ((menu['sodiumMg'] as num).toDouble() / menuLength);
+      //print(totalSodium);
        menu['celluloseG'] == null ? totalCellulose += 0 :
       totalCellulose += ((menu['celluloseG'] as num).toDouble() / menuLength);
+      //print(totalCellulose);
        menu['sugarsG'] == null ? totalSugar += 0 :
       totalSugar += ((menu['sugarsG'] as num).toDouble() / menuLength);
+      //print(totalSugar);
        menu['cholesterolMg'] == null ? totalCholesterol += 0 :
       totalCholesterol += ((menu['cholesterolMg'] as num).toDouble() / menuLength);
+      //print(totalCholesterol);
       menuNames.add(menu['name'] as String);
     }
-    print(json['intakeAmount']);
+    //print(json['intakeAmount']);
     return MealInfo(
       carbonhydrate_g: totalCarbon,
       protein_g: totalProtein,
@@ -73,7 +84,7 @@ class MealInfo {
       intakeamount: json['intakeAmount'] == null ? 1 : ((json['intakeAmount']) as num).toInt(), // 기본값 설정
       // 문자열 리스트로 변환 (API 응답이 List<dynamic>일 수 있으므로 캐스팅)
       meals: menuNames,
-      imagepath: json['imgPath'] as String? ?? '', // 기본값 설정
+      imagepath: imageBaseUrl + imagePath,
     );
   }
 }
