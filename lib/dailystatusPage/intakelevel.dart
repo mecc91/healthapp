@@ -13,7 +13,7 @@ class IntakeLevel extends StatefulWidget {
 class _IntakeLevelState extends State<IntakeLevel>
     with SingleTickerProviderStateMixin {
   // 바의 전체 너비와 높이 상수
-  final double _totalWidth = 300.0; // 바의 전체 가로 길이
+  final double _totalWidth = 320.0; // 바의 전체 가로 길이
   final double _blockHeight = 22.0; // 바의 세로 높이 (패딩 제외 순수 바 높이)
 
   late AnimationController _controller; // 애니메이션 컨트롤러
@@ -52,7 +52,6 @@ class _IntakeLevelState extends State<IntakeLevel>
         initialRatio = widget.intake.intakeamount > 0 ? 2.0 : 0.0; // 섭취량이 있으면 최대로, 없으면 0으로
     }
     _updateBarColor(initialRatio.isNaN || initialRatio.isInfinite ? 0.0 : initialRatio);
-
 
     _controller = AnimationController(
       vsync: this,
@@ -103,6 +102,7 @@ class _IntakeLevelState extends State<IntakeLevel>
   Widget build(BuildContext context) {
     final double centerLinePosition = _totalWidth / 2; // 기준선 위치 (중앙)
     final double maxRatioVisualized = 2.0; // 시각적으로 표현할 최대 비율 (예: 200%)
+    final double infoPartHeight = 26; // 바의 상단 및 하단 정보표시 영역크기
 
     // 권장 섭취량이 0일 경우 처리
     double currentRatio = widget.intake.requiredintake == 0
@@ -113,35 +113,38 @@ class _IntakeLevelState extends State<IntakeLevel>
 
     return Card( // 각 영양소 항목을 카드로 감싸 시각적 구분 강화
       elevation: 1.5, // 카드 그림자 효과
-      margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 0), // 카드 간 여백
+      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 0), // 카드 간 여백
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // 카드 모서리 둥글게
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0), // 카드 내부 패딩
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16.0), // 카드 내부 패딩
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // 내용물 왼쪽 정렬
+          crossAxisAlignment: CrossAxisAlignment.center, // 내용물 왼쪽 정렬
           children: [
-            // 상단: 영양소 이름 및 현재 섭취량 표시
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양 끝 정렬
-              children: [
-                Text(
-                  widget.intake.nutrientname,
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87), // 폰트 스타일 조정
-                ),
-                Text(
-                  '${widget.intake.intakeamount.toStringAsFixed(1)}${widget.intake.intakeunit} 섭취', // 소수점 한 자리까지 표시
-                  style: TextStyle(
-                      color: _barColor, // 현재 섭취량 텍스트 색상을 바 색상과 동일하게
-                      fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal:8),
+              // 상단: 영양소 이름 및 현재 섭취량 표시
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양 끝 정렬
+                children: [
+                  Text(
+                    widget.intake.nutrientname,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87), // 폰트 스타일 조정
+                  ),
+                  Text(
+                    '${widget.intake.intakeamount.toStringAsFixed(1)}${widget.intake.intakeunit} 섭취', // 소수점 한 자리까지 표시
+                    style: TextStyle(
+                        color: _barColor, // 현재 섭취량 텍스트 색상을 바 색상과 동일하게
+                        fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12), // 텍스트와 바 사이 간격
+            const SizedBox(height:0), // 텍스트와 바 사이 간격
             // 중앙: 섭취량 시각화 바 영역
             SizedBox(
               width: _totalWidth, // 전체 너비 고정
-              height: _blockHeight + 24 + 4, // 바와 텍스트들을 포함할 충분한 높이
+              height: _blockHeight + infoPartHeight, // 바와 텍스트들을 포함할 충분한 높이
               child: Stack( // 여러 요소를 겹쳐서 표현
                 alignment: Alignment.centerLeft, // 기본 정렬은 왼쪽 중앙
                 children: [
@@ -149,7 +152,7 @@ class _IntakeLevelState extends State<IntakeLevel>
                   Container(
                     height: _blockHeight,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200, // 바 배경색
+                      color: const Color.fromARGB(255, 169, 169, 169), // 바 배경색
                       borderRadius: BorderRadius.circular(10), // 모서리 둥글게
                       // border: Border.all(color: Colors.grey.shade300, width: 1), // 테두리 (선택 사항)
                     ),
@@ -174,24 +177,24 @@ class _IntakeLevelState extends State<IntakeLevel>
                   // 3. 기준선 (100% 위치)
                   Positioned(
                     left: centerLinePosition - 1.5, // 기준선 두께 고려하여 중앙 정렬
-                    top: -2, // 바 위쪽으로 살짝 올림
-                    bottom: _blockHeight + 2, // 바 아래쪽으로 살짝 내림 (텍스트 공간 확보)
+                    top: 13, // 바 위쪽으로 살짝 올림
+                    bottom: 13, // 바 아래쪽으로 살짝 내림 (텍스트 공간 확보)
                     child: Container(
                       width: 3, // 기준선 두께
                       decoration: BoxDecoration(
-                        color: Colors.black54, // 기준선 색상
+                        color: Colors.black, // 기준선 색상
                         borderRadius: BorderRadius.circular(1.5),
                       ),
                     ),
                   ),
                   // 4. 기준 섭취량 텍스트 (100% 위치 상단)
                   Positioned(
-                    left: centerLinePosition - 20, // 기준선 기준으로 텍스트 위치 조정
-                    top: -4, // 바 위쪽으로 더 올림
+                    left: centerLinePosition - 15, // 기준선 기준으로 텍스트 위치 조정
+                    top: 0, // 바 위쪽으로 더 올림
                     child: Text(
                       '${widget.intake.requiredintake.toStringAsFixed(widget.intake.requiredintake % 1 == 0 ? 0 : 1)}${widget.intake.intakeunit}', // 정수면 소수점 없이, 아니면 한 자리
                       style: const TextStyle(
-                          fontSize: 11, fontWeight: FontWeight.w500, color: Colors.black54),
+                          fontSize: 11, fontWeight: FontWeight.w500, color: Colors.black87),
                     ),
                   ),
                   // 5. 현재 섭취 퍼센트 텍스트 (바 끝 또는 바깥쪽)
@@ -204,15 +207,13 @@ class _IntakeLevelState extends State<IntakeLevel>
                       // 텍스트 위치 계산 (바 안쪽 또는 바깥쪽)
                       double textLeftPosition = currentBarWidth - 25; // 기본적으로 바 안쪽 끝에 위치
                       if (currentBarWidth < 40) { // 바가 너무 짧으면
-                        textLeftPosition = currentBarWidth + 5; // 바 바깥 오른쪽에 표시
+                        textLeftPosition = 15; // 바 바깥 오른쪽에 표시
                       }
                       if (textLeftPosition < 0) textLeftPosition = 5; // 화면 왼쪽 벗어남 방지
                       if (textLeftPosition > _totalWidth - 30) textLeftPosition = _totalWidth - 30; // 화면 오른쪽 벗어남 방지
-
-
                       return Positioned(
                         left: textLeftPosition,
-                        top: _blockHeight + 4, // 바 아래쪽에 위치
+                        top: _blockHeight - 5, // 바 아래쪽에 위치
                         child: Text(
                           '${(textRatio * 100).round()}%', // 퍼센트 표시
                           style: const TextStyle(

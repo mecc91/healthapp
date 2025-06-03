@@ -87,8 +87,6 @@ class _MealRecordState extends State<MealRecord> {
       TextEditingController(); // 메뉴 이름 입력 컨트롤러
 
   // 서비스 인스턴스
-  // final MenuAnalysisService _menuAnalysisService = MenuAnalysisService(); // 현재 직접 사용되지 않음
-  // final MealDataService _mealDataService = MealDataService(); // 현재 직접 사용되지 않음
   final MealGptService _mealGptService = MealGptService(); // GPT 기반 분석 및 기록 서비스
 
   @override
@@ -121,7 +119,7 @@ class _MealRecordState extends State<MealRecord> {
     super.dispose();
   }
 
-  // 이미지 선택(카메라/갤러리) 및 분석 실행
+  // 이미지 선택(카메라only) 및 분석 실행
   Future<void> _pickImageAndAnalyze(ImageSource source) async {
     if (_isAnalyzingMenu) return; // 분석 중이면 중복 실행 방지
 
@@ -588,37 +586,25 @@ class _MealRecordState extends State<MealRecord> {
 
   // 재촬영, 저장, 취소 버튼 영역 UI 빌드
   Widget _buildActionButtons(double horizontalPadding, Size screenSize) {
-    return Row(
-      children: [
-        // 재촬영 버튼
-        Tooltip(
-          message: MealRecordStrings.retakeTooltip,
-          child: OutlinedButton(
-            onPressed: _isAnalyzingMenu
-                ? null
-                : () => _pickImageAndAnalyze(ImageSource.camera), // 분석 중 비활성화
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.teal,
-              backgroundColor: Colors.teal.shade50,
-              side: BorderSide(color: Colors.teal.shade200),
-              padding: EdgeInsets.symmetric(
-                  vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ).copyWith(
-              // 비활성화 시 스타일
-              foregroundColor: WidgetStateProperty.resolveWith<Color?>(
-                  (states) => states.contains(WidgetState.disabled)
-                      ? Colors.grey
-                      : Colors.teal),
-              backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                  (states) => states.contains(WidgetState.disabled)
-                      ? Colors.grey.shade200
-                      : Colors.teal.shade50),
-              side: WidgetStateProperty.resolveWith<BorderSide?>((states) =>
-                  states.contains(WidgetState.disabled)
-                      ? BorderSide(color: Colors.grey.shade300)
-                      : BorderSide(color: Colors.teal.shade200)),
+     return Row(
+        children: [
+          // 재촬영 버튼
+          Tooltip(
+            message: MealRecordStrings.retakeTooltip,
+            child: OutlinedButton(
+              onPressed: _isAnalyzingMenu ? null : () => _pickImageAndAnalyze(ImageSource.camera), // 분석 중 비활성화
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.teal,
+                backgroundColor: Colors.teal.shade50,
+                side: BorderSide(color: Colors.teal.shade200),
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ).copyWith( // 비활성화 시 스타일
+                foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.teal),
+                backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.teal.shade50),
+                side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.teal.shade200)),
+              ),
+              child: const Icon(Icons.camera_alt, size: 24),
             ),
             child: const Icon(Icons.camera_alt, size: 24),
           ),
@@ -642,36 +628,25 @@ class _MealRecordState extends State<MealRecord> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
-        ),
-        const SizedBox(width: 16.0),
-        // 기록 취소 (휴지통) 버튼
-        Tooltip(
-          message: MealRecordStrings.cancelTooltip,
-          child: OutlinedButton(
-            // 분석 중에도 취소는 가능하도록 할 수 있으나, mealId가 없을 수 있음에 유의
-            onPressed: _deleteRecordAndExit,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.redAccent.shade700,
-              backgroundColor: Colors.red.shade50,
-              side: BorderSide(color: Colors.redAccent.shade200),
-              padding: EdgeInsets.symmetric(
-                  vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ).copyWith(
-              // 비활성화 시 스타일 (필요시 추가)
-              foregroundColor: WidgetStateProperty.resolveWith<Color?>(
-                  (states) => states.contains(WidgetState.disabled)
-                      ? Colors.grey
-                      : Colors.redAccent.shade700),
-              backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                  (states) => states.contains(WidgetState.disabled)
-                      ? Colors.grey.shade200
-                      : Colors.red.shade50),
-              side: WidgetStateProperty.resolveWith<BorderSide?>((states) =>
-                  states.contains(WidgetState.disabled)
-                      ? BorderSide(color: Colors.grey.shade300)
-                      : BorderSide(color: Colors.redAccent.shade200)),
+          const SizedBox(width: 16.0),
+          // 기록 취소 (휴지통) 버튼
+          Tooltip(
+            message: MealRecordStrings.cancelTooltip,
+            child: OutlinedButton(
+              // 분석 중에도 취소는 가능하도록 할 수 있으나, mealId가 없을 수 있음에 유의
+              onPressed: _deleteRecordAndExit,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.redAccent.shade700,
+                backgroundColor: Colors.red.shade50,
+                side: BorderSide(color: Colors.redAccent.shade200),
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: max(15, screenSize.width * 0.04)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ).copyWith( // 비활성화 시 스타일 (필요시 추가)
+                 foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey : Colors.redAccent.shade700),
+                 backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) => states.contains(WidgetState.disabled) ? Colors.grey.shade200 : Colors.red.shade50),
+                 side: WidgetStateProperty.resolveWith<BorderSide?>((states) => states.contains(WidgetState.disabled) ? BorderSide(color: Colors.grey.shade300) : BorderSide(color: Colors.redAccent.shade200)),
+              ),
+              child: const Icon(Icons.delete_outline, size: 24),
             ),
             child: const Icon(Icons.delete_outline, size: 24),
           ),
