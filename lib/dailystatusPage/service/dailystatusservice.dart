@@ -27,7 +27,7 @@ class DailyStatusService {
         final responsedata = json.decode(response.body) as Map<String, dynamic>;
         returnInfo.add(responsedata['gender']);
         String age = responsedata['birthday'] as String;
-        age = (int.parse(age.split('-')[0]) - int.parse(date.split('-')[0])).toString();
+        age = (int.parse(date.split('-')[0]) - int.parse(age.split('-')[0])).toString();
         returnInfo.add(age);
         return returnInfo;
       }
@@ -42,7 +42,6 @@ class DailyStatusService {
   }
   Future<List<double>> fetchCriterion(int userAge, String userGender) async {
     print("criterionfetch시작");
-    userAge = 20; //일단하드코딩;;
     List<double> returnCriterion = [];
     final url = Uri.parse('$_baseUrl/diet-criteria/')
       .replace(queryParameters: {'age': userAge.toString(), 'gender':userGender});
@@ -78,8 +77,7 @@ class DailyStatusService {
 
   // 오늘의 식단 기록을 모두 가져오는 API 함수
   Future<List<MealInfo>> fetchMeals(String userId) async {
-    //final date = _getDatetimeNow();
-    final date = "2025-05-31";
+    final date = _getDatetimeNow();
     List<MealInfo> returnMeals = [];
     final url = Uri.parse('$_baseUrl/users/$userId/meal-info')
       .replace(queryParameters: {'date': date});
